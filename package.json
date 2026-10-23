@@ -1,7 +1,7 @@
-{
+﻿{
   "name": "dsh-aurora-glass",
-  "version": "1.0.6",
-  "description": "Aurora Glass — a lightweight global glassmorphism + aurora theme for DeepSeek Harness",
+  "version": "1.0.7",
+  "description": "Aurora Glass 鈥?a lightweight global glassmorphism + aurora theme for DeepSeek Harness",
   "license": "MIT",
   "private": false,
   "type": "module",

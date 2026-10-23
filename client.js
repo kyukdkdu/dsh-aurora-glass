@@ -301,7 +301,6 @@ window.__ModuleLoader__.load({
         `body::after { opacity: ${dark ? '.5' : '.68'}; background: radial-gradient(50% 50% at 82% 72%, ${c2}, transparent 66%), radial-gradient(38% 38% at 18% 78%, ${c3}, transparent 70%); ${anim2} transform: translate3d(2%, 3%, 0); }`,
         `@keyframes ag-drift-1 { from { transform: translate3d(-2%, 1%, 0) scale(1); } to { transform: translate3d(3%, -2%, 0) scale(${tailScale}); } }`,
         `@keyframes ag-drift-2 { from { transform: translate3d(2%, 3%, 0) scale(1.06); } to { transform: translate3d(-3%, -1%, 0) scale(.96); } }`,
-        `@media (prefers-reduced-motion: reduce) { body::before, body::after { animation: none; } }`,
       ].join('\n');
     }
 
@@ -316,7 +315,7 @@ window.__ModuleLoader__.load({
 .ag-glow::after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.3) 50%,transparent 66%);transform:translateX(-130%)}
 .ag-glow:hover::after{animation:ag-shine .85s ease}
 @keyframes ag-shine{from{transform:translateX(-130%)}to{transform:translateX(130%)}}
-@media (prefers-reduced-motion: no-preference){.ag-glow{animation:ag-halo 3.6s ease-in-out infinite}.ag-glow:hover{animation:none}}
+.ag-glow.ag-anim{animation:ag-halo 3.6s ease-in-out infinite}.ag-glow.ag-anim:hover{animation:none}
 @keyframes ag-halo{0%,100%{box-shadow:0 10px 28px rgba(4,8,24,.4),0 0 0 0 rgba(143,176,255,0)}50%{box-shadow:0 10px 28px rgba(4,8,24,.4),0 0 0 8px rgba(143,176,255,.14)}}
 .ag-panel{width:306px;padding:16px 16px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.16);background:rgba(15,17,28,.97);backdrop-filter:blur(24px) saturate(1.5);-webkit-backdrop-filter:blur(24px) saturate(1.5);box-shadow:0 24px 64px rgba(2,6,20,.55),0 2px 12px rgba(2,6,20,.35);color:#e8ecf8;animation:ag-pop .3s cubic-bezier(.34,1.56,.64,1);transform-origin:100% 100%}
 @keyframes ag-pop{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:none}}
@@ -381,6 +380,7 @@ window.__ModuleLoader__.load({
       const [show, setShow] = useState(false);
       const [open, setOpen] = useState(false);
       const [diag, setDiag] = useState({ tier: 0, ok: null });
+      const st = useSyncExternalStore(store.subscribe, store.get);
       useEffect(() => {
         floatingMounts += 1;
         if (floatingMounts === 1) {
@@ -393,7 +393,7 @@ window.__ModuleLoader__.load({
       return h('div', { className: 'ag-root' },
         open ? h(Panel, { store, t, diag, onClose: () => setOpen(false) }) : null,
         h('button', {
-          type: 'button', className: 'ag-glow',
+          type: 'button', className: 'ag-glow' + (st.motion !== 'off' ? ' ag-anim' : ''),
           title: t('panel.toggle'), 'aria-label': t('panel.toggle'),
           onClick: () => setOpen((v) => {
             const next = !v;
@@ -432,7 +432,7 @@ window.__ModuleLoader__.load({
         h('div', { className: 'ag-head' },
           h('div', { className: 'ag-title' },
             h(Sparkle, { size: 18 }), t('panel.title'),
-            h('span', { className: 'ag-badge' }, 'v1.0.6')),
+            h('span', { className: 'ag-badge' }, 'v1.0.7')),
           h('button', { type: 'button', className: 'ag-x', 'aria-label': 'Close', onClick: onClose }, '\u2715')),
         h('div', { className: 'ag-diag', title: t('panel.diagTitle') },
           `CSS L${diag ? diag.tier : 0} ${diag && diag.ok === true ? '\u2714' : diag && diag.ok === false ? '\u2716' : '?'}`),

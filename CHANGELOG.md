@@ -3,6 +3,13 @@
 本文件记录 dsh-aurora-glass 的重要变更，采用简易维护格式（Keep a Changelog 风格）。
 All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a Changelog style).
 
+## [1.0.7] - 2026-10-23
+
+### Changed
+
+- 动效控制权交给面板：极光漂移动画不再受系统"减弱动画"（`prefers-reduced-motion`）自动关闭 —— 实测发现启用系统减弱动画时极光会静止，影响观感；现在由面板的「动效强度」直接决定（关闭/柔和/丰富），默认柔和。
+- ✦ 按钮的呼吸光晕（halo）同样跟随「动效强度」设置，不再依赖系统动画偏好。
+
 ## [1.0.6] - 2026-10-23
 
 ### Fixed
