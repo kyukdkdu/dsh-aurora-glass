@@ -103,6 +103,7 @@ window.__ModuleLoader__.load({
         'sw.aurora': 'Aurora glow',
         'sw.grain': 'Film grain',
         'sw.enabled': 'Glass theme',
+        'panel.diagTitle': 'CSS variable layer tier & result: ✔ landed, ✖ blocked, ? not measurable',
         'reset': 'Reset to defaults',
       },
       zh: {
@@ -126,6 +127,7 @@ window.__ModuleLoader__.load({
         'sw.aurora': '极光背景',
         'sw.grain': '噪点质感',
         'sw.enabled': '玻璃主题',
+        'panel.diagTitle': 'CSS 变量层诊断：✔ 已生效，✖ 被压制，? 无法测量',
         'reset': '恢复默认设置',
       },
     };
@@ -236,13 +238,16 @@ window.__ModuleLoader__.load({
      * always re-composed into live CSS variables by the shell, which leaves
      * the app surfaces fully opaque (the "no effect at all" symptom). This
      * sheet writes the resolved alias tokens straight onto :root for the
-     * active scheme, forcing the glass to show regardless.
+     * active scheme. `tier` escalates the selector specificity (:root,
+     * :root:root, ...) to outrank shells that scope their token rules with
+     * attribute selectors + !important.
      */
-    function buildVarCss(s, scheme) {
+    function buildVarCss(s, scheme, tier = 0) {
       if (!s.enabled) return null;
       const tokens = buildTokens(s);
       if (!tokens) return null;
-      const lines = ['/* dsh-aurora-glass: direct alias-token layer */', ':root {'];
+      const sel = ':root' + ':root'.repeat(tier);
+      const lines = [`/* dsh-aurora-glass: direct alias-token layer (tier ${tier}) */`, `${sel} {`];
       Object.keys(tokens).forEach((token) => {
         lines.push(`  ${token}: ${tokens[token][scheme === 'light' ? 'light' : 'dark']} !important;`);
       });
@@ -300,6 +305,7 @@ window.__ModuleLoader__.load({
 .ag-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
 .ag-title{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700;letter-spacing:.2px;color:#f2f5fd}
 .ag-badge{font-size:10px;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.12);color:#aab3cc}
+.ag-diag{margin:0 0 10px;font-size:11px;line-height:1;color:#8b93ad;font-variant-numeric:tabular-nums;user-select:text}
 .ag-x{width:26px;height:26px;border-radius:8px;border:none;background:rgba(255,255,255,.09);color:#aab3cc;cursor:pointer;transition:background .15s,color .15s}
 .ag-x:hover{background:rgba(255,255,255,.2);color:#f2f5fd}
 .ag-sec{margin-top:12px}
@@ -353,25 +359,33 @@ window.__ModuleLoader__.load({
     // first live mount renders the floating button.
     let floatingMounts = 0;
 
-    function FloatingButton({ store, t }) {
+    function FloatingButton({ store, t, ensureVarLayer }) {
       const [show, setShow] = useState(false);
       const [open, setOpen] = useState(false);
+      const [diag, setDiag] = useState({ tier: 0, ok: null });
       useEffect(() => {
         floatingMounts += 1;
-        if (floatingMounts === 1) setShow(true);
+        if (floatingMounts === 1) {
+          setShow(true);
+          if (typeof ensureVarLayer === 'function') setDiag(ensureVarLayer());
+        }
         return () => { floatingMounts -= 1; };
       }, []);
       if (!show) return null;
       return h('div', { className: 'ag-root' },
-        open ? h(Panel, { store, t, onClose: () => setOpen(false) }) : null,
+        open ? h(Panel, { store, t, diag, onClose: () => setOpen(false) }) : null,
         h('button', {
           type: 'button', className: 'ag-glow',
           title: t('panel.toggle'), 'aria-label': t('panel.toggle'),
-          onClick: () => setOpen((v) => !v),
+          onClick: () => setOpen((v) => {
+            const next = !v;
+            if (next && typeof ensureVarLayer === 'function') setDiag(ensureVarLayer());
+            return next;
+          }),
         }, h(Sparkle, { size: 22 })));
     }
 
-    function Panel({ store, t, onClose }) {
+    function Panel({ store, t, diag, onClose }) {
       const st = useSyncExternalStore(store.subscribe, store.get);
       const set = (patch) => store.update(patch);
       const pickPreset = (id) => {
@@ -400,8 +414,10 @@ window.__ModuleLoader__.load({
         h('div', { className: 'ag-head' },
           h('div', { className: 'ag-title' },
             h(Sparkle, { size: 18 }), t('panel.title'),
-            h('span', { className: 'ag-badge' }, 'v1.0.4')),
+            h('span', { className: 'ag-badge' }, 'v1.0.5')),
           h('button', { type: 'button', className: 'ag-x', 'aria-label': 'Close', onClick: onClose }, '\u2715')),
+        h('div', { className: 'ag-diag', title: t('panel.diagTitle') },
+          `CSS L${diag ? diag.tier : 0} ${diag && diag.ok === true ? '\u2714' : diag && diag.ok === false ? '\u2716' : '?'}`),
         h('div', { className: 'ag-sec' },
           h('div', { className: 'ag-sec-label' }, sections.preset[0]),
           h('div', { className: 'ag-chips' }, sections.preset[1])),
@@ -481,9 +497,55 @@ window.__ModuleLoader__.load({
         let tokenUndo = null;
         let auraUndo = null;
         let varUndo = null;
+        let varTier = 0;
         let sheetUndo = null;
 
         try { sheetUndo = ctx.styles.insert(BASE_CSS); } catch { /* panel renders unstyled */ }
+
+        const getScheme = () => {
+          try { return theme.getTheme().active.colorScheme; } catch { return 'dark'; }
+        };
+
+        const norm = (v) => String(v || '').replace(/\s+/g, '').toLowerCase();
+
+        const applyVarLayer = (s, scheme) => {
+          if (varUndo) { varUndo(); varUndo = null; }
+          if (!s.enabled) return;
+          const css = buildVarCss(s, scheme, varTier);
+          if (css) varUndo = ctx.styles.insert(css);
+        };
+
+        /**
+         * Verify that our variable layer actually landed. Some shells scope
+         * their token rules with attribute selectors + !important, which can
+         * beat a plain :root rule; walk the specificity ladder until the
+         * computed token matches what we asked for. Returns { tier, ok } for
+         * the panel diagnostics line.
+         */
+        const ensureVarLayer = () => {
+          try {
+            const doc = (typeof document !== 'undefined' && document)
+              || (typeof globalThis !== 'undefined' && globalThis.document) || null;
+            if (!doc || !doc.documentElement || !doc.defaultView) return { tier: varTier, ok: null };
+            const s = store.get();
+            const tokens = buildTokens(s);
+            if (!tokens) return { tier: varTier, ok: null };
+            const scheme = getScheme();
+            const want = norm(tokens['--dsw-alias-bg-base'][scheme === 'light' ? 'light' : 'dark']);
+            for (let tier = 0; tier <= 4; tier += 1) {
+              if (varUndo) { varUndo(); varUndo = null; }
+              const css = buildVarCss(s, scheme, tier);
+              if (css) varUndo = ctx.styles.insert(css);
+              const got = norm(doc.defaultView.getComputedStyle(doc.documentElement).getPropertyValue('--dsw-alias-bg-base'));
+              if (got && got === want) { varTier = tier; return { tier, ok: true }; }
+            }
+            varTier = 4;
+            return { tier: varTier, ok: false };
+          } catch (err) {
+            try { console.error('[dsh-aurora-glass] var check failed:', err); } catch { /* no console */ }
+            return { tier: varTier, ok: null };
+          }
+        };
 
         const rebuild = (tokensOnly) => {
           const s = store.get();
@@ -493,10 +555,8 @@ window.__ModuleLoader__.load({
               const tokens = buildTokens(s);
               if (tokens && theme) tokenUndo = theme.overrideTokens(PACKAGE, tokens);
             }
-            let scheme = 'dark';
-            try { scheme = theme.getTheme().active.colorScheme; } catch { /* default dark */ }
-            if (varUndo) { varUndo(); varUndo = null; }
-            if (s.enabled) varUndo = ctx.styles.insert(buildVarCss(s, scheme));
+            const scheme = getScheme();
+            applyVarLayer(s, scheme);
             if (auraUndo) { auraUndo(); auraUndo = null; }
             if (s.enabled) auraUndo = ctx.styles.insert(buildAuraCss(s, scheme));
           } catch (err) {
@@ -512,7 +572,7 @@ window.__ModuleLoader__.load({
 
         ctx.slots.inject(OVERLAY_SLOT, () => ctx.slots.register({
           name: OVERLAY_SLOT, id: PACKAGE + '.panel', order: 1000, label: PACKAGE,
-        }, () => h(FloatingButton, { store, t })));
+        }, () => h(FloatingButton, { store, t, ensureVarLayer })));
 
         try {
           ctx.effect(() => () => {

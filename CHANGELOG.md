@@ -3,6 +3,16 @@
 本文件记录 dsh-aurora-glass 的重要变更，采用简易维护格式（Keep a Changelog 风格）。
 All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a Changelog style).
 
+## [1.0.5] - 2026-10-23
+
+### Added
+
+- 面板内置 CSS 变量层诊断行（`CSS L0 ✔/✖/?`）：自动检测 `:root` 注入是否被壳的更高优先级规则压制，并按需把选择器升级到 `:root:root`、`:root:root:root`…… 逐级比对计算样式直到生效，用于排查"启用后仍无效果"的极端 shell。
+
+### Changed
+
+- `:root` 直接 token 层现在带 `!important` 并支持特异性阶梯升级；主题明暗切换与滑块调整时保持同一阶梯重写。
+
 ## [1.0.4] - 2026-10-23
 
 ### Fixed
