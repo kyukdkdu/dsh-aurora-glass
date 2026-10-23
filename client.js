@@ -6,17 +6,17 @@
  * Strategy:
  *  - Token-level theming through theme.overrideTokens(): the app's own
  *    --dsw-alias-* surface / border / brand tokens are re-pointed at
- *    translucent "glass" values, so the ENTIRE shell — sidebar, conversation,
- *    composer, popovers, settings — restyles at once with zero structural
- *    assumptions and zero third-party dependencies.
- *  - A pure-CSS aurora background layer (html/body pseudo-elements painted
- *    beneath the app surfaces, animated with GPU-composited transforms only)
- *    is what "shows through" the frosted layers. No DOM is written outside
- *    our own slot components.
- *  - One floating control button + a lightweight settings panel live in
- *    `shell.overlay`; a master toggle lives in `sidebar.footer.action`.
+ *    translucent "glass" values so the WHOLE shell restyles at once with
+ *    zero structural assumptions and zero third-party dependencies.
+ *    Dark-mode opacities keep enough body to stay readable over the aurora
+ *    layer; light-mode surfaces stay far more opaque for text contrast.
+ *  - A pure-CSS aurora background + optional film-grain layer (html/body
+ *    pseudo-elements) is what "shows through" the frosted layers.
+ *  - One floating control button + panel in `shell.overlay`. A module-wide
+ *    mount counter guarantees exactly one button even if the host mounts
+ *    the overlay more than once.
  *  - Settings persist to localStorage; heavy re-theming is throttled so
- *    slider dragging stays buttery.
+ *    slider dragging stays smooth.
  */
 window.__ModuleLoader__.load({
   id: 'dsh-aurora-glass',
@@ -24,12 +24,11 @@ window.__ModuleLoader__.load({
     'use strict';
     const React = require('react');
     const h = React.createElement;
-    const { useState, useSyncExternalStore } = React;
+    const { useState, useEffect, useSyncExternalStore } = React;
 
     const PACKAGE = 'dsh-aurora-glass';
     const STORAGE_KEY = 'dsh-aurora-glass:settings:v1';
     const OVERLAY_SLOT = 'shell.overlay';
-    const ACTION_SLOT = 'sidebar.footer.action';
 
     /* ------------------------------ palettes & presets ------------------------------ */
 
@@ -37,35 +36,35 @@ window.__ModuleLoader__.load({
       {
         id: 'aurora', label: 'Aurora',
         brand: { light: '#4763ff', dark: '#8fb0ff' },
-        glow: ['rgba(96, 126, 255, .55)', 'rgba(168, 85, 247, .45)', 'rgba(236, 72, 153, .36)'],
+        glow: ['rgba(96, 126, 255, .5)', 'rgba(168, 85, 247, .4)', 'rgba(236, 72, 153, .32)'],
       },
       {
         id: 'ocean', label: 'Ocean',
         brand: { light: '#0b7bf1', dark: '#7cc4ff' },
-        glow: ['rgba(34, 211, 238, .5)', 'rgba(59, 130, 246, .42)', 'rgba(16, 185, 129, .32)'],
+        glow: ['rgba(34, 211, 238, .46)', 'rgba(59, 130, 246, .38)', 'rgba(16, 185, 129, .3)'],
       },
       {
         id: 'ember', label: 'Ember',
         brand: { light: '#ea580c', dark: '#ffb27d' },
-        glow: ['rgba(251, 146, 60, .5)', 'rgba(244, 63, 94, .42)', 'rgba(217, 70, 239, .32)'],
+        glow: ['rgba(251, 146, 60, .46)', 'rgba(244, 63, 94, .38)', 'rgba(217, 70, 239, .3)'],
       },
       {
         id: 'jade', label: 'Jade',
         brand: { light: '#059669', dark: '#6ee7b7' },
-        glow: ['rgba(52, 211, 153, .5)', 'rgba(45, 212, 191, .42)', 'rgba(56, 189, 248, .3)'],
+        glow: ['rgba(52, 211, 153, .46)', 'rgba(45, 212, 191, .38)', 'rgba(56, 189, 248, .28)'],
       },
       {
         id: 'mono', label: 'Mono',
         brand: { light: '#4b5563', dark: '#cbd5e1' },
-        glow: ['rgba(148, 163, 184, .42)', 'rgba(203, 213, 225, .36)', 'rgba(99, 102, 241, .26)'],
+        glow: ['rgba(148, 163, 184, .4)', 'rgba(203, 213, 225, .34)', 'rgba(99, 102, 241, .24)'],
       },
     ];
 
     const PRESETS = [
-      { id: 'default', key: 'preset.default', set: { glass: .6, blur: 16, saturation: 1, motion: true, aurora: true } },
-      { id: 'mist', key: 'preset.mist', set: { glass: .88, blur: 30, saturation: .65, motion: false, aurora: true } },
-      { id: 'depth', key: 'preset.depth', set: { glass: .32, blur: 10, saturation: 1.25, motion: true, aurora: true } },
-      { id: 'pure', key: 'preset.pure', set: { glass: 0, blur: 0, saturation: 0, motion: false, aurora: false } },
+      { id: 'default', key: 'preset.default', set: { glass: .6, blur: 18, saturation: 1, motion: 'soft', aurora: true, grain: true } },
+      { id: 'mist', key: 'preset.mist', set: { glass: .88, blur: 30, saturation: .65, motion: 'off', aurora: true, grain: true } },
+      { id: 'depth', key: 'preset.depth', set: { glass: .32, blur: 10, saturation: 1.25, motion: 'full', aurora: true, grain: true } },
+      { id: 'pure', key: 'preset.pure', set: { glass: 0, blur: 0, saturation: 0, motion: 'off', aurora: false, grain: false } },
     ];
 
     const DEFAULT_SETTINGS = {
@@ -73,9 +72,10 @@ window.__ModuleLoader__.load({
       preset: 'default',
       palette: 'aurora',
       glass: .6,
-      blur: 16,
+      blur: 18,
       saturation: 1,
-      motion: true,
+      motion: 'soft',
+      grain: true,
       aurora: true,
     };
 
@@ -89,7 +89,6 @@ window.__ModuleLoader__.load({
         'sec.palette': 'Palette',
         'sec.surface': 'Surface',
         'sec.look': 'Atmosphere',
-        'sec.theme': 'Theme',
         'preset.default': 'Default',
         'preset.mist': 'Mist',
         'preset.depth': 'Deep',
@@ -97,15 +96,14 @@ window.__ModuleLoader__.load({
         'ctl.glass': 'Glass',
         'ctl.blur': 'Blur',
         'ctl.saturation': 'Color',
+        'ctl.motion': 'Motion',
+        'seg.motion.off': 'Off',
+        'seg.motion.soft': 'Soft',
+        'seg.motion.full': 'Rich',
         'sw.aurora': 'Aurora glow',
-        'sw.motion': 'Subtle motion',
+        'sw.grain': 'Film grain',
         'sw.enabled': 'Glass theme',
-        'theme.system': 'Auto',
-        'theme.light': 'Light',
-        'theme.dark': 'Dark',
         'reset': 'Reset to defaults',
-        'master.on': 'Enable Aurora Glass',
-        'master.off': 'Disable Aurora Glass',
       },
       zh: {
         'panel.toggle': '极光玻璃设置',
@@ -114,7 +112,6 @@ window.__ModuleLoader__.load({
         'sec.palette': '色板',
         'sec.surface': '表面',
         'sec.look': '氛围',
-        'sec.theme': '主题',
         'preset.default': '默认',
         'preset.mist': '轻雾',
         'preset.depth': '深空',
@@ -122,15 +119,14 @@ window.__ModuleLoader__.load({
         'ctl.glass': '玻璃强度',
         'ctl.blur': '模糊',
         'ctl.saturation': '色彩',
+        'ctl.motion': '动效强度',
+        'seg.motion.off': '关闭',
+        'seg.motion.soft': '柔和',
+        'seg.motion.full': '丰富',
         'sw.aurora': '极光背景',
-        'sw.motion': '微动效',
+        'sw.grain': '噪点质感',
         'sw.enabled': '玻璃主题',
-        'theme.system': '跟随系统',
-        'theme.light': '浅色',
-        'theme.dark': '深色',
         'reset': '恢复默认设置',
-        'master.on': '启用极光玻璃',
-        'master.off': '关闭极光玻璃',
       },
     };
 
@@ -142,6 +138,9 @@ window.__ModuleLoader__.load({
         if (!raw) return { ...DEFAULT_SETTINGS };
         const parsed = JSON.parse(raw);
         if (!parsed || typeof parsed !== 'object') return { ...DEFAULT_SETTINGS };
+        // migrate pre-1.0.2 boolean motion flag
+        if (parsed.motion === true) parsed.motion = 'full';
+        if (parsed.motion === false) parsed.motion = 'off';
         return { ...DEFAULT_SETTINGS, ...parsed };
       } catch {
         return { ...DEFAULT_SETTINGS };
@@ -191,8 +190,8 @@ window.__ModuleLoader__.load({
     /**
      * Compose the alias-token override layer. Values are { light, dark }
      * pairs (ThemeTokenOverrides); the theme service resolves the pair for
-     * the active color scheme, so system light/dark flip is automatic.
-     * Returns null when the glass theme is disabled (no override layer).
+     * the active color scheme. Dark surfaces keep enough opacity to stay
+     * readable over the aurora layer; light surfaces are nearly matte.
      */
     function buildTokens(s) {
       if (!s.enabled) return null;
@@ -200,22 +199,22 @@ window.__ModuleLoader__.load({
       const g = clamp(Number(s.glass) || 0, 0, 1);
 
       const dark = {
-        '--dsw-alias-bg-base': rgba(9, 11, 19, 1 - 0.16 * g),
-        '--dsw-alias-bg-layer-1': rgba(255, 255, 255, 0.016 + 0.05 * g),
-        '--dsw-alias-bg-layer-2': rgba(255, 255, 255, 0.035 + 0.085 * g),
-        '--dsw-alias-bg-overlay': rgba(12, 14, 23, 0.6 + 0.32 * g),
-        '--dsw-alias-border-l1': rgba(255, 255, 255, 0.05 + 0.095 * g),
-        '--dsw-alias-border-l2': rgba(255, 255, 255, 0.03 + 0.06 * g),
-        '--dsw-specific-sidebar-fill': rgba(255, 255, 255, 0.01 + 0.05 * g),
+        '--dsw-alias-bg-base': rgba(9, 11, 19, 1 - 0.12 * g),
+        '--dsw-alias-bg-layer-1': rgba(255, 255, 255, 0.05 + 0.09 * g),
+        '--dsw-alias-bg-layer-2': rgba(255, 255, 255, 0.07 + 0.1 * g),
+        '--dsw-alias-bg-overlay': rgba(12, 14, 23, 0.66 + 0.3 * g),
+        '--dsw-alias-border-l1': rgba(255, 255, 255, 0.06 + 0.1 * g),
+        '--dsw-alias-border-l2': rgba(255, 255, 255, 0.04 + 0.06 * g),
+        '--dsw-specific-sidebar-fill': rgba(255, 255, 255, 0.02 + 0.05 * g),
       };
       const light = {
-        '--dsw-alias-bg-base': rgba(248, 250, 254, 1 - 0.22 * g),
-        '--dsw-alias-bg-layer-1': rgba(255, 255, 255, 0.5 + 0.26 * g),
-        '--dsw-alias-bg-layer-2': rgba(255, 255, 255, 0.68 + 0.2 * g),
-        '--dsw-alias-bg-overlay': rgba(251, 252, 255, 0.7 + 0.26 * g),
-        '--dsw-alias-border-l1': rgba(13, 20, 42, 0.05 + 0.075 * g),
-        '--dsw-alias-border-l2': rgba(13, 20, 42, 0.03 + 0.05 * g),
-        '--dsw-specific-sidebar-fill': rgba(255, 255, 255, 0.4 + 0.32 * g),
+        '--dsw-alias-bg-base': rgba(248, 250, 254, 1 - 0.18 * g),
+        '--dsw-alias-bg-layer-1': rgba(255, 255, 255, 0.62 + 0.24 * g),
+        '--dsw-alias-bg-layer-2': rgba(255, 255, 255, 0.78 + 0.14 * g),
+        '--dsw-alias-bg-overlay': rgba(251, 252, 255, 0.78 + 0.2 * g),
+        '--dsw-alias-border-l1': rgba(13, 20, 42, 0.06 + 0.07 * g),
+        '--dsw-alias-border-l2': rgba(13, 20, 42, 0.04 + 0.05 * g),
+        '--dsw-specific-sidebar-fill': rgba(255, 255, 255, 0.52 + 0.28 * g),
       };
 
       const out = {
@@ -227,12 +226,10 @@ window.__ModuleLoader__.load({
       return out;
     }
 
-    /**
-     * Aurora background stylesheet: base canvas color on <html>, and two
-     * blurred radial-gradient blobs painted beneath the app surfaces
-     * (z-index:-1 on body pseudo-elements, pointer-events:none). Only
-     * transforms/opacity animate — the blur is a one-shot raster.
-     */
+    /* ------------------------------ aurora + grain stylesheet ------------------------------ */
+
+    const GRAIN_DATA_URI = 'url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix type=%22saturate%22 values=%220%22/%3E%3C/filter%3E%3Crect width=%22120%22 height=%22120%22 filter=%22url(%23n)%22 opacity=%220.05%22/%3E%3C/svg%3E")';
+
     function buildAuraCss(s, scheme) {
       const pal = paletteOf(s.palette);
       const dark = scheme === 'dark';
@@ -241,18 +238,19 @@ window.__ModuleLoader__.load({
       const blur = active ? clamp(Number(s.blur) || 0, 0, 40) : 0;
       const sat = active ? clamp(Number(s.saturation) || 0, 0, 1.6) : 0;
       const [c1, c2, c3] = pal.glow;
-      const motion = s.motion && active;
-      const anim1 = motion ? 'animation: ag-drift-1 26s ease-in-out infinite alternate;' : '';
-      const anim2 = motion ? 'animation: ag-drift-2 34s ease-in-out infinite alternate;' : '';
+      const grain = (s.grain && active) ? GRAIN_DATA_URI : 'none';
+      let anim1 = ''; let anim2 = ''; let tailScale = '1.05';
+      if (active && s.motion === 'soft') { anim1 = 'animation: ag-drift-1 26s ease-in-out infinite alternate;'; anim2 = 'animation: ag-drift-2 34s ease-in-out infinite alternate;'; }
+      if (active && s.motion === 'full') { anim1 = 'animation: ag-drift-1 15s ease-in-out infinite alternate;'; anim2 = 'animation: ag-drift-2 19s ease-in-out infinite alternate;'; tailScale = '1.12'; }
 
       return [
         `html { background: ${base}; }`,
         `body { background: transparent; }`,
         `body::before, body::after { content: ""; position: fixed; z-index: -1; inset: -15% -10%; pointer-events: none; filter: blur(${blur}px) saturate(${sat}); will-change: transform; backface-visibility: hidden; }`,
-        `body::before { background: radial-gradient(42% 42% at 22% 28%, ${c1}, transparent 66%), radial-gradient(46% 46% at 78% 20%, ${c2}, transparent 70%), radial-gradient(54% 54% at 62% 88%, ${c3}, transparent 72%); ${anim1} }`,
-        `body::after { opacity: .55; background: radial-gradient(50% 50% at 82% 72%, ${c2}, transparent 66%), radial-gradient(38% 38% at 18% 78%, ${c3}, transparent 68%); ${anim2} transform: translate3d(2%, 3%, 0); }`,
-        `@keyframes ag-drift-1 { from { transform: translate3d(-2%, 1%, 0) scale(1); } to { transform: translate3d(3%, -2%, 0) scale(1.07); } }`,
-        `@keyframes ag-drift-2 { from { transform: translate3d(2%, 3%, 0) scale(1.06); } to { transform: translate3d(-3%, -1%, 0) scale(.97); } }`,
+        `body::before { background-image: ${grain}, radial-gradient(42% 42% at 22% 28%, ${c1}, transparent 66%), radial-gradient(46% 46% at 78% 20%, ${c2}, transparent 70%), radial-gradient(54% 54% at 62% 88%, ${c3}, transparent 72%); background-size: 120px 120px, auto, auto, auto; ${anim1} }`,
+        `body::after { opacity: .5; background: radial-gradient(50% 50% at 82% 72%, ${c2}, transparent 66%), radial-gradient(38% 38% at 18% 78%, ${c3}, transparent 70%); ${anim2} transform: translate3d(2%, 3%, 0); }`,
+        `@keyframes ag-drift-1 { from { transform: translate3d(-2%, 1%, 0) scale(1); } to { transform: translate3d(3%, -2%, 0) scale(${tailScale}); } }`,
+        `@keyframes ag-drift-2 { from { transform: translate3d(2%, 3%, 0) scale(1.06); } to { transform: translate3d(-3%, -1%, 0) scale(.96); } }`,
         `@media (prefers-reduced-motion: reduce) { body::before, body::after { animation: none; } }`,
       ].join('\n');
     }
@@ -262,45 +260,51 @@ window.__ModuleLoader__.load({
     const BASE_CSS = `
 .ag-root{position:fixed;right:22px;bottom:22px;z-index:30;display:flex;flex-direction:column;align-items:flex-end;gap:12px;font-size:13px;line-height:1.45;font-family:inherit;-webkit-font-smoothing:antialiased;pointer-events:auto}
 .ag-root *,.ag-root *::before,.ag-root *::after{box-sizing:border-box}
-.ag-glow{display:grid;place-items:center;width:46px;height:46px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:linear-gradient(150deg,rgba(255,255,255,.2),rgba(255,255,255,.05));backdrop-filter:blur(10px) saturate(1.4);-webkit-backdrop-filter:blur(10px) saturate(1.4);color:var(--dsw-alias-label-primary);cursor:pointer;box-shadow:0 10px 28px rgba(4,8,24,.35);transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .3s}
-.ag-glow:hover{transform:scale(1.1) rotate(36deg);box-shadow:0 14px 34px rgba(4,8,24,.45)}
+.ag-glow{position:relative;overflow:hidden;display:grid;place-items:center;width:46px;height:46px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.24);background:linear-gradient(150deg,rgba(255,255,255,.22),rgba(255,255,255,.06));backdrop-filter:blur(12px) saturate(1.5);-webkit-backdrop-filter:blur(12px) saturate(1.5);color:#eef2ff;cursor:pointer;box-shadow:0 10px 28px rgba(4,8,24,.4),0 0 0 0 rgba(143,176,255,0);transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .3s}
+.ag-glow:hover{transform:scale(1.1) rotate(36deg);box-shadow:0 14px 34px rgba(4,8,24,.5),0 0 0 6px rgba(143,176,255,.12)}
 .ag-glow:active{transform:scale(.94)}
-.ag-panel{width:302px;padding:16px 16px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.13);background:rgba(16,18,30,.6);backdrop-filter:blur(28px) saturate(1.6);-webkit-backdrop-filter:blur(28px) saturate(1.6);box-shadow:0 24px 64px rgba(2,6,20,.42),0 2px 12px rgba(2,6,20,.28);color:var(--dsw-alias-label-primary);animation:ag-pop .3s cubic-bezier(.34,1.56,.64,1);transform-origin:100% 100%}
+.ag-glow::after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.3) 50%,transparent 66%);transform:translateX(-130%)}
+.ag-glow:hover::after{animation:ag-shine .85s ease}
+@keyframes ag-shine{from{transform:translateX(-130%)}to{transform:translateX(130%)}}
+.ag-panel{width:306px;padding:16px 16px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.16);background:rgba(15,17,28,.97);backdrop-filter:blur(24px) saturate(1.5);-webkit-backdrop-filter:blur(24px) saturate(1.5);box-shadow:0 24px 64px rgba(2,6,20,.55),0 2px 12px rgba(2,6,20,.35);color:#e8ecf8;animation:ag-pop .3s cubic-bezier(.34,1.56,.64,1);transform-origin:100% 100%}
 @keyframes ag-pop{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:none}}
-.ag-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-.ag-title{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:650;letter-spacing:.2px}
-.ag-badge{font-size:10px;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.09);color:var(--dsw-alias-label-secondary)}
-.ag-x{width:26px;height:26px;border-radius:8px;border:none;background:rgba(255,255,255,.07);color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background .15s,color .15s}
-.ag-x:hover{background:rgba(255,255,255,.16);color:var(--dsw-alias-label-primary)}
+.ag-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.ag-title{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700;letter-spacing:.2px;color:#f2f5fd}
+.ag-badge{font-size:10px;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.12);color:#aab3cc}
+.ag-x{width:26px;height:26px;border-radius:8px;border:none;background:rgba(255,255,255,.09);color:#aab3cc;cursor:pointer;transition:background .15s,color .15s}
+.ag-x:hover{background:rgba(255,255,255,.2);color:#f2f5fd}
 .ag-sec{margin-top:12px}
-.ag-sec-label{font-size:11px;color:var(--dsw-alias-label-secondary);letter-spacing:.4px;margin-bottom:6px}
+.ag-sec-label{font-size:11px;color:#9aa5c0;letter-spacing:.5px;margin-bottom:6px;text-transform:uppercase}
 .ag-chips{display:flex;flex-wrap:wrap;gap:6px}
-.ag-chip{font-size:12px;padding:4.5px 11px;border-radius:999px;border:1px solid var(--dsw-alias-border-l1);background:transparent;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:all .18s}
-.ag-chip:hover{color:var(--dsw-alias-label-primary);border-color:var(--dsw-alias-border-l2)}
-.ag-chip.on{color:#fff;background:var(--dsw-alias-brand-primary);border-color:transparent}
-.ag-swatches{display:flex;gap:8px;align-items:center}
-.ag-swatch{width:24px;height:24px;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.28);cursor:pointer;transition:transform .18s,box-shadow .18s}
+.ag-chip{font-size:12px;font-weight:500;padding:5px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:#c6cfe4;cursor:pointer;transition:all .18s}
+.ag-chip:hover{color:#f2f5fd;border-color:rgba(255,255,255,.32)}
+.ag-chip.on{color:#fff;background:var(--dsw-alias-brand-primary,#4763ff);border-color:transparent}
+.ag-swatches{display:flex;gap:9px;align-items:center}
+.ag-swatch{width:24px;height:24px;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.34);cursor:pointer;transition:transform .18s,box-shadow .18s}
 .ag-swatch:hover{transform:scale(1.09)}
-.ag-swatch.on{transform:scale(1.14);box-shadow:0 0 0 2.5px var(--dsw-alias-brand-primary)}
-.ag-ctl{display:flex;align-items:center;gap:10px;margin-top:10px}
-.ag-ctl-label{width:64px;font-size:12px;flex:none;color:var(--dsw-alias-label-primary)}
-.ag-range{flex:1;min-width:0;accent-color:var(--dsw-alias-brand-primary);cursor:pointer;height:4px}
-.ag-val{width:34px;text-align:right;font-size:11px;color:var(--dsw-alias-label-secondary);font-variant-numeric:tabular-nums;flex:none}
-.ag-row{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:12px}
-.ag-switch{position:relative;width:36px;height:21px;padding:0;border:none;border-radius:999px;background:rgba(255,255,255,.14);cursor:pointer;transition:background .2s}
+.ag-swatch.on{transform:scale(1.15);box-shadow:0 0 0 2.5px rgba(242,245,253,.9)}
+.ag-ctl{display:flex;align-items:center;gap:10px;margin-top:11px}
+.ag-ctl-label{width:66px;font-size:12px;flex:none;color:#dbe2f2}
+.ag-range{flex:1;min-width:0;accent-color:var(--dsw-alias-brand-primary,#4763ff);cursor:pointer;height:4px}
+.ag-val{width:34px;text-align:right;font-size:11px;color:#aab3cc;font-variant-numeric:tabular-nums;flex:none}
+.ag-row{display:flex;align-items:center;justify-content:space-between;margin-top:11px;font-size:12.5px;color:#e8ecf8}
+.ag-switch{position:relative;width:36px;height:21px;padding:0;border:none;border-radius:999px;background:rgba(255,255,255,.18);cursor:pointer;transition:background .2s}
 .ag-switch::after{content:"";position:absolute;top:2.5px;left:2.5px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .22s cubic-bezier(.34,1.56,.64,1)}
-.ag-switch.on{background:var(--dsw-alias-brand-primary)}
+.ag-switch.on{background:var(--dsw-alias-brand-primary,#4763ff)}
 .ag-switch.on::after{transform:translateX(15px)}
-.ag-seg{display:flex;gap:2px;padding:3px;margin-top:6px;background:rgba(255,255,255,.07);border-radius:10px}
-.ag-seg-button{flex:1;border:none;background:transparent;color:var(--dsw-alias-label-secondary);font-size:12px;padding:5px 0;border-radius:8px;cursor:pointer;transition:all .18s}
-.ag-seg-button:hover{color:var(--dsw-alias-label-primary)}
-.ag-seg-button.on{background:rgba(255,255,255,.15);color:var(--dsw-alias-label-primary)}
-.ag-reset{margin-top:14px;width:100%;font-size:12px;padding:7px 0;border-radius:10px;border:1px solid var(--dsw-alias-border-l1);background:transparent;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:all .15s}
-.ag-reset:hover{color:var(--dsw-alias-label-primary);background:rgba(255,255,255,.06)}
-.ag-action{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:none;border-radius:10px;background:transparent;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:color .15s,background .15s,transform .2s}
-.ag-action:hover{color:var(--dsw-alias-label-primary);background:rgba(255,255,255,.08)}
-.ag-action:active{transform:scale(.92)}
-.ag-action.on{color:var(--dsw-alias-brand-primary)}
+.ag-seg{display:flex;gap:2px;padding:3px;margin-top:8px;background:rgba(255,255,255,.08);border-radius:10px}
+.ag-seg-button{flex:1;border:none;background:transparent;color:#aab3cc;font-size:12px;padding:5.5px 0;border-radius:8px;cursor:pointer;transition:all .18s}
+.ag-seg-button:hover{color:#f2f5fd}
+.ag-seg-button.on{background:rgba(255,255,255,.17);color:#f2f5fd}
+.ag-reset{margin-top:14px;width:100%;font-size:12px;padding:7.5px 0;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);color:#c6cfe4;cursor:pointer;transition:all .15s}
+.ag-reset:hover{color:#f2f5fd;background:rgba(255,255,255,.1)}
+.ag-grain-toggle{display:block}
+*::-webkit-scrollbar{width:9px;height:9px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:999px;border:2px solid transparent;background-clip:content-box}
+*::-webkit-scrollbar-thumb:hover{background-color:rgba(148,163,184,.6);background-clip:content-box}
+*{scrollbar-width:thin;scrollbar-color:rgba(148,163,184,.4) transparent}
+::selection{background:rgba(96,126,255,.32)}
 `;
 
     /* ------------------------------ components ------------------------------ */
@@ -315,8 +319,20 @@ window.__ModuleLoader__.load({
       }));
     }
 
+    // The overlay slot may be mounted more than once by the host (e.g. one
+    // host per region — the duplicate sparkle the user reported). Only the
+    // first live mount renders the floating button.
+    let floatingMounts = 0;
+
     function FloatingButton({ store, t }) {
+      const [show, setShow] = useState(false);
       const [open, setOpen] = useState(false);
+      useEffect(() => {
+        floatingMounts += 1;
+        if (floatingMounts === 1) setShow(true);
+        return () => { floatingMounts -= 1; };
+      }, []);
+      if (!show) return null;
       return h('div', { className: 'ag-root' },
         open ? h(Panel, { store, t, onClose: () => setOpen(false) }) : null,
         h('button', {
@@ -324,18 +340,6 @@ window.__ModuleLoader__.load({
           title: t('panel.toggle'), 'aria-label': t('panel.toggle'),
           onClick: () => setOpen((v) => !v),
         }, h(Sparkle, { size: 22 })));
-    }
-
-    function MasterToggle({ store, t }) {
-      const st = useSyncExternalStore(store.subscribe, store.get);
-      const on = st.enabled;
-      return h('button', {
-        type: 'button', className: 'ag-action' + (on ? ' on' : ''),
-        title: on ? t('master.off') : t('master.on'),
-        'aria-label': on ? t('master.off') : t('master.on'),
-        'aria-pressed': on,
-        onClick: () => store.update({ enabled: !on }),
-      }, h(Sparkle, { size: 15 }));
     }
 
     function Panel({ store, t, onClose }) {
@@ -367,7 +371,7 @@ window.__ModuleLoader__.load({
         h('div', { className: 'ag-head' },
           h('div', { className: 'ag-title' },
             h(Sparkle, { size: 18 }), t('panel.title'),
-            h('span', { className: 'ag-badge' }, 'v1.0.1')),
+            h('span', { className: 'ag-badge' }, 'v1.0.2')),
           h('button', { type: 'button', className: 'ag-x', 'aria-label': 'Close', onClick: onClose }, '\u2715')),
         h('div', { className: 'ag-sec' },
           h('div', { className: 'ag-sec-label' }, sections.preset[0]),
@@ -382,8 +386,16 @@ window.__ModuleLoader__.load({
           SliderCtl({ t, label: t('ctl.saturation'), value: st.saturation, min: 0, max: 1.6, step: .05, fmt: (v) => `${Math.round(v * 100)}%`, onChange: (v) => set({ saturation: v }) })),
         h('div', { className: 'ag-sec' },
           h('div', { className: 'ag-sec-label' }, t('sec.look')),
+          h('div', { className: 'ag-row' },
+            h('span', null, t('ctl.motion')),
+            h('div', { className: 'ag-seg', style: { marginTop: 0, width: 150 } },
+              ['off', 'soft', 'full'].map((lv) => h('button', {
+                key: lv, type: 'button',
+                className: 'ag-seg-button' + (st.motion === lv ? ' on' : ''),
+                onClick: () => set({ motion: lv }),
+              }, t(`seg.motion.${lv}`))))),
           SwitchRow({ t, label: t('sw.aurora'), on: st.aurora, onToggle: () => set({ aurora: !st.aurora }) }),
-          SwitchRow({ t, label: t('sw.motion'), on: st.motion, onToggle: () => set({ motion: !st.motion }) }),
+          SwitchRow({ t, label: t('sw.grain'), on: st.grain, onToggle: () => set({ grain: !st.grain }) }),
           SwitchRow({ t, label: t('sw.enabled'), on: st.enabled, onToggle: () => set({ enabled: !st.enabled }) })),
         h('button', {
           type: 'button', className: 'ag-reset',
@@ -471,10 +483,6 @@ window.__ModuleLoader__.load({
         ctx.slots.inject(OVERLAY_SLOT, () => ctx.slots.register({
           name: OVERLAY_SLOT, id: PACKAGE + '.panel', order: 1000, label: PACKAGE,
         }, () => h(FloatingButton, { store, t })));
-
-        ctx.slots.inject(ACTION_SLOT, () => ctx.slots.register({
-          name: ACTION_SLOT, id: PACKAGE + '.toggle', order: 1000, label: PACKAGE,
-        }, () => h(MasterToggle, { store, t })));
 
         try {
           ctx.effect(() => () => {

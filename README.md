@@ -41,22 +41,22 @@
 | ✨ 动态极光背景 | 多层漂移光晕；模糊（0–40px）与色彩饱和度（0–160%）可调，可完全关闭 |
 | 🎨 5 套色板 | Aurora 极光 / Ocean 海蓝 / Ember 余烬 / Jade 翡翠 / Mono 黑白 |
 | 🧩 4 个预设 | 默认 / 轻雾 / 深空 / 原版观感，一键切换整套参数 |
-| 🪶 微动效开关 | 控制极光光斑的缓慢漂移动画，可随时关闭 |
+| 🪶 三级动效 | 动效强度分段（关闭 / 柔和 / 丰富），控制极光漂移速度与幅度，可随时关闭 |
+| 🎞️ 噪点质感 | 细腻胶片颗粒层，为玻璃表面增添高级质感，可开关 |
 | 🖲️ 玻璃主题总开关 | 一键启停整套玻璃效果，无需卸载插件 |
 | 💾 设置持久化 | 所有设置自动保存到 `localStorage`，刷新 / 重启后保持 |
 | 🌗 亮暗双模 | light + dark 双套 token 值，自动跟随系统主题 |
 | 🌏 中英双语面板 | 面板文字跟随 DSH 界面语言自动切换（中文 / English） |
 
-> **范围说明**：插件只做「皮肤」。控制面板仅含 3 个滑块（玻璃强度 / 模糊 / 色彩），3 个开关（极光背景 / 微动效 / 玻璃主题），5 个色板圆点与 4 个预设按钮、一个「恢复默认设置」按钮；**没有**键盘快捷键，也**没有**命令行配置或隐藏功能。
+> **范围说明**：插件只做「皮肤」。控制面板为**近不透明深色高对比设计**，含 3 个滑块（玻璃强度 / 模糊 / 色彩）、1 个动效强度分段（关闭 / 柔和 / 丰富）、3 个开关（极光背景 / 噪点质感 / 玻璃主题）、5 个色板圆点、4 个预设按钮与一个「恢复默认设置」按钮；**没有**键盘快捷键，也**没有**命令行配置或隐藏功能。
 
 ### 使用说明
 
 安装并启用后：
 
 1. 界面**右下角**出现一个 ✦ 星形悬浮按钮；点击展开控制面板「极光玻璃 / Aurora Glass」。
-2. 面板从上到下依次为：**预设**（默认 / 轻雾 / 深空 / 原版观感）→ **色板**（5 个渐变色圆点）→ **表面滑块**（玻璃强度 / 模糊 / 色彩）→ **氛围开关**（极光背景 / 微动效 / 玻璃主题）→ **恢复默认设置**。
-3. **侧栏底部**（设置按钮旁）有一个星形快捷开关，可一键启停玻璃主题。
-4. 所有改动即时生效并自动保存；刷新页面后设置依然保持。
+2. 面板从上到下依次为：**预设**（默认 / 轻雾 / 深空 / 原版观感）→ **色板**（5 个渐变色圆点）→ **表面滑块**（玻璃强度 / 模糊 / 色彩）→ **氛围**（动效强度分段：关闭 / 柔和 / 丰富；极光背景 / 噪点质感 / 玻璃主题开关）→ **恢复默认设置**。
+3. 所有改动即时生效并自动保存；刷新页面后设置依然保持。
 
 ### 安装
 
@@ -127,22 +127,22 @@ Enable once, effective everywhere: sidebar, conversation area, composer, popover
 | ✨ Animated aurora background | Drifting multi-color glow; blur (0–40px) and saturation (0–160%) adjustable, can be turned off |
 | 🎨 5 palettes | Aurora / Ocean / Ember / Jade / Mono |
 | 🧩 4 presets | Default / Mist / Deep / Original — one click swaps the whole parameter set |
-| 🪶 Subtle-motion toggle | Controls the slow aurora drift animation; can be turned off anytime |
+| 🪶 3-level motion | Segmented Motion control (Off / Soft / Rich) tunes the aurora drift speed & amplitude |
+| 🎞️ Film grain | A fine film-grain layer adds subtle premium texture to the glass surfaces; toggleable |
 | 🖲️ Master glass toggle | One click to enable/disable the whole glass theme without uninstalling |
 | 💾 Persistent settings | Everything is saved to `localStorage` and survives refresh / restart |
 | 🌗 Light & dark modes | Paired light + dark token values, automatically following the system theme |
 | 🌏 Bilingual panel | Panel text follows the DSH UI language (zh-CN / en) |
 
-> **Scope note**: this plugin is skin-only. The control panel contains exactly 3 sliders (Glass / Blur / Color), 3 switches (Aurora glow / Subtle motion / Glass theme), 5 palette swatches, 4 preset chips and one "Reset to defaults" button; there are **no** keyboard shortcuts, **no** CLI configuration and no hidden features.
+> **Scope note**: this plugin is skin-only. The control panel is a **near-opaque dark high-contrast surface** and contains exactly 3 sliders (Glass / Blur / Color), 1 motion segmented control (Off / Soft / Rich), 3 switches (Aurora glow / Film grain / Glass theme), 5 palette swatches, 4 preset chips and one "Reset to defaults" button; there are **no** keyboard shortcuts, **no** CLI configuration and no hidden features.
 
 ### Usage
 
 After installing and enabling:
 
 1. A ✦ sparkle button appears at the **bottom-right** corner; click it to open the **Aurora Glass** control panel.
-2. The panel contains, top to bottom: **Presets** (Default / Mist / Deep / Original) → **Palette** (5 gradient swatches) → **Surface sliders** (Glass / Blur / Color) → **Atmosphere switches** (Aurora glow / Subtle motion / Glass theme) → **Reset to defaults**.
-3. A sparkle quick-toggle sits at the **bottom of the sidebar** (next to the settings button) to enable/disable the glass theme in one click.
-4. Every change applies instantly and is saved automatically; settings persist across page refreshes.
+2. The panel contains, top to bottom: **Presets** (Default / Mist / Deep / Original) → **Palette** (5 gradient swatches) → **Surface sliders** (Glass / Blur / Color) → **Atmosphere** (Motion segmented control: Off / Soft / Rich; Aurora glow / Film grain / Glass theme switches) → **Reset to defaults**.
+3. Every change applies instantly and is saved automatically; settings persist across page refreshes.
 
 ### Installation
 

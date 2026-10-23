@@ -3,24 +3,27 @@
 本文件记录 dsh-aurora-glass 的重要变更，采用简易维护格式（Keep a Changelog 风格）。
 All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a Changelog style).
 
-> ⚠️ **占位说明 / Placeholder note**：当前条目内容为占位，正式发布前请补充具体日期与更多细节。
-> Dates and details below are placeholders — fill them in before release.
-
-## [Unreleased]
-
-### Added
-
-- （待补充 / TBD）
-
-### Changed
-
-- （待补充 / TBD）
+## [1.0.2] - 2026-10-23
 
 ### Fixed
 
-- （待补充 / TBD）
+- 控制面板改为近不透明的深色表面（`rgba(15,17,28,.97)`），文字全部使用显式高对比颜色，不再受主题 token 层影响——修复"控件太透、设置文字看不清"。
+- 修复多余 ✦ 悬浮按钮：overlay 多实例挂载守卫（同一时刻只保留一个星形按钮）；
+- 移除侧栏底部星形快捷开关，避免与其它入口混淆。
 
-## [1.0.1] - TBD
+### Added
+
+- 🎞️ 噪点质感（film grain）开关：细腻胶片颗粒层，提升玻璃表面质感。
+- 🪶 动效强度分段控制（关闭 / 柔和 / 丰富），映射不同的极光漂移速度与幅度。
+- ✨ 悬浮按钮悬浮扫光动画、hover 光晕扩展。
+- 全局轻交互细节：细圆角滚动条、品牌色文本选区、更柔和的分区标签。
+
+### Changed
+
+- 深色模式表面 token 最低不透明度上调（更易读），默认模糊 16→18px，默认极光浓度微调。
+- 面板/文档化说明同步至 1.0.2 实际控件集。
+
+## [1.0.1] - 2026-10-23
 
 ### Fixed
 
@@ -30,7 +33,7 @@ All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a 
 
 - 正式发布（1.0.1）。
 
-## [1.0.0] - TBD
+## [1.0.0] - 2026-10-23
 
 ### Added
 
