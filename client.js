@@ -237,9 +237,10 @@ window.__ModuleLoader__.load({
       const active = s.aurora && s.enabled;
       const blur = active ? clamp(Number(s.blur) || 0, 0, 40) : 0;
       // light mode needs a stronger layer for the glass to read
-      const satEff = (active && !dark) ? Math.min(1.6, clamp(Number(s.saturation) || 0, 0, 1.6) + 0.35) : clamp(Number(s.saturation) || 0, 0, 1.6);
+      const satEff = (active && !dark) ? Math.min(1.75, clamp(Number(s.saturation) || 0, 0, 1.6) + 0.4) : clamp(Number(s.saturation) || 0, 0, 1.6);
       const sat = satEff;
       const [c1, c2, c3] = pal.glow;
+      const sz = dark ? ['42% 42%', '46% 46%', '54% 54%'] : ['48% 48%', '52% 52%', '60% 60%'];
       const grain = (s.grain && active) ? GRAIN_DATA_URI : 'none';
       let anim1 = ''; let anim2 = ''; let tailScale = '1.05';
       if (active && s.motion === 'soft') { anim1 = 'animation: ag-drift-1 26s ease-in-out infinite alternate;'; anim2 = 'animation: ag-drift-2 34s ease-in-out infinite alternate;'; }
@@ -249,8 +250,8 @@ window.__ModuleLoader__.load({
         `html { background: ${base}; }`,
         `body { background: transparent; }`,
         `body::before, body::after { content: ""; position: fixed; z-index: -1; inset: -15% -10%; pointer-events: none; filter: blur(${blur}px) saturate(${sat}); will-change: transform; backface-visibility: hidden; }`,
-        `body::before { background-image: ${grain}, radial-gradient(42% 42% at 22% 28%, ${c1}, transparent 66%), radial-gradient(46% 46% at 78% 20%, ${c2}, transparent 70%), radial-gradient(54% 54% at 62% 88%, ${c3}, transparent 72%); background-size: 120px 120px, auto, auto, auto; ${anim1} }`,
-        `body::after { opacity: ${dark ? '.5' : '.62'}; background: radial-gradient(50% 50% at 82% 72%, ${c2}, transparent 66%), radial-gradient(38% 38% at 18% 78%, ${c3}, transparent 70%); ${anim2} transform: translate3d(2%, 3%, 0); }`,
+        `body::before { background-image: ${grain}, radial-gradient(${sz[0]} at 22% 28%, ${c1}, transparent 66%), radial-gradient(${sz[1]} at 78% 20%, ${c2}, transparent 70%), radial-gradient(${sz[2]} at 62% 88%, ${c3}, transparent 72%); background-size: 120px 120px, auto, auto, auto; ${anim1} }`,
+        `body::after { opacity: ${dark ? '.5' : '.68'}; background: radial-gradient(50% 50% at 82% 72%, ${c2}, transparent 66%), radial-gradient(38% 38% at 18% 78%, ${c3}, transparent 70%); ${anim2} transform: translate3d(2%, 3%, 0); }`,
         `@keyframes ag-drift-1 { from { transform: translate3d(-2%, 1%, 0) scale(1); } to { transform: translate3d(3%, -2%, 0) scale(${tailScale}); } }`,
         `@keyframes ag-drift-2 { from { transform: translate3d(2%, 3%, 0) scale(1.06); } to { transform: translate3d(-3%, -1%, 0) scale(.96); } }`,
         `@media (prefers-reduced-motion: reduce) { body::before, body::after { animation: none; } }`,
