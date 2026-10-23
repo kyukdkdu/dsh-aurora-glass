@@ -3,7 +3,7 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness (DSH).
 
-![Version](https://img.shields.io/badge/version-1.0.7-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Type](https://img.shields.io/badge/type-Cordis%20bundle-7c3aed) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.1.3-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Type](https://img.shields.io/badge/type-Cordis%20bundle-7c3aed) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <!-- SCREENSHOTS: 请在此处粘贴面板/界面截图 -->
 
@@ -22,7 +22,7 @@
 
 ### 简介
 
-**dsh-aurora-glass**（显示名 **Aurora Glass / 极光玻璃**，v1.0.7，MIT 许可）是面向 DeepSeek Harness（DSH）的全局美化插件：为整套界面带来玻璃拟态（glassmorphism）+ 极光渐变（aurora glow）主题。视觉风格受 codex 类深色高级设计启发，实现上完全独立原创——不包含、也不依赖任何第三方主题包与资源。
+**dsh-aurora-glass**（显示名 **Aurora Glass / 极光玻璃**，v1.1.3，MIT 许可）是面向 DeepSeek Harness（DSH）的全局美化插件：为整套界面带来玻璃拟态（glassmorphism）+ 极光渐变（aurora glow）主题。视觉风格受 codex 类深色高级设计启发，实现上完全独立原创——不包含、也不依赖任何第三方主题包与资源。
 
 一次启用、全局生效：侧栏、对话区、输入框、弹窗、菜单、设置页共享同一套半透明「玻璃」表面与柔和极光背景；浅色 / 深色模式自动跟随系统，无需任何手动切换。
 
@@ -110,7 +110,7 @@ pnpm add dsh-aurora-glass
 
 ### Overview
 
-**dsh-aurora-glass** (display name **Aurora Glass / 极光玻璃**, v1.0.7, MIT licensed) is a global beautification plugin for DeepSeek Harness (DSH): it gives the entire UI a glassmorphism + aurora glow theme. The visual style is inspired by codex-style premium dark interfaces, while the implementation is fully original — no third-party theme package or asset is bundled or required.
+**dsh-aurora-glass** (display name **Aurora Glass / 极光玻璃**, v1.1.3, MIT licensed) is a global beautification plugin for DeepSeek Harness (DSH): it gives the entire UI a glassmorphism + aurora glow theme. The visual style is inspired by codex-style premium dark interfaces, while the implementation is fully original — no third-party theme package or asset is bundled or required.
 
 Enable once, effective everywhere: sidebar, conversation area, composer, popovers, menus and the settings page all share the same translucent "glass" surfaces and a soft aurora backdrop. Light / dark mode follows your system automatically — no manual switching.
 

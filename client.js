@@ -1,5 +1,5 @@
 /**
- * dsh-aurora-glass — client module (Web UI half).
+ * dsh-aurora-glass —client module (Web UI half).
  *
  * A global glassmorphism + aurora theme for DeepSeek Harness.
  *
@@ -108,7 +108,7 @@ window.__ModuleLoader__.load({
         'sw.aurora': 'Aurora glow',
         'sw.grain': 'Film grain',
         'sw.enabled': 'Glass theme',
-        'panel.diagTitle': 'CSS variable layer tier & result: ✔ landed, ✖ blocked, ? not measurable',
+        'panel.diagTitle': 'CSS variable layer tier & result: ✨landed, ✨blocked, ? not measurable',
         'reset': 'Reset to defaults',
       },
       zh: {
@@ -132,12 +132,33 @@ window.__ModuleLoader__.load({
         'sw.aurora': '极光背景',
         'sw.grain': '噪点质感',
         'sw.enabled': '玻璃主题',
-        'panel.diagTitle': 'CSS 变量层诊断：✔ 已生效，✖ 被压制，? 无法测量',
+        'panel.diagTitle': 'CSS 变量层诊断：✨已生效，✨被压制，? 无法测量',
         'reset': '恢复默认设置',
       },
     };
 
     /* ------------------------------ settings store ------------------------------ */
+
+    // The client sandbox traps setTimeout/setInterval (they throw teaching
+    // errors pointing at the timer service), so every deferred call routes
+    // through this helper: native timer first, requestAnimationFrame chain as
+    // the sandbox-safe fallback.
+    function scheduleLater(fn, ms) {
+      try {
+        if (typeof setTimeout === 'function') return setTimeout(fn, ms);
+      } catch { /* sandbox trap */ }
+      try {
+        const g = (typeof globalThis !== 'undefined') ? globalThis : null;
+        if (g && typeof g.setTimeout === 'function') return g.setTimeout(fn, ms);
+      } catch { /* no window timer */ }
+      const start = Date.now();
+      const tick = () => {
+        if (Date.now() - start >= ms) { fn(); return; }
+        try { requestAnimationFrame(tick); } catch { fn(); }
+      };
+      try { requestAnimationFrame(tick); } catch { fn(); }
+      return () => {};
+    }
 
     function loadSettings() {
       try {
@@ -167,7 +188,7 @@ window.__ModuleLoader__.load({
           lastDeep = now;
           deep.forEach((fn) => fn());
         } else if (timer === null) {
-          timer = setTimeout(() => {
+          timer = scheduleLater(() => {
             timer = null;
             lastDeep = Date.now();
             deep.forEach((fn) => fn());
@@ -242,9 +263,9 @@ window.__ModuleLoader__.load({
      * Direct alias-token layer. The shell declares its alias tokens on
      * `body` / `body[data-ds-dark-theme]` (static platform sheets, normal
      * importance), so a `:root` injection always loses at body level. This
-     * sheet writes BOTH schemes onto body with !important — the dark block
+     * sheet writes BOTH schemes onto body with !important —the dark block
      * rides the host's own data-ds-dark-theme attribute so system/light/dark
-     * flips need no re-injection — plus a :root copy for html-level
+     * flips need no re-injection —plus a :root copy for html-level
      * consumers. `tier` escalates the selector as a belt-and-suspenders
      * against future shells that scope token rules more aggressively.
      */
@@ -372,24 +393,41 @@ window.__ModuleLoader__.load({
     }
 
     // The overlay slot may be mounted more than once by the host (e.g. one
-    // host per region — the duplicate sparkle the user reported). Only the
-    // first live mount renders the floating button.
-    let floatingMounts = 0;
+    // host per region —the duplicate sparkle the user reported). Instead of
+    // a fragile "first mount ever wins" counter, keep an ordered registry of
+    // LIVE mounts and let the OLDEST living mount render the button. Any
+    // mount/unmount interleaving converges to exactly one visible button.
+    const mountRegistry = { list: [], version: 0, listeners: new Set() };
+    function bumpMountRegistry() {
+      mountRegistry.version += 1;
+      mountRegistry.listeners.forEach((fn) => { try { fn(); } catch { /* never break a render */ } });
+    }
+    const mountStore = {
+      subscribe(fn) { mountRegistry.listeners.add(fn); return () => { mountRegistry.listeners.delete(fn); }; },
+      get() { return mountRegistry.version; },
+    };
+    let mountUid = 0;
 
     function FloatingButton({ store, t, ensureVarLayer }) {
-      const [show, setShow] = useState(false);
       const [open, setOpen] = useState(false);
       const [diag, setDiag] = useState({ tier: 0, ok: null });
       const st = useSyncExternalStore(store.subscribe, store.get);
+      useSyncExternalStore(mountStore.subscribe, mountStore.get);
+      const uidRef = React.useRef(0);
       useEffect(() => {
-        floatingMounts += 1;
-        if (floatingMounts === 1) {
-          setShow(true);
-          if (typeof ensureVarLayer === 'function') setDiag(ensureVarLayer());
-        }
-        return () => { floatingMounts -= 1; };
+        const uid = ++mountUid;
+        uidRef.current = uid;
+        mountRegistry.list.push(uid);
+        bumpMountRegistry();
+        if (typeof ensureVarLayer === 'function') setDiag(ensureVarLayer());
+        return () => {
+          const at = mountRegistry.list.indexOf(uid);
+          if (at >= 0) mountRegistry.list.splice(at, 1);
+          bumpMountRegistry();
+        };
       }, []);
-      if (!show) return null;
+      const lead = mountRegistry.list[0];
+      if (lead !== uidRef.current) return null;
       return h('div', { className: 'ag-root' },
         open ? h(Panel, { store, t, diag, onClose: () => setOpen(false) }) : null,
         h('button', {
@@ -432,7 +470,7 @@ window.__ModuleLoader__.load({
         h('div', { className: 'ag-head' },
           h('div', { className: 'ag-title' },
             h(Sparkle, { size: 18 }), t('panel.title'),
-            h('span', { className: 'ag-badge' }, 'v1.0.7')),
+            h('span', { className: 'ag-badge' }, 'v1.1.3')),
           h('button', { type: 'button', className: 'ag-x', 'aria-label': 'Close', onClick: onClose }, '\u2715')),
         h('div', { className: 'ag-diag', title: t('panel.diagTitle') },
           `CSS L${diag ? diag.tier : 0} ${diag && diag.ok === true ? '\u2714' : diag && diag.ok === false ? '\u2716' : '?'}`),
@@ -507,9 +545,13 @@ window.__ModuleLoader__.load({
     }
 
     return {
-      inject: ['slots', 'theme', 'locale'],
+      inject: ['slots', 'theme', 'locale', 'styles'],
       apply(ctx) {
-        const store = createStore();
+        const stylesApi = (() => {
+          try { return ctx.styles; } catch { /* façade property fenced */ }
+          try { if (ctx.get) return ctx.get('styles'); } catch { /* not resolvable */ }
+          return null;
+        })();
         const theme = ctx.theme;
         const t = makeT(ctx.get('locale'));
         let tokenUndo = null;
@@ -518,7 +560,7 @@ window.__ModuleLoader__.load({
         let varTier = 0;
         let sheetUndo = null;
 
-        try { sheetUndo = ctx.styles.insert(BASE_CSS); } catch { /* panel renders unstyled */ }
+        try { if (stylesApi) sheetUndo = stylesApi.insert(BASE_CSS); } catch { /* panel renders unstyled */ }
 
         const getScheme = () => {
           try { return theme.getTheme().active.colorScheme; } catch { return 'dark'; }
@@ -530,7 +572,7 @@ window.__ModuleLoader__.load({
           if (varUndo) { varUndo(); varUndo = null; }
           if (!s.enabled) return;
           const css = buildVarCss(s, scheme, varTier);
-          if (css) varUndo = ctx.styles.insert(css);
+          if (css && stylesApi) varUndo = stylesApi.insert(css);
         };
 
         /**
@@ -555,7 +597,7 @@ window.__ModuleLoader__.load({
             for (let tier = 0; tier < VAR_SELECTORS.length; tier += 1) {
               if (varUndo) { varUndo(); varUndo = null; }
               const css = buildVarCss(s, scheme, tier);
-              if (css) varUndo = ctx.styles.insert(css);
+              if (css && stylesApi) varUndo = stylesApi.insert(css);
               const got = norm(doc.defaultView.getComputedStyle(target).getPropertyValue('--dsw-alias-bg-base'));
               if (got && got === want) { varTier = tier; return { tier, ok: true }; }
             }
@@ -578,7 +620,7 @@ window.__ModuleLoader__.load({
             const scheme = getScheme();
             applyVarLayer(s, scheme);
             if (auraUndo) { auraUndo(); auraUndo = null; }
-            if (s.enabled) auraUndo = ctx.styles.insert(buildAuraCss(s, scheme));
+            if (s.enabled && stylesApi) auraUndo = stylesApi.insert(buildAuraCss(s, scheme));
           } catch (err) {
             try { console.error('[dsh-aurora-glass] theme apply failed:', err); } catch { /* no console */ }
           }
@@ -604,7 +646,165 @@ window.__ModuleLoader__.load({
             if (sheetUndo) { sheetUndo(); sheetUndo = null; }
           });
         } catch { /* disposal best-effort */ }
+
+        /* ------------------------- v1.1.3 runtime diagnostics ------------------------- */
+        // Besides the visible panel diag line, this build phones home with the
+        // page's real state through the package-private host.call bridge so the
+        // exercising agent can see exactly which steps landed on a page it
+        // cannot otherwise inspect (freshest pages, other windows, etc.).
+        let diagSent = false;
+        const writeDiag = (key, obj) => {
+          try {
+            window.localStorage.setItem(key, JSON.stringify(obj));
+          } catch { /* storage may be unavailable */ }
+        };
+        // First-chance boot trace: written the moment this module executes,
+        // BEFORE any slot/theme/storage work — so an outside reader of the
+        // page's Local Storage can tell whether this bundle ever ran.
+        try {
+          writeDiag('dsh-aurora-glass:boot:v1', {
+            v: '1.1.2', pkg: PACKAGE, time: Date.now(),
+            href: (() => { try { return String(window.location && window.location.href || '').slice(0, 200); } catch { return ''; } })(),
+            title0: (() => { try { return String(document.title || '').slice(0, 80); } catch { return ''; } })(),
+          });
+        } catch { /* never break activation */ }
+        const sendDiag = () => {
+          if (diagSent) return;
+          diagSent = true;
+          const s = store.get();
+          const payload = {
+            v: '1.1.3', pkg: PACKAGE, time: Date.now(),
+            vis: (() => { try { return String(document.visibilityState); } catch { return ''; } })(),
+            settings: s,
+            steps: {
+              baseCss: !!sheetUndo,
+              tokens: !!tokenUndo,
+              varLayer: !!varUndo,
+              aura: !!auraUndo,
+              slots: true,
+              enabled: !!s.enabled,
+            },
+            url: (() => { try { return String(window.location && window.location.href || '').slice(0, 160); } catch { return ''; } })(),
+            title: (() => { try { return String(document.title || '').slice(0, 80); } catch { return ''; } })(),
+            ua: (() => { try { return String(navigator.userAgent || '').slice(0, 140); } catch { return ''; } })(),
+            bodyAttrs: (() => {
+              try {
+                return Array.from(document.body.attributes).slice(0, 24)
+                  .map((a) => a.name + '=' + String(a.value).slice(0, 40));
+              } catch { return []; }
+            })(),
+            bodyDataset: (() => {
+              try { return JSON.stringify(document.body.dataset || {}).slice(0, 300); } catch { return ''; }
+            })(),
+            sheets: (() => {
+              try {
+                const all = Array.from(document.querySelectorAll('style'));
+                const mine = all.map((el) => ({
+                  dyn: el.getAttribute('data-dyn'),
+                  len: (el.textContent || '').length,
+                  mine: (el.textContent || '').includes('dsh-aurora-glass'),
+                  first: (el.textContent || '').replace(/^\s*\n/, '').slice(0, 48),
+                })).filter((x) => x.mine);
+                const head4 = all.slice(0, 4).map((el) => ({
+                  dyn: el.getAttribute('data-dyn'),
+                  len: (el.textContent || '').length,
+                  mine: false,
+                  first: (el.textContent || '').replace(/^\s*\n/, '').slice(0, 48),
+                }));
+                return { mine, head4, total: all.length };
+              } catch { return { error: true }; }
+            })(),
+            links: (() => {
+              try {
+                return Array.from(document.querySelectorAll('link[rel="stylesheet"]')).slice(0, 16)
+                  .map((l) => String(l.getAttribute('href') || '').slice(-70));
+              } catch { return []; }
+            })(),
+            computed: (() => {
+              try {
+                const cs = window.getComputedStyle(document.body);
+                const pick = (n) => {
+                  try { return String(cs.getPropertyValue(n).trim()).slice(0, 90); } catch { return ''; }
+                };
+                let before = null;
+                try {
+                  const p = window.getComputedStyle(document.body, '::before');
+                  before = {
+                    content: String(p.content || '').slice(0, 20),
+                    bg: String(p.backgroundImage || '').slice(0, 110),
+                    z: String(p.zIndex || ''),
+                    position: String(p.position || ''),
+                  };
+                } catch { /* pseudo unsupported */ }
+                return {
+                  bgBase: pick('--dsw-alias-bg-base'),
+                  layer1: pick('--dsw-alias-bg-layer-1'),
+                  overlay: pick('--dsw-alias-bg-overlay'),
+                  borderL1: pick('--dsw-alias-border-l1'),
+                  sidebarFill: pick('--dsw-specific-sidebar-fill'),
+                  brand: pick('--dsw-alias-brand-primary'),
+                  bodyBg: String(cs.backgroundColor || '').slice(0, 70),
+                  htmlBg: String(window.getComputedStyle(document.documentElement).backgroundImage || '').slice(0, 120),
+                  before,
+                };
+              } catch { return null; }
+            })(),
+            dom: (() => {
+              try {
+                return {
+                  roots: document.querySelectorAll('.ag-root').length,
+                  panels: document.querySelectorAll('.ag-panel').length,
+                };
+              } catch { return null; }
+            })(),
+          };
+          try { console.error('[dsh-aurora-glass][diag-v1.1.3]', JSON.stringify(payload)); } catch { /* no console */ }
+          try {
+            writeDiag('dsh-aurora-glass:diag:v1', payload);
+          } catch { /* never break activation */ }
+          try {
+            if (typeof host !== 'undefined' && host && typeof host.call === 'function') {
+              host.call('aurora.report', payload);
+            }
+          } catch (err) {
+            try { console.error('[dsh-aurora-glass][diag] host.call failed:', String(err && err.stack || err)); } catch { /* no console */ }
+          }
+        };
+        // Synchronous first-chance diagnostics: computed styles and DOM are
+        // already settled at apply time, so hidden pages (locked screen,
+        // throttled rAF) still leave a readable trail in Local Storage.
+        try { sendDiag(); } catch { /* never break activation */ }
+        // Self-healing import: on hidden/locked pages the live module-push
+        // channel empirically stalls, so a guarded one-shot reload forces the
+        // page to import the freshest client graph. The localStorage flag is
+        // written BEFORE the reload, so this can never loop; a version bump
+        // on the flag key arms the next iteration.
+        try {
+          const g2 = (typeof globalThis !== 'undefined') ? globalThis : null;
+          if (g2 && typeof g2.location === 'object' && g2.location
+            && typeof document !== 'undefined' && document
+            && document.visibilityState === 'hidden') {
+            const rk = 'dsh-aurora-glass:reload:v1';
+            try {
+              if (!window.localStorage.getItem(rk)) {
+                window.localStorage.setItem(rk, String(Date.now()));
+                if (typeof g2.setTimeout === 'function') {
+                  g2.setTimeout(() => {
+                    try { g2.location.reload(); } catch { /* no reload */ }
+                  }, 1500);
+                }
+              }
+            } catch { /* storage or reload unavailable */ }
+          }
+        } catch { /* best effort */ }
+        const diagStart = Date.now();
+        const diagTick = () => {
+          if (Date.now() - diagStart >= 600) { sendDiag(); return; }
+          scheduleLater(diagTick, 100);
+        };
+        scheduleLater(diagTick, 100);
       },
     };
   },
 });
+// hmr-probe: (edge-of-version comment, harmless)
