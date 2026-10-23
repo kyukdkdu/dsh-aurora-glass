@@ -3,6 +3,13 @@
 本文件记录 dsh-aurora-glass 的重要变更，采用简易维护格式（Keep a Changelog 风格）。
 All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a Changelog style).
 
+## [1.0.3] - 2026-10-23
+
+### Fixed
+
+- **浅色模式几乎看不见玻璃/极光效果**（用户反馈"整体效果与介绍不符"）：浅色表面 token 改为真正半透明（可透出极光）、浅色模式极光饱和度与第二层亮度增强；深色模式不受影响。
+- ✦ 悬浮按钮增加微呼吸光晕（reduced-motion 时自动禁用），浅色模式下也更易发现。
+
 ## [1.0.2] - 2026-10-23
 
 ### Fixed

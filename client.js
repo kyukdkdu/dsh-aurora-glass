@@ -208,13 +208,13 @@ window.__ModuleLoader__.load({
         '--dsw-specific-sidebar-fill': rgba(255, 255, 255, 0.02 + 0.05 * g),
       };
       const light = {
-        '--dsw-alias-bg-base': rgba(248, 250, 254, 1 - 0.18 * g),
-        '--dsw-alias-bg-layer-1': rgba(255, 255, 255, 0.62 + 0.24 * g),
-        '--dsw-alias-bg-layer-2': rgba(255, 255, 255, 0.78 + 0.14 * g),
-        '--dsw-alias-bg-overlay': rgba(251, 252, 255, 0.78 + 0.2 * g),
-        '--dsw-alias-border-l1': rgba(13, 20, 42, 0.06 + 0.07 * g),
-        '--dsw-alias-border-l2': rgba(13, 20, 42, 0.04 + 0.05 * g),
-        '--dsw-specific-sidebar-fill': rgba(255, 255, 255, 0.52 + 0.28 * g),
+        '--dsw-alias-bg-base': rgba(248, 250, 254, 0.78 - 0.22 * g),
+        '--dsw-alias-bg-layer-1': rgba(255, 255, 255, 0.42 + 0.18 * g),
+        '--dsw-alias-bg-layer-2': rgba(255, 255, 255, 0.6 + 0.14 * g),
+        '--dsw-alias-bg-overlay': rgba(251, 252, 255, 0.72 + 0.16 * g),
+        '--dsw-alias-border-l1': rgba(13, 20, 42, 0.1 + 0.08 * g),
+        '--dsw-alias-border-l2': rgba(13, 20, 42, 0.08 + 0.06 * g),
+        '--dsw-specific-sidebar-fill': rgba(255, 255, 255, 0.36 + 0.2 * g),
       };
 
       const out = {
@@ -236,7 +236,9 @@ window.__ModuleLoader__.load({
       const base = dark ? '#0a0d16' : '#eef1f8';
       const active = s.aurora && s.enabled;
       const blur = active ? clamp(Number(s.blur) || 0, 0, 40) : 0;
-      const sat = active ? clamp(Number(s.saturation) || 0, 0, 1.6) : 0;
+      // light mode needs a stronger layer for the glass to read
+      const satEff = (active && !dark) ? Math.min(1.6, clamp(Number(s.saturation) || 0, 0, 1.6) + 0.35) : clamp(Number(s.saturation) || 0, 0, 1.6);
+      const sat = satEff;
       const [c1, c2, c3] = pal.glow;
       const grain = (s.grain && active) ? GRAIN_DATA_URI : 'none';
       let anim1 = ''; let anim2 = ''; let tailScale = '1.05';
@@ -248,7 +250,7 @@ window.__ModuleLoader__.load({
         `body { background: transparent; }`,
         `body::before, body::after { content: ""; position: fixed; z-index: -1; inset: -15% -10%; pointer-events: none; filter: blur(${blur}px) saturate(${sat}); will-change: transform; backface-visibility: hidden; }`,
         `body::before { background-image: ${grain}, radial-gradient(42% 42% at 22% 28%, ${c1}, transparent 66%), radial-gradient(46% 46% at 78% 20%, ${c2}, transparent 70%), radial-gradient(54% 54% at 62% 88%, ${c3}, transparent 72%); background-size: 120px 120px, auto, auto, auto; ${anim1} }`,
-        `body::after { opacity: .5; background: radial-gradient(50% 50% at 82% 72%, ${c2}, transparent 66%), radial-gradient(38% 38% at 18% 78%, ${c3}, transparent 70%); ${anim2} transform: translate3d(2%, 3%, 0); }`,
+        `body::after { opacity: ${dark ? '.5' : '.62'}; background: radial-gradient(50% 50% at 82% 72%, ${c2}, transparent 66%), radial-gradient(38% 38% at 18% 78%, ${c3}, transparent 70%); ${anim2} transform: translate3d(2%, 3%, 0); }`,
         `@keyframes ag-drift-1 { from { transform: translate3d(-2%, 1%, 0) scale(1); } to { transform: translate3d(3%, -2%, 0) scale(${tailScale}); } }`,
         `@keyframes ag-drift-2 { from { transform: translate3d(2%, 3%, 0) scale(1.06); } to { transform: translate3d(-3%, -1%, 0) scale(.96); } }`,
         `@media (prefers-reduced-motion: reduce) { body::before, body::after { animation: none; } }`,
@@ -266,6 +268,8 @@ window.__ModuleLoader__.load({
 .ag-glow::after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.3) 50%,transparent 66%);transform:translateX(-130%)}
 .ag-glow:hover::after{animation:ag-shine .85s ease}
 @keyframes ag-shine{from{transform:translateX(-130%)}to{transform:translateX(130%)}}
+@media (prefers-reduced-motion: no-preference){.ag-glow{animation:ag-halo 3.6s ease-in-out infinite}.ag-glow:hover{animation:none}}
+@keyframes ag-halo{0%,100%{box-shadow:0 10px 28px rgba(4,8,24,.4),0 0 0 0 rgba(143,176,255,0)}50%{box-shadow:0 10px 28px rgba(4,8,24,.4),0 0 0 8px rgba(143,176,255,.14)}}
 .ag-panel{width:306px;padding:16px 16px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.16);background:rgba(15,17,28,.97);backdrop-filter:blur(24px) saturate(1.5);-webkit-backdrop-filter:blur(24px) saturate(1.5);box-shadow:0 24px 64px rgba(2,6,20,.55),0 2px 12px rgba(2,6,20,.35);color:#e8ecf8;animation:ag-pop .3s cubic-bezier(.34,1.56,.64,1);transform-origin:100% 100%}
 @keyframes ag-pop{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:none}}
 .ag-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
@@ -371,7 +375,7 @@ window.__ModuleLoader__.load({
         h('div', { className: 'ag-head' },
           h('div', { className: 'ag-title' },
             h(Sparkle, { size: 18 }), t('panel.title'),
-            h('span', { className: 'ag-badge' }, 'v1.0.2')),
+            h('span', { className: 'ag-badge' }, 'v1.0.3')),
           h('button', { type: 'button', className: 'ag-x', 'aria-label': 'Close', onClick: onClose }, '\u2715')),
         h('div', { className: 'ag-sec' },
           h('div', { className: 'ag-sec-label' }, sections.preset[0]),
