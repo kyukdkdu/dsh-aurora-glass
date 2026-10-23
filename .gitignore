@@ -1,0 +1,16 @@
+# --- dsh-aurora-glass ---
+# NOTE: the lockfile IS committed on purpose — do NOT ignore pnpm-lock.yaml.
+
+# Dependencies
+node_modules/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Editors & IDEs
+.idea/
+.vscode/
