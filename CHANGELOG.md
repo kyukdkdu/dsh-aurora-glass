@@ -3,6 +3,12 @@
 本文件记录 dsh-aurora-glass 的重要变更，采用简易维护格式（Keep a Changelog 风格）。
 All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a Changelog style).
 
+## [1.0.4] - 2026-10-23
+
+### Fixed
+
+- **启用后界面完全没有效果**（用户反馈：与 mock-shot.png 设计不一致）：部分 shell 不会把 Theme 服务的 override 层重新合成到实时 CSS 变量，导致玻璃表面保持全不透明、极光被完全遮挡。现在直接把解析后的 alias token 以 `!important` 写到 `:root`（随主题明暗切换自动重写），并给 `html` 画布加一层静态极光渐变兜底。原有 `theme.overrideTokens` 路径保留，双保险。
+
 ## [1.0.3] - 2026-10-23
 
 ### Fixed

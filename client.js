@@ -185,6 +185,11 @@ window.__ModuleLoader__.load({
 
     const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
     const rgba = (r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${clamp(a, 0, 1).toFixed(3)})`;
+    const fade = (color, k) => color.replace(/rgba?\(([^)]+)\)/, (m, body) => {
+      const parts = body.split(',').map((x) => x.trim());
+      if (parts.length !== 4) return m;
+      return `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${(parseFloat(parts[3]) * k).toFixed(3)})`;
+    });
     const paletteOf = (id) => PALETTES.find((p) => p.id === id) || PALETTES[0];
 
     /**
@@ -226,6 +231,25 @@ window.__ModuleLoader__.load({
       return out;
     }
 
+    /**
+     * Belt-and-suspenders layer: the theme service's override layers are not
+     * always re-composed into live CSS variables by the shell, which leaves
+     * the app surfaces fully opaque (the "no effect at all" symptom). This
+     * sheet writes the resolved alias tokens straight onto :root for the
+     * active scheme, forcing the glass to show regardless.
+     */
+    function buildVarCss(s, scheme) {
+      if (!s.enabled) return null;
+      const tokens = buildTokens(s);
+      if (!tokens) return null;
+      const lines = ['/* dsh-aurora-glass: direct alias-token layer */', ':root {'];
+      Object.keys(tokens).forEach((token) => {
+        lines.push(`  ${token}: ${tokens[token][scheme === 'light' ? 'light' : 'dark']} !important;`);
+      });
+      lines.push('}');
+      return lines.join('\n');
+    }
+
     /* ------------------------------ aurora + grain stylesheet ------------------------------ */
 
     const GRAIN_DATA_URI = 'url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix type=%22saturate%22 values=%220%22/%3E%3C/filter%3E%3Crect width=%22120%22 height=%22120%22 filter=%22url(%23n)%22 opacity=%220.05%22/%3E%3C/svg%3E")';
@@ -247,7 +271,7 @@ window.__ModuleLoader__.load({
       if (active && s.motion === 'full') { anim1 = 'animation: ag-drift-1 15s ease-in-out infinite alternate;'; anim2 = 'animation: ag-drift-2 19s ease-in-out infinite alternate;'; tailScale = '1.12'; }
 
       return [
-        `html { background: ${base}; }`,
+        `html { background: radial-gradient(50% 55% at 18% 18%, ${fade(c1, .55)}, transparent 72%), radial-gradient(60% 50% at 82% 26%, ${fade(c2, .5)}, transparent 74%), radial-gradient(65% 60% at 50% 92%, ${fade(c3, .45)}, transparent 75%), ${base}; }`,
         `body { background: transparent; }`,
         `body::before, body::after { content: ""; position: fixed; z-index: -1; inset: -15% -10%; pointer-events: none; filter: blur(${blur}px) saturate(${sat}); will-change: transform; backface-visibility: hidden; }`,
         `body::before { background-image: ${grain}, radial-gradient(${sz[0]} at 22% 28%, ${c1}, transparent 66%), radial-gradient(${sz[1]} at 78% 20%, ${c2}, transparent 70%), radial-gradient(${sz[2]} at 62% 88%, ${c3}, transparent 72%); background-size: 120px 120px, auto, auto, auto; ${anim1} }`,
@@ -376,7 +400,7 @@ window.__ModuleLoader__.load({
         h('div', { className: 'ag-head' },
           h('div', { className: 'ag-title' },
             h(Sparkle, { size: 18 }), t('panel.title'),
-            h('span', { className: 'ag-badge' }, 'v1.0.3')),
+            h('span', { className: 'ag-badge' }, 'v1.0.4')),
           h('button', { type: 'button', className: 'ag-x', 'aria-label': 'Close', onClick: onClose }, '\u2715')),
         h('div', { className: 'ag-sec' },
           h('div', { className: 'ag-sec-label' }, sections.preset[0]),
@@ -456,6 +480,7 @@ window.__ModuleLoader__.load({
         const t = makeT(ctx.get('locale'));
         let tokenUndo = null;
         let auraUndo = null;
+        let varUndo = null;
         let sheetUndo = null;
 
         try { sheetUndo = ctx.styles.insert(BASE_CSS); } catch { /* panel renders unstyled */ }
@@ -468,12 +493,12 @@ window.__ModuleLoader__.load({
               const tokens = buildTokens(s);
               if (tokens && theme) tokenUndo = theme.overrideTokens(PACKAGE, tokens);
             }
+            let scheme = 'dark';
+            try { scheme = theme.getTheme().active.colorScheme; } catch { /* default dark */ }
+            if (varUndo) { varUndo(); varUndo = null; }
+            if (s.enabled) varUndo = ctx.styles.insert(buildVarCss(s, scheme));
             if (auraUndo) { auraUndo(); auraUndo = null; }
-            if (s.enabled) {
-              let scheme = 'dark';
-              try { scheme = theme.getTheme().active.colorScheme; } catch { /* default dark */ }
-              auraUndo = ctx.styles.insert(buildAuraCss(s, scheme));
-            }
+            if (s.enabled) auraUndo = ctx.styles.insert(buildAuraCss(s, scheme));
           } catch (err) {
             try { console.error('[dsh-aurora-glass] theme apply failed:', err); } catch { /* no console */ }
           }
@@ -481,8 +506,8 @@ window.__ModuleLoader__.load({
 
         rebuild(false);
         const offDeep = store.subscribeDeep(() => rebuild(false));
-        // Theme flips (system light/dark) only need the aurora sheet re-rastered;
-        // the token layer already carries {light,dark} pairs and re-resolves itself.
+        // Theme flips (system light/dark) re-resolve both the direct var
+        // layer and the aurora sheet for the new scheme.
         const offTheme = ctx.on('theme/change', () => rebuild(true));
 
         ctx.slots.inject(OVERLAY_SLOT, () => ctx.slots.register({
@@ -495,6 +520,7 @@ window.__ModuleLoader__.load({
             offTheme();
             if (tokenUndo) { tokenUndo(); tokenUndo = null; }
             if (auraUndo) { auraUndo(); auraUndo = null; }
+            if (varUndo) { varUndo(); varUndo = null; }
             if (sheetUndo) { sheetUndo(); sheetUndo = null; }
           });
         } catch { /* disposal best-effort */ }
