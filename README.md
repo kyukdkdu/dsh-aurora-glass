@@ -31,7 +31,7 @@
 1. **主题 token 覆盖**：通过 DSH 官方的 `theme.overrideTokens` 机制，将应用的 `--dsw-alias-*` 主题 token（表面色 `bg-base` / `bg-layer-1` / `bg-layer-2` / `bg-overlay`，边框 `border-l1` / `border-l2`，侧栏填充 `--dsw-specific-sidebar-fill`，品牌色 `brand-primary`）重定向为半透明「玻璃」值。每个值都提供 light + dark 成对取值，由主题服务按当前色彩方案自动解析——跟随系统亮暗切换完全自动化。
 2. **纯 CSS 极光背景层**：在 `html` 底色之上，用 `body::before` / `body::after` 两个伪元素绘制多层径向渐变光斑；`position: fixed; z-index: -1` 垫在整个应用下方，`pointer-events: none` 绝不拦截交互。模糊与饱和度经 `filter` 一次性栅格化，动画只使用 `transform`（`translate3d` / `scale`），完全由 GPU 合成，不触发布局。
 3. **不改应用结构**：不修改、不注入任何业务组件，所有换肤只发生在 token 层与一个背景样式层，因此整站风格一致、对应用升级友好。
-4. **插槽挂载**：控制面板与悬浮按钮挂载于 `shell.overlay` 插槽；侧栏底部快捷开关挂载于 `sidebar.footer.action` 插槽。插件由两部分构成：主进程入口（`index.js`，空实现）与客户端模块（`client.js`，承载全部渲染逻辑）。
+4. **插槽挂载**：控制面板与悬浮按钮挂载于 `shell.overlay` 插槽（带多实例守卫，任何情况下都只渲染一个 ✦ 按钮）。插件由两部分构成：主进程入口（`index.js`，空实现）与客户端模块（`client.js`，承载全部渲染逻辑）。
 
 ### 功能特性
 
@@ -117,7 +117,7 @@ Enable once, effective everywhere: sidebar, conversation area, composer, popover
 1. **Theme token overrides**: via DSH's official `theme.overrideTokens` mechanism, the app's `--dsw-alias-*` tokens (surfaces `bg-base` / `bg-layer-1` / `bg-layer-2` / `bg-overlay`, borders `border-l1` / `border-l2`, sidebar fill `--dsw-specific-sidebar-fill` and brand `brand-primary`) are re-pointed at translucent "glass" values. Every value ships as a light + dark pair and the theme service resolves the correct one for the active color scheme — system light/dark flips are fully automatic.
 2. **Pure-CSS aurora layer**: layered radial-gradient blobs are painted with the `body::before` / `body::after` pseudo-elements on top of an `html` base color; `position: fixed; z-index: -1` keeps them beneath the whole app and `pointer-events: none` means they never intercept input. Blur and saturation are rasterized once via `filter`; animations use only `transform` (`translate3d` / `scale`), composited entirely on the GPU with no layout work.
 3. **Zero structural changes**: no business components are modified or injected — all theming lives in a token layer and one background stylesheet, so the look is consistent everywhere and app upgrades stay safe.
-4. **Slot mounting**: the control panel and floating button live in the `shell.overlay` slot; the sidebar quick-toggle lives in the `sidebar.footer.action` slot. The plugin consists of a host entry (`index.js`, a no-op) and a client module (`client.js`) that owns all rendering.
+4. **Slot mounting**: the control panel and floating button live in the `shell.overlay` slot (guarded against multi-mounts — exactly one ✦ button is ever rendered). The plugin consists of a host entry (`index.js`, a no-op) and a client module (`client.js`) that owns all rendering.
 
 ### Features
 
