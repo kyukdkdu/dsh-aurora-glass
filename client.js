@@ -4,12 +4,17 @@
  * A global glassmorphism + aurora theme for DeepSeek Harness.
  *
  * Strategy:
- *  - Token-level theming through theme.overrideTokens(): the app's own
- *    --dsw-alias-* surface / border / brand tokens are re-pointed at
- *    translucent "glass" values so the WHOLE shell restyles at once with
- *    zero structural assumptions and zero third-party dependencies.
- *    Dark-mode opacities keep enough body to stay readable over the aurora
- *    layer; light-mode surfaces stay far more opaque for text contrast.
+ *  - Token-level theming through a DIRECT CSS variable layer on `body`:
+ *    this shell defines its --dsw-alias-* surface / border / brand tokens
+ *    on `body` and `body[data-ds-dark-theme]` in static platform sheets,
+ *    and the theme service's override layers are never composed back into
+ *    live CSS. So this plugin writes BOTH schemes straight onto body with
+ *    !important (the dark block rides the host's own data-ds-dark-theme
+ *    attribute), re-pointing the tokens at translucent "glass" values so
+ *    the WHOLE shell restyles at once with zero structural assumptions and
+ *    zero third-party dependencies. Dark-mode opacities keep enough body
+ *    to stay readable over the aurora layer; light-mode surfaces stay far
+ *    more opaque for text contrast.
  *  - A pure-CSS aurora background + optional film-grain layer (html/body
  *    pseudo-elements) is what "shows through" the frosted layers.
  *  - One floating control button + panel in `shell.overlay`. A module-wide
@@ -234,24 +239,37 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * Belt-and-suspenders layer: the theme service's override layers are not
-     * always re-composed into live CSS variables by the shell, which leaves
-     * the app surfaces fully opaque (the "no effect at all" symptom). This
-     * sheet writes the resolved alias tokens straight onto :root for the
-     * active scheme. `tier` escalates the selector specificity (:root,
-     * :root:root, ...) to outrank shells that scope their token rules with
-     * attribute selectors + !important.
+     * Direct alias-token layer. The shell declares its alias tokens on
+     * `body` / `body[data-ds-dark-theme]` (static platform sheets, normal
+     * importance), so a `:root` injection always loses at body level. This
+     * sheet writes BOTH schemes onto body with !important — the dark block
+     * rides the host's own data-ds-dark-theme attribute so system/light/dark
+     * flips need no re-injection — plus a :root copy for html-level
+     * consumers. `tier` escalates the selector as a belt-and-suspenders
+     * against future shells that scope token rules more aggressively.
      */
+    const VAR_SELECTORS = [
+      ['body', 'body[data-ds-dark-theme]'],
+      ['html body', 'html body[data-ds-dark-theme]'],
+      ['html > body', 'html > body[data-ds-dark-theme]'],
+    ];
+
     function buildVarCss(s, scheme, tier = 0) {
       if (!s.enabled) return null;
       const tokens = buildTokens(s);
       if (!tokens) return null;
-      const sel = ':root' + ':root'.repeat(tier);
-      const lines = [`/* dsh-aurora-glass: direct alias-token layer (tier ${tier}) */`, `${sel} {`];
-      Object.keys(tokens).forEach((token) => {
-        lines.push(`  ${token}: ${tokens[token][scheme === 'light' ? 'light' : 'dark']} !important;`);
-      });
-      lines.push('}');
+      const [lightSel, darkSel] = VAR_SELECTORS[Math.min(tier, VAR_SELECTORS.length - 1)];
+      const lines = [`/* dsh-aurora-glass: direct alias-token layer (tier ${tier}) */`];
+      const emit = (sel, mode) => {
+        lines.push(`${sel} {`);
+        Object.keys(tokens).forEach((token) => {
+          lines.push(`  ${token}: ${tokens[token][mode]} !important;`);
+        });
+        lines.push('}');
+      };
+      emit(lightSel, 'light');
+      emit(darkSel, 'dark');
+      emit(':root', scheme === 'light' ? 'light' : 'dark');
       return lines.join('\n');
     }
 
@@ -414,7 +432,7 @@ window.__ModuleLoader__.load({
         h('div', { className: 'ag-head' },
           h('div', { className: 'ag-title' },
             h(Sparkle, { size: 18 }), t('panel.title'),
-            h('span', { className: 'ag-badge' }, 'v1.0.5')),
+            h('span', { className: 'ag-badge' }, 'v1.0.6')),
           h('button', { type: 'button', className: 'ag-x', 'aria-label': 'Close', onClick: onClose }, '\u2715')),
         h('div', { className: 'ag-diag', title: t('panel.diagTitle') },
           `CSS L${diag ? diag.tier : 0} ${diag && diag.ok === true ? '\u2714' : diag && diag.ok === false ? '\u2716' : '?'}`),
@@ -516,11 +534,12 @@ window.__ModuleLoader__.load({
         };
 
         /**
-         * Verify that our variable layer actually landed. Some shells scope
-         * their token rules with attribute selectors + !important, which can
-         * beat a plain :root rule; walk the specificity ladder until the
-         * computed token matches what we asked for. Returns { tier, ok } for
-         * the panel diagnostics line.
+         * Verify that our variable layer actually landed. The shell defines
+         * the alias tokens on `body`, so we measure the COMPUTED value at
+         * body (a :root read would false-positive while the body-level
+         * declaration still wins for the UI). Escalate the selector ladder
+         * only if a future shell manages to beat the !important body rule.
+         * Returns { tier, ok } for the panel diagnostics line.
          */
         const ensureVarLayer = () => {
           try {
@@ -532,14 +551,15 @@ window.__ModuleLoader__.load({
             if (!tokens) return { tier: varTier, ok: null };
             const scheme = getScheme();
             const want = norm(tokens['--dsw-alias-bg-base'][scheme === 'light' ? 'light' : 'dark']);
-            for (let tier = 0; tier <= 4; tier += 1) {
+            const target = doc.body || doc.documentElement;
+            for (let tier = 0; tier < VAR_SELECTORS.length; tier += 1) {
               if (varUndo) { varUndo(); varUndo = null; }
               const css = buildVarCss(s, scheme, tier);
               if (css) varUndo = ctx.styles.insert(css);
-              const got = norm(doc.defaultView.getComputedStyle(doc.documentElement).getPropertyValue('--dsw-alias-bg-base'));
+              const got = norm(doc.defaultView.getComputedStyle(target).getPropertyValue('--dsw-alias-bg-base'));
               if (got && got === want) { varTier = tier; return { tier, ok: true }; }
             }
-            varTier = 4;
+            varTier = VAR_SELECTORS.length - 1;
             return { tier: varTier, ok: false };
           } catch (err) {
             try { console.error('[dsh-aurora-glass] var check failed:', err); } catch { /* no console */ }

@@ -3,6 +3,14 @@
 本文件记录 dsh-aurora-glass 的重要变更，采用简易维护格式（Keep a Changelog 风格）。
 All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a Changelog style).
 
+## [1.0.6] - 2026-10-23
+
+### Fixed
+
+- **根治"启用后无任何效果"**（对壳主题实现的源码级诊断）：本壳把 `--dsw-alias-*` 别名 token 定义在 `body` / `body[data-ds-dark-theme]` 静态平台样式上（普通优先级），且 Theme 服务的内置 light/dark 主题 token 为空、override 层从不回写到实时 CSS —— 所以此前写到 `:root` 的直接层在 body 级被无条件压掉，玻璃表面保持全不透明、极光完全被遮挡。
+- 直接 token 层改为同时写入 `body`（浅色）与 `body[data-ds-dark-theme]`（深色）两个选择器，全部带 `!important`；深色块复用宿主自带的 `data-ds-dark-theme` 属性，系统/明暗切换无需重写。
+- 诊断行改测 `document.body` 的计算样式（此前测 `documentElement` 会得到"已生效"的假阳性）；选择器阶梯改为 `body` → `html body` → `html > body`。
+
 ## [1.0.5] - 2026-10-23
 
 ### Added
