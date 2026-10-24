@@ -246,7 +246,7 @@ html:has(body[data-ds-dark-theme]){
    the host resets form controls, so every control carries it too — otherwise
    the popup is white while the option text stays dark-theme white. */
 select,input,textarea,button,option,optgroup,progress,meter{
-  color-scheme:light;
+  color-scheme:light !important;
 }
 html:has(body[data-ds-dark-theme]) select,
 html:has(body[data-ds-dark-theme]) input,
@@ -256,7 +256,7 @@ html:has(body[data-ds-dark-theme]) option,
 html:has(body[data-ds-dark-theme]) optgroup,
 html:has(body[data-ds-dark-theme]) progress,
 html:has(body[data-ds-dark-theme]) meter{
-  color-scheme:dark;
+  color-scheme:dark !important;
 }
 option{
   background-color:#f7f9fe;
