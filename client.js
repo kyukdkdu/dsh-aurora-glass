@@ -1,26 +1,24 @@
 /**
  * dsh-aurora-glass — client half (Web UI).
  *
- * v1.4.0
+ * v1.5.0
  *
- * Performance model (this is what the previous version got wrong):
+ * Performance model:
  *   • No full-screen filter on the aurora container. Each blob carries its own
- *     `filter: blur() saturate()`; the blob content never changes, only its
- *     `transform` animates, so Chromium bakes the filter once and the drift
- *     runs entirely on the compositor.
- *   • Sliders write CSS custom properties, and the writes are coalesced into
- *     one `requestAnimationFrame`. `--ag-g` (the token alpha driver) updates
- *     live; `--ag-blur` / `--ag-sat` are committed on `change` (release),
- *     because re-filtering three viewport-sized layers per frame is exactly
- *     what made dragging stutter.
- *   • Only values that actually changed are written back.
+ *     `filter: blur() saturate() hue-rotate()`; the blob content never changes,
+ *     only its `transform` animates, so Chromium bakes the filter once and the
+ *     drift runs entirely on the compositor.
+ *   • Custom-property writes are coalesced into one requestAnimationFrame and
+ *     only changed values are written. `--ag-g` (token alpha) is live;
+ *     `--ag-blur` / `--ag-sat` commit on release, because re-filtering three
+ *     viewport-sized layers per frame is what makes dragging stutter.
  *
- * Interaction model:
- *   • Control lives at the bottom-right, in its own fixed layer on
- *     `document.body` with z-index 2147483647, so no plugin overlay can cover
- *     it.
- *   • Pointer parallax nudges the whole aurora by a few pixels (one transform
- *     per frame, compositor only).
+ * Correctness details that used to break things:
+ *   • `color-scheme` is declared per theme. Without it Chromium paints native
+ *     <select> popups white while the option text stays dark-theme white, so
+ *     the model-provider dropdown rendered as an empty white board.
+ *   • Dialog surfaces get an opaque `--dsw-alias-bg-base` of their own, so the
+ *     settings page does not inherit the shell's translucency.
  *
  * Nothing in this file may throw out of `apply`: a failed client entry aborts
  * the whole web boot.
@@ -32,12 +30,13 @@ window.__ModuleLoader__.load({
     'use strict';
 
     const PKG = 'dsh-aurora-glass';
-    const VERSION = '1.4.0';
+    const VERSION = '1.5.0';
     const STORAGE_KEY = 'dsh-aurora-glass:settings:v2';
     const STYLE_ID = 'dsh-aurora-glass-theme';
     const UI_STYLE_ID = 'dsh-aurora-glass-ui';
     const ROOT_ID = 'dsh-ag-root';
     const BG_ID = 'dsh-ag-bg';
+    const GLOW_ID = 'dsh-ag-glow';
 
     /* ------------------------------------------------------------------ *
      * palettes & presets
@@ -52,10 +51,10 @@ window.__ModuleLoader__.load({
     ];
 
     const PRESETS = [
-      { id: 'default', key: 'preset.default', set: { glass: 0.82, blur: 34, saturation: 1.15, motion: 'soft', aurora: true, grain: true } },
-      { id: 'mist', key: 'preset.mist', set: { glass: 0.92, blur: 52, saturation: 0.85, motion: 'off', aurora: true, grain: true } },
-      { id: 'depth', key: 'preset.depth', set: { glass: 0.55, blur: 22, saturation: 1.3, motion: 'full', aurora: true, grain: true } },
-      { id: 'pure', key: 'preset.pure', set: { glass: 0, blur: 0, saturation: 1, motion: 'off', aurora: false, grain: false } },
+      { id: 'default', key: 'preset.default', set: { glass: 0.82, blur: 34, saturation: 1.15, motion: 'soft', aurora: true, grain: true, tint: true } },
+      { id: 'mist', key: 'preset.mist', set: { glass: 0.92, blur: 52, saturation: 0.85, motion: 'off', aurora: true, grain: true, tint: true } },
+      { id: 'depth', key: 'preset.depth', set: { glass: 0.55, blur: 22, saturation: 1.3, motion: 'full', aurora: true, grain: true, tint: true } },
+      { id: 'pure', key: 'preset.pure', set: { glass: 0, blur: 0, saturation: 1, motion: 'off', aurora: false, grain: false, tint: false } },
     ];
 
     const DEFAULT_SETTINGS = {
@@ -68,6 +67,7 @@ window.__ModuleLoader__.load({
       motion: 'soft',
       grain: true,
       aurora: true,
+      tint: true,
     };
 
     /* ------------------------------------------------------------------ *
@@ -95,6 +95,7 @@ window.__ModuleLoader__.load({
         'ctl.motion': '动效',
         'sw.aurora': '极光背景',
         'sw.grain': '噪点质感',
+        'sw.tint': '随场景变色',
         'sw.enabled': '玻璃主题',
         reset: '恢复默认设置',
         done: '已恢复默认',
@@ -120,6 +121,7 @@ window.__ModuleLoader__.load({
         'ctl.motion': 'Motion',
         'sw.aurora': 'Aurora glow',
         'sw.grain': 'Film grain',
+        'sw.tint': 'Scene tint',
         'sw.enabled': 'Glass theme',
         reset: 'Reset to defaults',
         done: 'Defaults restored',
@@ -176,9 +178,6 @@ window.__ModuleLoader__.load({
 
     /* ------------------------------------------------------------------ *
      * theme stylesheet
-     *
-     * Alpha lives in CSS (`calc(... * var(--ag-g))`), so a drag never
-     * re-parses a stylesheet — it writes one custom property.
      * ------------------------------------------------------------------ */
 
     const NOISE =
@@ -188,24 +187,29 @@ window.__ModuleLoader__.load({
       const c1 = pal.rgb[0];
       const c2 = pal.rgb[1];
       const c3 = pal.rgb[2];
-      // Two-tone falloff: each blob melts into the next palette hue instead of
-      // fading a single flat colour — richer, and still a static background.
+      // Two-tone falloff with an off-centre core: rotation is visible, and the
+      // edge melts into the next palette hue instead of fading to grey.
       const soft = (a, b) =>
-        `radial-gradient(circle at 50% 50%, ${rgbaOf(a, 0.96)} 0%, ${rgbaOf(a, 0.62)} 26%, ${rgbaOf(b, 0.3)} 48%, ${rgbaOf(b, 0)} 64%)`;
+        `radial-gradient(circle at 44% 46%, ${rgbaOf(a, 0.96)} 0%, ${rgbaOf(a, 0.6)} 26%, ${rgbaOf(b, 0.26)} 50%, ${rgbaOf(b, 0)} 70%)`;
+
       return `/* ${PKG} v${VERSION} — palette:${pal.id} */
 :root{
-  --ag-g:.82; --ag-blur:34; --ag-sat:1.15; --ag-grain:1;
-  --ag-d1:19s; --ag-d2:24s; --ag-d3:30s;
+  --ag-g:.82; --ag-blur:34; --ag-sat:1.15; --ag-grain:1; --ag-hue:0deg;
+  --ag-d1:11s; --ag-d2:14s; --ag-d3:18s;
 }
 html.ag-m0 #${BG_ID} i{ animation:none !important; }
-html.ag-m2{ --ag-d1:10s; --ag-d2:13s; --ag-d3:16s; }
+html.ag-m2{ --ag-d1:6s; --ag-d2:8s; --ag-d3:10s; }
 
-/* ---- canvas -------------------------------------------------------- */
+/* ---- canvas + native controls -------------------------------------- */
 html{
   background-color:#eef2f9 !important;
   background-image:none !important;
+  color-scheme:light;
 }
-html:has(body[data-ds-dark-theme]){ background-color:#05070d !important; }
+html:has(body[data-ds-dark-theme]){
+  background-color:#05070d !important;
+  color-scheme:dark;
+}
 body{
   background:transparent !important;
   background-color:transparent !important;
@@ -215,95 +219,132 @@ body{
 #${BG_ID}{
   position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden;
   contain:paint; will-change:transform;
-  animation:ag-breathe 26s ease-in-out infinite alternate;
+  animation:ag-breathe 22s ease-in-out infinite alternate;
 }
 @keyframes ag-breathe{ from{ opacity:.94 } to{ opacity:1 } }
 #${BG_ID} i{
   position:absolute; display:block; border-radius:50%;
-  filter:blur(calc(var(--ag-blur) * .75px)) saturate(var(--ag-sat));
+  filter:blur(calc(var(--ag-blur) * .75px)) saturate(var(--ag-sat)) hue-rotate(var(--ag-hue));
   opacity:calc(.58 + .36 * var(--ag-g));
   will-change:transform; backface-visibility:hidden;
+  transition:filter .45s ease;
 }
 #${BG_ID} i:nth-of-type(1){
-  width:60vmax; height:60vmax; left:-16vmax; top:-20vmax;
+  width:62vmax; height:62vmax; left:-18%; top:-22%;
   background:${soft(c1, c2)};
   animation:ag-f1 var(--ag-d1) ease-in-out infinite;
 }
 #${BG_ID} i:nth-of-type(2){
-  width:54vmax; height:54vmax; right:-18vmax; top:-12vmax;
+  width:56vmax; height:56vmax; right:-16%; top:-18%;
   background:${soft(c2, c3)};
   animation:ag-f2 var(--ag-d2) ease-in-out infinite;
-  animation-delay:-6s;
+  animation-delay:-4s;
 }
 #${BG_ID} i:nth-of-type(3){
-  width:64vmax; height:64vmax; left:12vmax; bottom:-28vmax;
+  width:66vmax; height:66vmax; left:-6%; bottom:-26%;
   background:${soft(c3, c1)};
   animation:ag-f3 var(--ag-d3) ease-in-out infinite;
-  animation-delay:-13s;
+  animation-delay:-9s;
+}
+/* the sidebar column gets its own slow glow so the workspace list is never flat */
+#${BG_ID} i:nth-of-type(4){
+  width:46vmax; height:86vmax; left:-22%; top:0;
+  background:${soft(c2, c1)};
+  opacity:calc(.18 + .2 * var(--ag-g));
+  animation:ag-f4 calc(var(--ag-d3) * 1.25) ease-in-out infinite;
+  animation-delay:-7s;
 }
 #${BG_ID} .ag-vignette{
   position:absolute; inset:0; display:block; pointer-events:none;
-  background:radial-gradient(120% 100% at 50% 0%, transparent 46%, rgb(0 0 0 / .28) 100%);
+  background:radial-gradient(120% 100% at 50% 0%, transparent 46%, rgb(0 0 0 / .2) 100%);
   opacity:calc(.5 + .5 * var(--ag-g));
 }
 #${BG_ID} .ag-scrim{
   position:absolute; inset:0; display:block; pointer-events:none;
-  background:rgb(238 242 249 / calc(.08 + .10 * var(--ag-g)));
+  background:rgb(238 242 249 / calc(.06 + .06 * var(--ag-g)));
+  transition:opacity .6s ease;
 }
+body:not([data-ds-dark-theme]) #${BG_ID} i{ opacity:calc(.7 + .28 * var(--ag-g)) }
+body:not([data-ds-dark-theme]) #${BG_ID} .ag-vignette{ opacity:.34 }
 body[data-ds-dark-theme] #${BG_ID} .ag-scrim{
-  background:rgb(5 7 13 / calc(.24 + .12 * var(--ag-g)));
+  background:rgb(5 7 13 / calc(.22 + .12 * var(--ag-g)));
 }
+html.ag-typing #${BG_ID} .ag-scrim{ opacity:.62 }
 #${BG_ID} .ag-grain{
   position:absolute; inset:0; display:block; pointer-events:none;
   background-image:${NOISE}; background-size:160px 160px;
   opacity:calc(.42 * var(--ag-grain)); mix-blend-mode:soft-light;
 }
-/* closed loops — a drift, not a bounce */
+
+/* closed loops with rotation — the off-centre core orbits, so motion reads
+   even when the blob itself barely moves */
 @keyframes ag-f1{
-  0%{ transform:translate3d(0,0,0) scale(1) }
-  33%{ transform:translate3d(9vmax,5vmax,0) scale(1.1) }
-  66%{ transform:translate3d(2vmax,11vmax,0) scale(.94) }
-  100%{ transform:translate3d(0,0,0) scale(1) }
+  0%{ transform:translate3d(0,0,0) scale(1) rotate(0deg) }
+  33%{ transform:translate3d(13vmax,7vmax,0) scale(1.14) rotate(120deg) }
+  66%{ transform:translate3d(2vmax,15vmax,0) scale(.93) rotate(240deg) }
+  100%{ transform:translate3d(0,0,0) scale(1) rotate(360deg) }
 }
 @keyframes ag-f2{
-  0%{ transform:translate3d(0,0,0) scale(1.06) }
-  30%{ transform:translate3d(-8vmax,7vmax,0) scale(.92) }
-  65%{ transform:translate3d(-13vmax,-2vmax,0) scale(1.14) }
-  100%{ transform:translate3d(0,0,0) scale(1.06) }
+  0%{ transform:translate3d(0,0,0) scale(1.06) rotate(0deg) }
+  30%{ transform:translate3d(-11vmax,9vmax,0) scale(.9) rotate(-110deg) }
+  65%{ transform:translate3d(-16vmax,-3vmax,0) scale(1.16) rotate(-230deg) }
+  100%{ transform:translate3d(0,0,0) scale(1.06) rotate(-360deg) }
 }
 @keyframes ag-f3{
-  0%{ transform:translate3d(0,0,0) scale(.96) }
-  35%{ transform:translate3d(7vmax,-8vmax,0) scale(1.12) }
-  70%{ transform:translate3d(-5vmax,-4vmax,0) scale(1) }
-  100%{ transform:translate3d(0,0,0) scale(.96) }
+  0%{ transform:translate3d(0,0,0) scale(.96) rotate(0deg) }
+  35%{ transform:translate3d(9vmax,-10vmax,0) scale(1.14) rotate(130deg) }
+  70%{ transform:translate3d(-7vmax,-5vmax,0) scale(1) rotate(250deg) }
+  100%{ transform:translate3d(0,0,0) scale(.96) rotate(360deg) }
+}
+@keyframes ag-f4{
+  0%{ transform:translate3d(0,0,0) scale(1) rotate(0deg) }
+  50%{ transform:translate3d(5vmax,10vmax,0) scale(1.1) rotate(180deg) }
+  100%{ transform:translate3d(0,0,0) scale(1) rotate(360deg) }
+}
+
+/* pointer glow that follows the cursor inside the sidebar column */
+#${GLOW_ID}{
+  position:fixed; left:0; top:0; width:360px; height:360px; border-radius:50%;
+  pointer-events:none; z-index:-1; opacity:0;
+  background:radial-gradient(circle at 50% 50%, rgb(255 255 255 / .1), rgb(255 255 255 / 0) 66%);
+  transform:translate3d(-50%,-50%,0);
+  transition:opacity .35s ease;
+  will-change:transform, opacity;
+}
+body[data-ds-dark-theme] #${GLOW_ID}{
+  background:radial-gradient(circle at 50% 50%, rgb(160 190 255 / .13), rgb(160 190 255 / 0) 66%);
 }
 
 /* ---- alias tokens, light ------------------------------------------- */
 body{
-  --dsw-alias-bg-base: rgb(247 249 254 / calc(.93 - .30 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-1: rgb(255 255 255 / calc(.66 + .24 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-2: rgb(255 255 255 / calc(.78 + .18 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-3: rgb(255 255 255 / calc(.88 + .10 * var(--ag-g))) !important;
-  --dsw-alias-bg-overlay: rgb(250 251 254 / calc(.99 - .03 * var(--ag-g))) !important;
-  --dsw-alias-bg-module-platform: rgb(255 255 255 / calc(.62 + .28 * var(--ag-g))) !important;
-  --dsw-alias-bg-multi-select: rgb(255 255 255 / calc(.66 + .24 * var(--ag-g))) !important;
-  --dsw-alias-border-l1: rgb(15 23 42 / .12) !important;
-  --dsw-alias-border-l2: rgb(15 23 42 / .09) !important;
-  --dsw-alias-border-l3: rgb(15 23 42 / .14) !important;
-  --dsw-alias-border-l4: rgb(15 23 42 / .18) !important;
-  --dsw-specific-sidebar-fill: rgb(255 255 255 / calc(.34 + .26 * var(--ag-g))) !important;
+  --dsw-alias-bg-base: rgb(247 249 254 / calc(.9 - .38 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-1: rgb(255 255 255 / calc(.72 + .2 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-2: rgb(255 255 255 / calc(.82 + .14 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-3: rgb(255 255 255 / calc(.9 + .08 * var(--ag-g))) !important;
+  --dsw-alias-bg-overlay: rgb(250 251 254 / calc(.995 - .01 * var(--ag-g))) !important;
+  --dsw-alias-bg-module-platform: rgb(255 255 255 / calc(.66 + .26 * var(--ag-g))) !important;
+  --dsw-alias-bg-multi-select: rgb(255 255 255 / calc(.7 + .22 * var(--ag-g))) !important;
+  --dsw-alias-bg-mask-1: rgb(15 23 42 / .3) !important;
+  --dsw-alias-bg-mask-2: rgb(15 23 42 / .18) !important;
+  --dsw-alias-border-l1: rgb(15 23 42 / .13) !important;
+  --dsw-alias-border-l2: rgb(15 23 42 / .1) !important;
+  --dsw-alias-border-l3: rgb(15 23 42 / .15) !important;
+  --dsw-alias-border-l4: rgb(15 23 42 / .19) !important;
+  --dsw-specific-sidebar-fill: rgb(255 255 255 / calc(.38 + .24 * var(--ag-g))) !important;
   --dsw-alias-brand-primary: ${pal.brand.light} !important;
 }
 
 /* ---- alias tokens, dark -------------------------------------------- */
 body[data-ds-dark-theme]{
-  --dsw-alias-bg-base: rgb(11 13 22 / calc(.80 - .36 * var(--ag-g))) !important;
+  --dsw-alias-bg-base: rgb(11 13 22 / calc(.8 - .36 * var(--ag-g))) !important;
   --dsw-alias-bg-layer-1: rgb(255 255 255 / calc(.08 + .06 * var(--ag-g))) !important;
   --dsw-alias-bg-layer-2: rgb(255 255 255 / calc(.11 + .07 * var(--ag-g))) !important;
   --dsw-alias-bg-layer-3: rgb(255 255 255 / calc(.14 + .08 * var(--ag-g))) !important;
-  --dsw-alias-bg-overlay: rgb(12 14 22 / calc(.985 - .02 * var(--ag-g))) !important;
+  --dsw-alias-bg-overlay: rgb(12 14 22 / calc(.995 - .01 * var(--ag-g))) !important;
   --dsw-alias-bg-module-platform: rgb(255 255 255 / calc(.07 + .05 * var(--ag-g))) !important;
-  --dsw-alias-bg-multi-select: rgb(255 255 255 / calc(.10 + .05 * var(--ag-g))) !important;
+  --dsw-alias-bg-multi-select: rgb(255 255 255 / calc(.1 + .05 * var(--ag-g))) !important;
+  --dsw-alias-bg-mask-1: rgb(2 4 10 / .64) !important;
+  --dsw-alias-bg-mask-2: rgb(2 4 10 / .42) !important;
   --dsw-alias-border-l1: rgb(255 255 255 / calc(.12 + .06 * var(--ag-g))) !important;
   --dsw-alias-border-l2: rgb(255 255 255 / calc(.09 + .04 * var(--ag-g))) !important;
   --dsw-alias-border-l3: rgb(255 255 255 / calc(.15 + .06 * var(--ag-g))) !important;
@@ -312,20 +353,43 @@ body[data-ds-dark-theme]{
   --dsw-alias-brand-primary: ${pal.brand.dark} !important;
 }
 
+/* ---- dialogs: opaque, so settings never floats on the aurora -------- */
+[role="dialog"],[role="alertdialog"],[role="menu"],[role="listbox"],
+[class*="dialog"],[class*="Dialog"],[class*="modal"],[class*="Modal"],
+[class*="popover"],[class*="Popover"],[class*="sheet"],[class*="Sheet"]{
+  --dsw-alias-bg-base: rgb(11 13 22 / .99) !important;
+  --dsw-alias-bg-overlay: rgb(12 14 22 / .995) !important;
+}
+body:not([data-ds-dark-theme]) [role="dialog"],
+body:not([data-ds-dark-theme]) [role="alertdialog"],
+body:not([data-ds-dark-theme]) [role="menu"],
+body:not([data-ds-dark-theme]) [role="listbox"],
+body:not([data-ds-dark-theme]) [class*="dialog"],
+body:not([data-ds-dark-theme]) [class*="Dialog"],
+body:not([data-ds-dark-theme]) [class*="modal"],
+body:not([data-ds-dark-theme]) [class*="Modal"],
+body:not([data-ds-dark-theme]) [class*="popover"],
+body:not([data-ds-dark-theme]) [class*="Popover"],
+body:not([data-ds-dark-theme]) [class*="sheet"],
+body:not([data-ds-dark-theme]) [class*="Sheet"]{
+  --dsw-alias-bg-base: rgb(250 251 254 / .995) !important;
+  --dsw-alias-bg-overlay: rgb(250 251 254 / .995) !important;
+}
+
 /* ---- composer: frosted glass card ----------------------------------- */
 [class*="composerSeat"]{
   background:linear-gradient(180deg, rgb(8 10 18 / 0) 0px, rgb(8 10 18 / calc(.22 + .28 * var(--ag-g))) 48px) !important;
 }
 body:not([data-ds-dark-theme]) [class*="composerSeat"]{
-  background:linear-gradient(180deg, rgb(238 242 249 / 0) 0px, rgb(238 242 249 / calc(.30 + .32 * var(--ag-g))) 48px) !important;
+  background:linear-gradient(180deg, rgb(238 242 249 / 0) 0px, rgb(238 242 249 / calc(.3 + .32 * var(--ag-g))) 48px) !important;
 }
 [class*="composerHero"] [class$="_card"],
 [class*="composerSeat"] [class$="_card"]{
   background:rgb(255 255 255 / calc(.05 + .07 * var(--ag-g))) !important;
   backdrop-filter:blur(14px) saturate(1.5) !important;
   -webkit-backdrop-filter:blur(14px) saturate(1.5) !important;
-  border:1px solid rgb(255 255 255 / calc(.10 + .08 * var(--ag-g))) !important;
-  box-shadow:0 18px 48px rgb(0 0 0 / .34), inset 0 1px 0 rgb(255 255 255 / .10) !important;
+  border:1px solid rgb(255 255 255 / calc(.1 + .08 * var(--ag-g))) !important;
+  box-shadow:0 18px 48px rgb(0 0 0 / .34), inset 0 1px 0 rgb(255 255 255 / .1) !important;
   transition:box-shadow .25s ease, border-color .25s ease, background-color .25s ease;
 }
 [class*="composerHero"] [class$="_card"]:focus-within,
@@ -335,8 +399,8 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"]{
 }
 body:not([data-ds-dark-theme]) [class*="composerHero"] [class$="_card"],
 body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
-  background:rgb(255 255 255 / calc(.52 + .30 * var(--ag-g))) !important;
-  border-color:rgb(15 23 42 / .10) !important;
+  background:rgb(255 255 255 / calc(.56 + .28 * var(--ag-g))) !important;
+  border-color:rgb(15 23 42 / .1) !important;
   box-shadow:0 16px 42px rgb(23 33 64 / .12), inset 0 1px 0 rgb(255 255 255 / .7) !important;
 }
 `;
@@ -418,13 +482,12 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 }
 
 #dsh-ag-panel{
-  position:absolute; right:0; bottom:48px; width:300px;
-  max-height:min(640px, calc(100vh - 148px)); overflow-y:auto; overflow-x:hidden;
-  padding:14px 14px 12px; border-radius:18px;
+  position:absolute; right:0; bottom:48px; width:306px;
+  max-height:min(660px, calc(100vh - 148px)); overflow-y:auto; overflow-x:hidden;
+  padding:15px 15px 13px; border-radius:18px;
   border:1px solid rgba(255,255,255,.15);
-  background:linear-gradient(180deg, rgba(16,18,28,.99), rgba(11,13,21,.985));
-  backdrop-filter:blur(20px) saturate(1.4); -webkit-backdrop-filter:blur(20px) saturate(1.4);
-  box-shadow:0 26px 70px rgba(2,6,20,.66), 0 2px 10px rgba(2,6,20,.4), inset 0 1px 0 rgba(255,255,255,.07);
+  background:linear-gradient(180deg, rgba(17,19,30,.995), rgba(11,13,21,.995));
+  box-shadow:0 26px 70px rgba(2,6,20,.68), 0 2px 10px rgba(2,6,20,.42), inset 0 1px 0 rgba(255,255,255,.07);
   display:none; text-align:left; isolation:isolate;
 }
 #dsh-ag-panel::before{
@@ -533,6 +596,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 
     let root = null;
     let bg = null;
+    let glow = null;
     let refs = {};
     let written = {};
     let rafPending = 0;
@@ -547,6 +611,35 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       }
       if (node.textContent !== css) node.textContent = css;
       return node;
+    }
+
+    /* ---- scene tint: session title hash + time of day ---------------- */
+
+    let sessionHue = 0;
+    let huePending = 0;
+
+    function hueFromTitle(title) {
+      let h = 0;
+      for (let i = 0; i < title.length; i += 1) h = (h * 31 + title.charCodeAt(i)) % 9973;
+      return (h % 13) - 6;
+    }
+
+    function updateHue() {
+      if (huePending) return;
+      huePending = requestAnimationFrame(() => {
+        huePending = 0;
+        try {
+          let hue = 0;
+          if (state.tint) {
+            const hour = new Date().getHours();
+            const timeHue = Math.sin(((hour - 6) / 24) * Math.PI * 2) * 8;
+            hue = sessionHue + timeHue;
+          }
+          document.documentElement.style.setProperty('--ag-hue', hue.toFixed(1) + 'deg');
+        } catch {
+          /* no document */
+        }
+      });
     }
 
     function writeVars() {
@@ -567,6 +660,8 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       html.classList.toggle('ag-m0', !on || !state.aurora || state.motion === 'off');
       html.classList.toggle('ag-m2', on && state.aurora && state.motion === 'full');
       if (bg) bg.style.display = on && state.aurora ? '' : 'none';
+      if (glow) glow.style.display = on && state.aurora && state.motion !== 'off' ? '' : 'none';
+      updateHue();
     }
 
     function paint() {
@@ -648,8 +743,6 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
             state = { ...state, [key]: v };
             const out = refs['val-' + key];
             if (out) out.textContent = fmt(v);
-            // glass is a token-only change (cheap); blur/sat re-filter three
-            // viewport-sized layers, so they are committed on release.
             if (key === 'glass') paint();
           },
           onChange: (e) => {
@@ -714,6 +807,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           ]),
           sw('aurora', t('sw.aurora')),
           sw('grain', t('sw.grain')),
+          sw('tint', t('sw.tint')),
           sw('enabled', t('sw.enabled')),
         ]),
         el('button', {
@@ -749,7 +843,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       (refs.segButtons || []).forEach((node) => {
         node.classList.toggle('on', node.getAttribute('data-motion') === state.motion);
       });
-      ['aurora', 'grain', 'enabled'].forEach((key) => {
+      ['aurora', 'grain', 'tint', 'enabled'].forEach((key) => {
         const node = refs['sw-' + key];
         if (!node) return;
         node.classList.toggle('on', !!state[key]);
@@ -763,23 +857,63 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       if (btn) btn.classList.toggle('ag-pulse', !!state.enabled && state.motion !== 'off');
     }
 
-    /* ---------------------------- parallax ---------------------------- */
+    /* ---------------------------- pointer ---------------------------- */
 
     let parallaxQueued = 0;
     let pointerX = 0;
     let pointerY = 0;
+    let glowX = 0;
+    let glowY = 0;
+    let glowVisible = false;
 
     function onPointerMove(e) {
-      if (!bg || !state.enabled || !state.aurora || state.motion === 'off') return;
-      pointerX = e.clientX / (window.innerWidth || 1) - 0.5;
-      pointerY = e.clientY / (window.innerHeight || 1) - 0.5;
+      if (!state.enabled || !state.aurora) return;
+      const w = window.innerWidth || 1;
+      const h = window.innerHeight || 1;
+      pointerX = e.clientX / w - 0.5;
+      pointerY = e.clientY / h - 0.5;
+
+      // the sidebar column is roughly the left 260px; only light it up there
+      const inSidebar = e.clientX < 260;
+      if (inSidebar) {
+        glowX = e.clientX;
+        glowY = e.clientY;
+      }
+      if (inSidebar !== glowVisible && glow) {
+        glowVisible = inSidebar;
+        glow.style.opacity = inSidebar ? '1' : '0';
+      }
+
       if (parallaxQueued) return;
       parallaxQueued = requestAnimationFrame(() => {
         parallaxQueued = 0;
-        if (!bg) return;
-        bg.style.transform =
-          'translate3d(' + (-pointerX * 16).toFixed(2) + 'px,' + (-pointerY * 16).toFixed(2) + 'px,0)';
+        if (bg) {
+          bg.style.transform =
+            'translate3d(' + (-pointerX * 16).toFixed(2) + 'px,' + (-pointerY * 16).toFixed(2) + 'px,0)';
+        }
+        if (glow && glowVisible) {
+          glow.style.transform = 'translate3d(' + (glowX - 180).toFixed(0) + 'px,' + (glowY - 180).toFixed(0) + 'px,0)';
+        }
       });
+    }
+
+    function onFocusIn(e) {
+      try {
+        const el = e && e.target;
+        const tag = el && el.tagName;
+        const editing = !!el && (el.isContentEditable === true || tag === 'TEXTAREA' || tag === 'INPUT');
+        document.documentElement.classList.toggle('ag-typing', editing);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    function onFocusOut() {
+      try {
+        document.documentElement.classList.remove('ag-typing');
+      } catch {
+        /* ignore */
+      }
     }
 
     /* ---------------------------- mount ---------------------------- */
@@ -789,8 +923,11 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       if (stale) stale.remove();
       const staleBg = document.getElementById(BG_ID);
       if (staleBg) staleBg.remove();
+      const staleGlow = document.getElementById(GLOW_ID);
+      if (staleGlow) staleGlow.remove();
 
       bg = el('div', { id: BG_ID, 'aria-hidden': 'true' }, [
+        el('i'),
         el('i'),
         el('i'),
         el('i'),
@@ -799,6 +936,9 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         el('span', { class: 'ag-grain' }),
       ]);
       document.body.appendChild(bg);
+
+      glow = el('div', { id: GLOW_ID, 'aria-hidden': 'true' });
+      document.body.appendChild(glow);
 
       const btn = el('button', {
         id: 'dsh-ag-btn',
@@ -815,17 +955,19 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       document.body.appendChild(root);
 
       written = {};
+      sessionHue = hueFromTitle(String(document.title || ''));
       applyPalette();
       syncUI();
     }
 
     function unmount() {
-      [ROOT_ID, BG_ID, STYLE_ID, UI_STYLE_ID].forEach((id) => {
+      [ROOT_ID, BG_ID, GLOW_ID, STYLE_ID, UI_STYLE_ID].forEach((id) => {
         const node = document.getElementById(id);
         if (node && node.parentNode) node.parentNode.removeChild(node);
       });
       root = null;
       bg = null;
+      glow = null;
       refs = {};
       written = {};
     }
@@ -856,14 +998,36 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           document.addEventListener('pointerdown', onDocDown, true);
           document.addEventListener('keydown', onKey);
           document.addEventListener('pointermove', onPointerMove, { passive: true });
+          document.addEventListener('focusin', onFocusIn, true);
+          document.addEventListener('focusout', onFocusOut, true);
+
+          // per-session tint: the shell writes the session title into <title>
+          let titleObserver = null;
+          try {
+            const titleNode = document.querySelector('title');
+            if (titleNode && typeof MutationObserver === 'function') {
+              titleObserver = new MutationObserver(() => {
+                sessionHue = hueFromTitle(String(document.title || ''));
+                updateHue();
+              });
+              titleObserver.observe(titleNode, { childList: true, characterData: true, subtree: true });
+            }
+          } catch {
+            /* title observation is optional */
+          }
 
           const teardown = () => {
             try {
               document.removeEventListener('pointerdown', onDocDown, true);
               document.removeEventListener('keydown', onKey);
               document.removeEventListener('pointermove', onPointerMove);
+              document.removeEventListener('focusin', onFocusIn, true);
+              document.removeEventListener('focusout', onFocusOut, true);
+              document.documentElement.classList.remove('ag-typing');
+              if (titleObserver) titleObserver.disconnect();
               if (rafPending) cancelAnimationFrame(rafPending);
               if (parallaxQueued) cancelAnimationFrame(parallaxQueued);
+              if (huePending) cancelAnimationFrame(huePending);
             } catch {
               /* already gone */
             }

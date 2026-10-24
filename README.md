@@ -3,7 +3,7 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-1.4.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.5.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <p align="center">
   <img src="docs/preview-dark.png" alt="Aurora Glass 深色主题" width="780">
@@ -48,11 +48,17 @@
 | 预设 | 默认 / 轻雾 / 深空 / 原版观感 |
 | 色板 | Aurora / Ocean / Ember / Jade / Mono |
 | 表面 | 玻璃强度、柔化、色彩三个滑杆 |
-| 氛围 | 动效（关 / 柔和 / 丰富）、极光背景、噪点、玻璃主题总开关 |
+| 氛围 | 动效（关 / 柔和 / 丰富）、极光背景、噪点、随场景变色、玻璃主题总开关 |
 
 设置存在 `localStorage` 的 `dsh-aurora-glass:settings:v2`，删掉这个键即恢复默认。
 "原版观感"把玻璃强度归零并关掉极光与噪点，等于临时回到原生外观。
 点面板外或按 Esc 关闭。
+
+除了手动调，还有三个自动行为：
+
+- **随场景变色**：会话标题算出一个稳定的色相偏移，再叠加按时段的正弦偏移——切会话、过时间，主色都会慢慢变
+- **输入脉动**：焦点在输入框时背景亮一档
+- **侧栏微光**：鼠标在左侧 260px 内移动时，一层很淡的光晕跟着走
 
 ### 性能
 
@@ -101,7 +107,13 @@ body[data-ds-dark-theme] { --dsw-alias-bg-base: rgb(11 13 22 / calc(.80 - .36 * 
 
 就能在不碰任何组件的前提下把整套界面改成半透明表面。透明度写成 `calc(... * var(--ag-g))`，所以拖"玻璃强度"滑杆只是改一个 CSS 变量，不用重建样式表。
 
-极光是一个挂在 `body` 上的固定层（`#dsh-ag-bg`，`z-index:-1`）：三团径向渐变各自沿闭环路径漂移、缩放，带负延迟错峰，所以看起来是连续流动而不是来回摆动；上面依次压着暗角、scrim（保证正文对比度）和噪点。输入框走 `[class*="composerHero"] [class$="_card"]` 加 `backdrop-filter`，做真正的毛玻璃卡片。控件浮层是 `#dsh-ag-root`，`z-index: 2147483647`，固定挂在 `document.body` 上，所以不会被任何插件的浮层盖住。
+极光是一个挂在 `body` 上的固定层（`#dsh-ag-bg`，`z-index:-1`）：四团径向渐变各自沿闭环路径漂移、缩放、旋转，带负延迟错峰，所以看起来是连续流动而不是来回摆动；上面依次压着暗角、scrim（保证正文对比度）和噪点。输入框走 `[class*="composerHero"] [class$="_card"]` 加 `backdrop-filter`，做真正的毛玻璃卡片。控件浮层是 `#dsh-ag-root`，`z-index: 2147483647`，固定挂在 `document.body` 上，所以不会被任何插件的浮层盖住。
+
+两个容易踩的坑，顺手记在这里：
+
+**`color-scheme` 必须声明。** 不写的话，原生 `<select>` 的弹出层会用白底渲染，而选项文字是暗色主题的白字——看起来就是一块白板，只剩一行被选中的蓝。所以主题里显式写了 `html{color-scheme:light}` / `html:has(body[data-ds-dark-theme]){color-scheme:dark}`。
+
+**弹窗不能继承外壳的透明度。** 设置面板和主框架共用 `--dsw-alias-bg-base`，外壳要半透明才能看见极光，弹窗要是也半透明就没法读字。所以给 `[role="dialog"]`、`[class*="modal"]`、`[class*="popover"]` 这些容器单独把 `bg-base` 抬到 99%。
 
 ### 故障排查
 
