@@ -188,7 +188,10 @@ window.__ModuleLoader__.load({
       const c1 = pal.rgb[0];
       const c2 = pal.rgb[1];
       const c3 = pal.rgb[2];
-      const soft = (c) => `radial-gradient(circle at 50% 50%, ${rgbaOf(c, 0.95)} 0%, ${rgbaOf(c, 0.5)} 38%, ${rgbaOf(c, 0)} 70%)`;
+      // Two-tone falloff: each blob melts into the next palette hue instead of
+      // fading a single flat colour — richer, and still a static background.
+      const soft = (a, b) =>
+        `radial-gradient(circle at 50% 50%, ${rgbaOf(a, 0.96)} 0%, ${rgbaOf(a, 0.62)} 26%, ${rgbaOf(b, 0.3)} 48%, ${rgbaOf(b, 0)} 64%)`;
       return `/* ${PKG} v${VERSION} — palette:${pal.id} */
 :root{
   --ag-g:.82; --ag-blur:34; --ag-sat:1.15; --ag-grain:1;
@@ -212,33 +215,35 @@ body{
 #${BG_ID}{
   position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden;
   contain:paint; will-change:transform;
+  animation:ag-breathe 26s ease-in-out infinite alternate;
 }
+@keyframes ag-breathe{ from{ opacity:.94 } to{ opacity:1 } }
 #${BG_ID} i{
   position:absolute; display:block; border-radius:50%;
   filter:blur(calc(var(--ag-blur) * .75px)) saturate(var(--ag-sat));
-  opacity:calc(.5 + .38 * var(--ag-g));
+  opacity:calc(.58 + .36 * var(--ag-g));
   will-change:transform; backface-visibility:hidden;
 }
 #${BG_ID} i:nth-of-type(1){
-  width:62vmax; height:62vmax; left:-16vmax; top:-20vmax;
-  background:${soft(c1)};
+  width:60vmax; height:60vmax; left:-16vmax; top:-20vmax;
+  background:${soft(c1, c2)};
   animation:ag-f1 var(--ag-d1) ease-in-out infinite;
 }
 #${BG_ID} i:nth-of-type(2){
-  width:56vmax; height:56vmax; right:-18vmax; top:-12vmax;
-  background:${soft(c2)};
+  width:54vmax; height:54vmax; right:-18vmax; top:-12vmax;
+  background:${soft(c2, c3)};
   animation:ag-f2 var(--ag-d2) ease-in-out infinite;
   animation-delay:-6s;
 }
 #${BG_ID} i:nth-of-type(3){
-  width:66vmax; height:66vmax; left:14vmax; bottom:-30vmax;
-  background:${soft(c3)};
+  width:64vmax; height:64vmax; left:12vmax; bottom:-28vmax;
+  background:${soft(c3, c1)};
   animation:ag-f3 var(--ag-d3) ease-in-out infinite;
   animation-delay:-13s;
 }
 #${BG_ID} .ag-vignette{
   position:absolute; inset:0; display:block; pointer-events:none;
-  background:radial-gradient(120% 100% at 50% 0%, transparent 46%, rgb(0 0 0 / .34) 100%);
+  background:radial-gradient(120% 100% at 50% 0%, transparent 46%, rgb(0 0 0 / .28) 100%);
   opacity:calc(.5 + .5 * var(--ag-g));
 }
 #${BG_ID} .ag-scrim{
