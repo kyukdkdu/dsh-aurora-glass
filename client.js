@@ -30,7 +30,7 @@ window.__ModuleLoader__.load({
     'use strict';
 
     const PKG = 'dsh-aurora-glass';
-    const VERSION = '1.5.0';
+    const VERSION = '1.6.0';
     const STORAGE_KEY = 'dsh-aurora-glass:settings:v2';
     const STYLE_ID = 'dsh-aurora-glass-theme';
     const UI_STYLE_ID = 'dsh-aurora-glass-ui';
@@ -143,6 +143,37 @@ window.__ModuleLoader__.load({
       return dict[key] || DICTS.en[key] || key;
     };
 
+    /* hover copy — one short sentence per control */
+    const TIPS = {
+      zh: {
+        preset: '一键套一组参数。想快速换个感觉时用它，细调再去下面的滑杆。',
+        palette: '极光的配色。深色和浅色各取一组，悬停色块可以直接预览。',
+        glass: '表面有多透。100% 几乎全靠背景撑，0% 等于回到原生外观。',
+        blur: '极光边缘的柔化程度，越大越朦胧。松手才生效，所以拖动不会卡。',
+        saturation: '极光的鲜艳程度。往右更艳，往左偏灰。',
+        motion: '背景流动的速度。关闭后完全静止，也最省电。',
+        aurora: '关掉就只剩玻璃表面，没有彩色光晕。',
+        grain: '叠一层很淡的颗粒，看起来更像胶片而不是纯色块。',
+        tint: '跟着当前会话和时段微调色相，每个会话都有点不一样。',
+        enabled: '总开关。关掉等于临时回到原生外观，设置都还在。',
+        reset: '把上面所有参数恢复成默认值。',
+      },
+      en: {
+        preset: 'Applies a whole set of values at once. Use it to change the mood quickly.',
+        palette: 'The aurora colours. Dark and light each pick their own; hover a swatch to preview.',
+        glass: 'How transparent the surfaces are. 100% leans on the background, 0% is the stock look.',
+        blur: 'Softness of the aurora edge. Applied on release, so dragging stays smooth.',
+        saturation: 'Colour intensity. Right is richer, left is greyer.',
+        motion: 'Speed of the drift. Off freezes it and saves the most power.',
+        aurora: 'Turn it off and only the glass surfaces remain.',
+        grain: 'A faint film grain on top, so the gradient reads as film rather than flat colour.',
+        tint: 'Nudges the hue with the current session and time of day.',
+        enabled: 'Master switch. Off returns to the stock look; your values are kept.',
+        reset: 'Restore every value above to its default.',
+      },
+    };
+    const tip = (key) => (TIPS[isZh ? 'zh' : 'en'][key] || '');
+
     /* ------------------------------------------------------------------ *
      * settings
      * ------------------------------------------------------------------ */
@@ -210,6 +241,31 @@ html:has(body[data-ds-dark-theme]){
   background-color:#05070d !important;
   color-scheme:dark;
 }
+/* The native <select> popup is drawn by the browser, not by the page: it reads
+   color-scheme from the CONTROL. Declaring it on html alone is not enough when
+   the host resets form controls, so every control carries it too — otherwise
+   the popup is white while the option text stays dark-theme white. */
+select,input,textarea,button,option,optgroup,progress,meter{
+  color-scheme:light;
+}
+html:has(body[data-ds-dark-theme]) select,
+html:has(body[data-ds-dark-theme]) input,
+html:has(body[data-ds-dark-theme]) textarea,
+html:has(body[data-ds-dark-theme]) button,
+html:has(body[data-ds-dark-theme]) option,
+html:has(body[data-ds-dark-theme]) optgroup,
+html:has(body[data-ds-dark-theme]) progress,
+html:has(body[data-ds-dark-theme]) meter{
+  color-scheme:dark;
+}
+option{
+  background-color:#f7f9fe;
+  color:#101828;
+}
+html:has(body[data-ds-dark-theme]) option{
+  background-color:#14161f;
+  color:#e8ecf8;
+}
 body{
   background:transparent !important;
   background-color:transparent !important;
@@ -256,18 +312,25 @@ body{
 }
 #${BG_ID} .ag-vignette{
   position:absolute; inset:0; display:block; pointer-events:none;
-  background:radial-gradient(120% 100% at 50% 0%, transparent 46%, rgb(0 0 0 / .2) 100%);
+  background:radial-gradient(120% 100% at 50% 0%, transparent 46%, rgb(0 0 0 / .18) 100%);
   opacity:calc(.5 + .5 * var(--ag-g));
 }
+/* Centre-weighted scrim: the content area stays calm so surfaces read as glass,
+   while the corners keep their colour. This is what makes the shell feel deep
+   instead of one flat wash of purple. */
 #${BG_ID} .ag-scrim{
   position:absolute; inset:0; display:block; pointer-events:none;
-  background:rgb(238 242 249 / calc(.06 + .06 * var(--ag-g)));
+  background:
+    radial-gradient(64% 58% at 52% 44%, rgb(248 250 255 / calc(.24 + .2 * var(--ag-g))), rgb(248 250 255 / 0) 80%),
+    rgb(248 250 255 / calc(.04 + .05 * var(--ag-g)));
   transition:opacity .6s ease;
 }
-body:not([data-ds-dark-theme]) #${BG_ID} i{ opacity:calc(.7 + .28 * var(--ag-g)) }
+body:not([data-ds-dark-theme]) #${BG_ID} i{ opacity:calc(.78 + .22 * var(--ag-g)) }
 body:not([data-ds-dark-theme]) #${BG_ID} .ag-vignette{ opacity:.34 }
 body[data-ds-dark-theme] #${BG_ID} .ag-scrim{
-  background:rgb(5 7 13 / calc(.22 + .12 * var(--ag-g)));
+  background:
+    radial-gradient(64% 58% at 52% 44%, rgb(4 6 12 / calc(.3 + .28 * var(--ag-g))), rgb(4 6 12 / 0) 82%),
+    rgb(4 6 12 / calc(.1 + .08 * var(--ag-g)));
 }
 html.ag-typing #${BG_ID} .ag-scrim{ opacity:.62 }
 #${BG_ID} .ag-grain{
@@ -317,20 +380,20 @@ body[data-ds-dark-theme] #${GLOW_ID}{
 
 /* ---- alias tokens, light ------------------------------------------- */
 body{
-  --dsw-alias-bg-base: rgb(247 249 254 / calc(.9 - .38 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-1: rgb(255 255 255 / calc(.72 + .2 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-2: rgb(255 255 255 / calc(.82 + .14 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-3: rgb(255 255 255 / calc(.9 + .08 * var(--ag-g))) !important;
-  --dsw-alias-bg-overlay: rgb(250 251 254 / calc(.995 - .01 * var(--ag-g))) !important;
-  --dsw-alias-bg-module-platform: rgb(255 255 255 / calc(.66 + .26 * var(--ag-g))) !important;
-  --dsw-alias-bg-multi-select: rgb(255 255 255 / calc(.7 + .22 * var(--ag-g))) !important;
+  --dsw-alias-bg-base: rgb(247 249 254 / calc(.86 - .46 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-1: rgb(255 255 255 / calc(.66 + .2 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-2: rgb(255 255 255 / calc(.78 + .14 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-3: rgb(255 255 255 / calc(.88 + .08 * var(--ag-g))) !important;
+  --dsw-alias-bg-overlay: rgb(250 251 254 / calc(.99 - .02 * var(--ag-g))) !important;
+  --dsw-alias-bg-module-platform: rgb(255 255 255 / calc(.62 + .26 * var(--ag-g))) !important;
+  --dsw-alias-bg-multi-select: rgb(255 255 255 / calc(.66 + .22 * var(--ag-g))) !important;
   --dsw-alias-bg-mask-1: rgb(15 23 42 / .3) !important;
   --dsw-alias-bg-mask-2: rgb(15 23 42 / .18) !important;
-  --dsw-alias-border-l1: rgb(15 23 42 / .13) !important;
-  --dsw-alias-border-l2: rgb(15 23 42 / .1) !important;
-  --dsw-alias-border-l3: rgb(15 23 42 / .15) !important;
-  --dsw-alias-border-l4: rgb(15 23 42 / .19) !important;
-  --dsw-specific-sidebar-fill: rgb(255 255 255 / calc(.38 + .24 * var(--ag-g))) !important;
+  --dsw-alias-border-l1: rgb(15 23 42 / .14) !important;
+  --dsw-alias-border-l2: rgb(15 23 42 / .11) !important;
+  --dsw-alias-border-l3: rgb(15 23 42 / .16) !important;
+  --dsw-alias-border-l4: rgb(15 23 42 / .2) !important;
+  --dsw-specific-sidebar-fill: rgb(255 255 255 / calc(.3 + .22 * var(--ag-g))) !important;
   --dsw-alias-brand-primary: ${pal.brand.light} !important;
 }
 
@@ -372,8 +435,8 @@ body:not([data-ds-dark-theme]) [class*="popover"],
 body:not([data-ds-dark-theme]) [class*="Popover"],
 body:not([data-ds-dark-theme]) [class*="sheet"],
 body:not([data-ds-dark-theme]) [class*="Sheet"]{
-  --dsw-alias-bg-base: rgb(250 251 254 / .995) !important;
-  --dsw-alias-bg-overlay: rgb(250 251 254 / .995) !important;
+  --dsw-alias-bg-base: rgb(250 251 254 / .97) !important;
+  --dsw-alias-bg-overlay: rgb(250 251 254 / .98) !important;
 }
 
 /* ---- composer: frosted glass card ----------------------------------- */
@@ -454,7 +517,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 
     const UI_CSS = `
 #${ROOT_ID}{
-  position:fixed; right:16px; bottom:80px; z-index:2147483647;
+  position:fixed; right:16px; top:96px; z-index:2147483647;
   display:flex; flex-direction:column; align-items:flex-end;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
   font-size:13px; line-height:1.45; color:#eef1f8; text-align:left;
@@ -482,8 +545,8 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 }
 
 #dsh-ag-panel{
-  position:absolute; right:0; bottom:48px; width:306px;
-  max-height:min(660px, calc(100vh - 148px)); overflow-y:auto; overflow-x:hidden;
+  position:absolute; right:0; top:48px; width:306px;
+  max-height:min(620px, calc(100vh - 168px)); overflow-y:auto; overflow-x:hidden;
   padding:15px 15px 13px; border-radius:18px;
   border:1px solid rgba(255,255,255,.15);
   background:linear-gradient(180deg, rgba(17,19,30,.995), rgba(11,13,21,.995));
@@ -549,9 +612,24 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 .ag-swatch.on{ transform:scale(1.16); border-color:rgba(255,255,255,.9); box-shadow:0 0 0 2.5px rgba(255,255,255,.28), 0 4px 14px rgba(0,0,0,.35); }
 
 .ag-ctl{ display:flex; align-items:center; gap:10px; margin-top:10px; }
-.ag-ctl-label{ width:64px; flex:none; font-size:12px; color:#dfe5f2; }
-.ag-range{ flex:1; min-width:0; height:4px; accent-color:var(--dsw-alias-brand-primary,#4763ff); cursor:pointer; }
-.ag-range:active{ cursor:grabbing; }
+.ag-ctl-label{ width:64px; flex:none; font-size:12px; color:#dfe5f2; cursor:help; }
+.ag-range{
+  -webkit-appearance:none; appearance:none; flex:1; min-width:0; height:4px; margin:0;
+  border-radius:99px; background:rgba(255,255,255,.16); cursor:pointer; outline:none;
+}
+.ag-range::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none; width:14px; height:14px; border-radius:50%;
+  background:var(--dsw-alias-brand-primary,#4763ff);
+  border:2px solid rgba(255,255,255,.92);
+  box-shadow:0 2px 8px rgba(0,0,0,.42);
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s ease;
+}
+.ag-range:hover::-webkit-slider-thumb{
+  transform:scale(1.18);
+  box-shadow:0 0 0 6px rgba(143,176,255,.16), 0 2px 8px rgba(0,0,0,.42);
+}
+.ag-range:active::-webkit-slider-thumb{ transform:scale(1.04); }
+.ag-range:focus-visible::-webkit-slider-thumb{ box-shadow:0 0 0 5px rgba(143,176,255,.3); }
 .ag-val{ width:40px; flex:none; text-align:right; font-size:11px; color:#b7c0d4; font-variant-numeric:tabular-nums; }
 
 .ag-row{ display:flex; align-items:center; justify-content:space-between; margin-top:10px; font-size:12.5px; color:#eef1f8; }
@@ -588,6 +666,18 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 .ag-reset:active{ transform:scale(.985); }
 
 .ag-foot{ margin-top:10px; font-size:10.5px; color:#8b95ab; text-align:center; letter-spacing:.3px; }
+
+/* hover copy — one floating element, positioned from the hovered control */
+#dsh-ag-tip{
+  position:fixed; z-index:2147483647; width:216px; padding:8px 10px;
+  border-radius:10px; border:1px solid rgba(255,255,255,.14);
+  background:rgba(8,10,17,.985); color:#dde3f0;
+  font-size:11.5px; line-height:1.55; letter-spacing:.1px;
+  box-shadow:0 12px 30px rgba(0,0,0,.5);
+  pointer-events:none; opacity:0; transform:translateY(3px);
+  transition:opacity .16s ease, transform .16s ease;
+}
+#dsh-ag-tip.on{ opacity:1; transform:none; }
 `;
 
     /* ------------------------------------------------------------------ *
@@ -621,7 +711,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
     function hueFromTitle(title) {
       let h = 0;
       for (let i = 0; i < title.length; i += 1) h = (h * 31 + title.charCodeAt(i)) % 9973;
-      return (h % 13) - 6;
+      return (h % 9) - 4;
     }
 
     function updateHue() {
@@ -632,7 +722,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           let hue = 0;
           if (state.tint) {
             const hour = new Date().getHours();
-            const timeHue = Math.sin(((hour - 6) / 24) * Math.PI * 2) * 8;
+            const timeHue = Math.sin(((hour - 6) / 24) * Math.PI * 2) * 6;
             hue = sessionHue + timeHue;
           }
           document.documentElement.style.setProperty('--ag-hue', hue.toFixed(1) + 'deg');
@@ -685,6 +775,16 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       paintNow();
     }
 
+    // Hovering a swatch repaints the palette once so you can feel it before
+    // committing; leaving the swatch restores the stored one.
+    function previewPalette(id) {
+      try {
+        ensureStyle(STYLE_ID, buildSheet(paletteOf(id || state.palette)));
+      } catch {
+        /* preview is cosmetic */
+      }
+    }
+
     function set(patch) {
       state = { ...state, ...patch };
       save();
@@ -695,6 +795,55 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 
     function setOpen(open) {
       if (root) root.setAttribute('data-open', open ? '1' : '0');
+      if (!open) hideTip();
+    }
+
+    /* ---------------------------- hover copy ---------------------------- */
+
+    let tipEl = null;
+
+    function placeTip(target) {
+      if (!tipEl || !target) return;
+      const text = target.getAttribute('data-tip');
+      if (!text) return;
+      tipEl.textContent = text;
+      const r = target.getBoundingClientRect();
+      const w = 216;
+      let left = r.left - w - 12;
+      if (left < 8) left = Math.min(r.right + 12, (window.innerWidth || 800) - w - 8);
+      let top = r.top + r.height / 2 - 22;
+      const maxTop = (window.innerHeight || 600) - 92;
+      if (top > maxTop) top = maxTop;
+      if (top < 8) top = 8;
+      tipEl.style.left = Math.round(left) + 'px';
+      tipEl.style.top = Math.round(top) + 'px';
+      tipEl.classList.add('on');
+    }
+
+    function hideTip() {
+      if (tipEl) tipEl.classList.remove('on');
+    }
+
+    function onRootOver(e) {
+      try {
+        const target = e.target && e.target.closest ? e.target.closest('[data-tip]') : null;
+        if (!target) return;
+        if (e.relatedTarget && target.contains && target.contains(e.relatedTarget)) return;
+        placeTip(target);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    function onRootOut(e) {
+      try {
+        const target = e.target && e.target.closest ? e.target.closest('[data-tip]') : null;
+        if (!target) return;
+        if (e.relatedTarget && target.contains && target.contains(e.relatedTarget)) return;
+        hideTip();
+      } catch {
+        /* ignore */
+      }
     }
 
     /* ---------------------------- panel ---------------------------- */
@@ -714,6 +863,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           class: 'ag-chip',
           type: 'button',
           'data-preset': p.id,
+          'data-tip': tip('preset'),
           onClick: () => set({ preset: p.id, ...p.set }),
         }, t(p.key)),
       );
@@ -725,7 +875,10 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           title: p.label,
           'aria-label': p.label,
           'data-palette': p.id,
+          'data-tip': tip('palette'),
           style: 'background:linear-gradient(135deg,' + solidOf(p.rgb[0]) + ',' + solidOf(p.rgb[1]) + ' 55%,' + solidOf(p.rgb[2]) + ')',
+          onPointerenter: () => previewPalette(p.id),
+          onPointerleave: () => previewPalette(null),
           onClick: () => set({ palette: p.id }),
         }),
       );
@@ -738,6 +891,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           max: String(max),
           step: String(step),
           'data-slider': key,
+          'data-tip': tip(key),
           onInput: (e) => {
             const v = Number(e.target.value);
             state = { ...state, [key]: v };
@@ -756,7 +910,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         refs['val-' + key] = val;
         refs['slider-' + key] = input;
         return el('label', { class: 'ag-ctl' }, [
-          el('span', { class: 'ag-ctl-label', text: label }),
+          el('span', { class: 'ag-ctl-label', text: label, 'data-tip': tip(key) }),
           input,
           val,
         ]);
@@ -767,6 +921,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           class: 'ag-seg-btn',
           type: 'button',
           'data-motion': lv,
+          'data-tip': tip('motion'),
           onClick: () => set({ motion: lv }),
         }, t('seg.motion.' + lv)),
       );
@@ -780,7 +935,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           onClick: () => set({ [key]: !state[key] }),
         });
         refs['sw-' + key] = btn;
-        return el('div', { class: 'ag-row' }, [el('span', { text: label }), btn]);
+        return el('div', { class: 'ag-row', 'data-tip': tip(key) }, [el('span', { text: label }), btn]);
       };
 
       const panel = el('div', { id: 'dsh-ag-panel', role: 'dialog', 'aria-label': t('panel.title') }, [
@@ -813,6 +968,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         el('button', {
           class: 'ag-reset',
           type: 'button',
+          'data-tip': tip('reset'),
           onClick: (e) => {
             set({ ...DEFAULT_SETTINGS });
             const btn = e.currentTarget;
@@ -953,6 +1109,15 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 
       root = el('div', { id: ROOT_ID, 'data-open': '0' }, [buildPanel(), btn]);
       document.body.appendChild(root);
+      try {
+        root.addEventListener('pointerover', onRootOver);
+        root.addEventListener('pointerout', onRootOut);
+      } catch {
+        /* hover copy is optional */
+      }
+
+      tipEl = el('div', { id: 'dsh-ag-tip', 'aria-hidden': 'true' });
+      document.body.appendChild(tipEl);
 
       written = {};
       sessionHue = hueFromTitle(String(document.title || ''));
@@ -961,13 +1126,14 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
     }
 
     function unmount() {
-      [ROOT_ID, BG_ID, GLOW_ID, STYLE_ID, UI_STYLE_ID].forEach((id) => {
+      [ROOT_ID, BG_ID, GLOW_ID, 'dsh-ag-tip', STYLE_ID, UI_STYLE_ID].forEach((id) => {
         const node = document.getElementById(id);
         if (node && node.parentNode) node.parentNode.removeChild(node);
       });
       root = null;
       bg = null;
       glow = null;
+      tipEl = null;
       refs = {};
       written = {};
     }

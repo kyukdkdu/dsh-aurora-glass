@@ -3,7 +3,7 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-1.5.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.6.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <p align="center">
   <img src="docs/preview-dark.png" alt="Aurora Glass 深色主题" width="780">
@@ -41,14 +41,16 @@
 
 ### 使用
 
-右下角有个小闪光按钮（平时半透明，鼠标移上去才显形），点开是设置面板：
+右上角有个小闪光按钮（平时半透明，鼠标移上去才显形），点开是设置面板：
 
 | 分区 | 内容 |
 | --- | --- |
 | 预设 | 默认 / 轻雾 / 深空 / 原版观感 |
-| 色板 | Aurora / Ocean / Ember / Jade / Mono |
+| 色板 | Aurora / Ocean / Ember / Jade / Mono（悬停即可预览） |
 | 表面 | 玻璃强度、柔化、色彩三个滑杆 |
 | 氛围 | 动效（关 / 柔和 / 丰富）、极光背景、噪点、随场景变色、玻璃主题总开关 |
+
+每个控件都有悬停说明：鼠标停在预设、色板、滑杆或开关上，面板左侧会浮出一句话讲它做什么。
 
 设置存在 `localStorage` 的 `dsh-aurora-glass:settings:v2`，删掉这个键即恢复默认。
 "原版观感"把玻璃强度归零并关掉极光与噪点，等于临时回到原生外观。
