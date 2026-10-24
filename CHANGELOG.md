@@ -3,6 +3,26 @@
 本文件记录 dsh-aurora-glass 的重要变更，采用简易维护格式（Keep a Changelog 风格）。
 All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a Changelog style).
 
+## [1.4.0] - 2026-10-24
+
+### Fixed
+
+- **卡顿**：v1.3 在极光容器上挂了全屏 `hue-rotate` 动画，容器里三个视口大小的图层每帧都要重新过滤一遍，这是"调滑杆不跟手 + 整个软件卡"的根因。现在容器上没有任何 filter，三团极光各自带 `blur()/saturate()`，内容不变、只有 `transform` 在动，浏览器只需烘焙一次滤镜，位移全部交给合成器。
+- **滑杆抖动**：`--ag-blur` / `--ag-sat` 每次 `input` 都会让三个大图层重新过滤。改成拖动时只更新数字，松手（`change`）才提交；`--ag-g` 仍然实时，因为它只改 token 的 alpha（样式重算，不重绘大图层）。
+- **写入合并**：所有 CSS 变量写入合并到一个 `requestAnimationFrame`，并且只写真正变化的那个值。
+- **面板看不清字**：面板底色从 96% 提到 98.5%–99%，标签/数值对比度整体上调，分区之间加了分隔线；宿主对话框的 `--dsw-alias-bg-overlay` 也提到 98.5%，设置页不再透出背景。
+- 输入框 `backdrop-filter` 从 20px 降到 14px（滚动时重新模糊的面积更小）。
+
+### Changed
+
+- 控件回到**右下角**（`right:16px; bottom:80px`），仍然挂在 `document.body` 上、`z-index: 2147483647`，不会被任何插件的浮层盖住。
+- 极光动画改成**闭环漂移**（19s / 24s / 30s，带负延迟错峰），不再是来回摆动的 `alternate`，看起来像真的在流。丰富档 10s / 13s / 16s。
+
+### Added
+
+- 指针视差：鼠标移动时整层极光反向偏移最多 16px，一帧一次 `transform`，纯合成器开销。
+- 面板微交互：打开时整体弹性缩放 + 分区依次上浮（20–120ms 错峰）、顶边一道高光、chip 按压回弹、色板选中双层光环、开关拖拽时滑块轻微拉伸、重置按钮文字临时变成"已恢复默认"。
+
 ## [1.3.0] - 2026-10-24
 
 ### Changed

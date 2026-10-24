@@ -3,7 +3,7 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-1.3.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.4.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 不替换任何组件，只改 CSS token 层 —— 侧栏、对话区、输入框、代码块、弹窗会一起变；
 深浅色跟随宿主自己的 `data-ds-dark-theme` 属性切换，不需要重新注入样式；
@@ -36,18 +36,28 @@
 
 ### 使用
 
-左下角头像正上方有个小闪光按钮（平时半透明，鼠标移上去才显形），点开是设置面板：
+右下角有个小闪光按钮（平时半透明，鼠标移上去才显形），点开是设置面板：
 
 | 分区 | 内容 |
 | --- | --- |
 | 预设 | 默认 / 轻雾 / 深空 / 原版观感 |
 | 色板 | Aurora / Ocean / Ember / Jade / Mono |
-| 表面 | 玻璃强度、光晕、色彩三个滑杆 |
+| 表面 | 玻璃强度、柔化、色彩三个滑杆 |
 | 氛围 | 动效（关 / 柔和 / 丰富）、极光背景、噪点、玻璃主题总开关 |
 
 设置存在 `localStorage` 的 `dsh-aurora-glass:settings:v2`，删掉这个键即恢复默认。
 "原版观感"把玻璃强度归零并关掉极光与噪点，等于临时回到原生外观。
 点面板外或按 Esc 关闭。
+
+### 性能
+
+主题是常驻的，所以这里花的每一毫秒都会算在整机头上。三条约束：
+
+1. **容器上没有 filter。** 全屏 `filter` 会让里面每一帧都在动的图层反复重新过滤——这是 v1.3 卡顿的根因。现在三团极光各自带 `filter: blur() saturate()`，图层内容恒定、只有 `transform` 在动，浏览器烘焙一次滤镜，之后全是合成器位移。
+2. **滑杆写变量，不重建样式表。** 透明度写在 CSS 里（`rgb(… / calc(… * var(--ag-g)))`），拖动只改一个自定义属性，而且所有写入合并到一帧一次、只写变化的值。
+3. **贵的滑杆松手才提交。** "柔化"和"色彩"会改变三个视口大小图层的滤镜，所以拖动时只更新数字，`change` 时才真正应用；"玻璃强度"实时。
+
+额外的小动作（指针视差、面板入场、开关回弹）全部是 `transform` / `opacity`，走合成器，不触发布局和重绘。
 
 ### 工作原理（也是踩过的坑）
 
@@ -86,7 +96,7 @@ body[data-ds-dark-theme] { --dsw-alias-bg-base: rgb(11 13 22 / calc(.80 - .36 * 
 
 就能在不碰任何组件的前提下把整套界面改成半透明表面。透明度写成 `calc(... * var(--ag-g))`，所以拖"玻璃强度"滑杆只是改一个 CSS 变量，不用重建样式表。
 
-极光是一个挂在 `body` 上的固定层（`#dsh-ag-bg`，`z-index:-1`）：三团径向渐变各自漂移 + 缓慢色相旋转，上面压一层 scrim 保证正文对比度，最上面是噪点。输入框走 `[class*="composerHero"] [class$="_card"]` 加 `backdrop-filter`，做真正的毛玻璃卡片。控件浮层是 `#dsh-ag-root`，`z-index: 2147483647`，固定挂在 `document.body` 上，所以不会被任何插件的浮层盖住。
+极光是一个挂在 `body` 上的固定层（`#dsh-ag-bg`，`z-index:-1`）：三团径向渐变各自沿闭环路径漂移、缩放，带负延迟错峰，所以看起来是连续流动而不是来回摆动；上面依次压着暗角、scrim（保证正文对比度）和噪点。输入框走 `[class*="composerHero"] [class$="_card"]` 加 `backdrop-filter`，做真正的毛玻璃卡片。控件浮层是 `#dsh-ag-root`，`z-index: 2147483647`，固定挂在 `document.body` 上，所以不会被任何插件的浮层盖住。
 
 ### 故障排查
 
