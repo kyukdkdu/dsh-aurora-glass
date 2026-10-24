@@ -1,17 +1,17 @@
 {
   "name": "dsh-aurora-glass",
-  "version": "1.1.4",
-  "description": "Aurora Glass 閳?a lightweight global glassmorphism + aurora theme for DeepSeek Harness",
+  "version": "1.2.0",
+  "description": "Aurora Glass — a lightweight global glassmorphism + aurora theme for DeepSeek Harness",
   "license": "MIT",
   "private": false,
   "type": "module",
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
-    "./locale/*.json": "./locale/*.json",
-    "./icon": "./icon.svg"
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
   },
-  "files": ["index.js", "client.js", "cordis.patch.yml", "locale/*.json", "icon.svg"],
+  "files": ["index.js", "client.js", "cordis.patch.yml", "icon.svg", "locale/*.json"],
   "dsh": {
     "bundle": { "patch": "./cordis.patch.yml" },
     "client": {

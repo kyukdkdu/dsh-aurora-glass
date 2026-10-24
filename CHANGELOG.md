@@ -3,6 +3,27 @@
 本文件记录 dsh-aurora-glass 的重要变更，采用简易维护格式（Keep a Changelog 风格）。
 All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a Changelog style).
 
+## [1.2.0] - 2026-10-24
+
+### Fixed (critical)
+
+- **`store` 未定义导致插件激活抛错，整个应用无法启动**：v1.1.0 重写时删掉了 `const store = createStore()`，`apply()` 第一行 `rebuild(false)` 里 `store.get()` 直接抛 `ReferenceError`。客户端条目因此变成 `failed`，DSH 的 web boot 把"任一客户端条目未激活"当成致命错误，于是弹出"应用无法启动或已意外停止"。这是"装上没效果 + 一直报错"的直接原因。
+- **`inject: ['styles']` 声明了不存在的服务**：客户端 `inject` 只能写真实存在的客户端服务，否则条目永远停在 `pending`（错误信息 `waiting for service: styles`）。现在只声明 `slots`，其余全部可选。
+- **插槽注册 API 用错**：`ctx.slots` 没有 `inject()` 方法（那是旧版 API），正确写法是 `ctx.slots.register({ name: 'shell.overlay', id, order }, Component)`。原来那段被 try/catch 静默吞掉，所以悬浮按钮从来没出现过。
+
+### Changed
+
+- 客户端半侧重写：去掉宿主 RPC 上报、隐藏页自愈刷新、`styles` 服务探测等全部调试代码，只保留"注入样式 + 挂一个悬浮按钮"。
+- 宿主半侧（`index.js`）清空为一个空的 `apply()`：主题完全在浏览器侧实现，宿主侧不再注册路由、不再写文件、不再有任何可能失败的动作。
+- 主题改为纯 CSS token 层：`body { --dsw-alias-* }` + `body[data-ds-dark-theme]`，深浅色切换无需重新注入；`html:has(body[data-ds-dark-theme])` 负责画布底色。
+- 极光层重新调色：三团角落光晕 + 一层淡中心光，透明度、模糊、饱和都随面板滑杆实时变化。
+- 面板重做：预设 / 色板 / 表面 / 氛围四段，动效三档，设置存 `localStorage`（键 `dsh-aurora-glass:settings:v2`）。
+- `package.json` 版本 1.2.0；`dsh.client.inject` 为空数组。
+
+### Added
+
+- `tools/dsh-aurora-toggle.ps1`：只开关本插件（写 `- id: dsh-aurora-glass / disabled: true` 到 profile patch），不会再出现"点禁用，所有插件一起消失"的情况。
+
 ## [1.1.4] - 2026-10-24
 
 ### Fixed (critical)
