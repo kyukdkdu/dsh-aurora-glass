@@ -470,7 +470,7 @@ window.__ModuleLoader__.load({
         h('div', { className: 'ag-head' },
           h('div', { className: 'ag-title' },
             h(Sparkle, { size: 18 }), t('panel.title'),
-            h('span', { className: 'ag-badge' }, 'v1.1.3')),
+            h('span', { className: 'ag-badge' }, 'v1.1.4')),
           h('button', { type: 'button', className: 'ag-x', 'aria-label': 'Close', onClick: onClose }, '\u2715')),
         h('div', { className: 'ag-diag', title: t('panel.diagTitle') },
           `CSS L${diag ? diag.tier : 0} ${diag && diag.ok === true ? '\u2714' : diag && diag.ok === false ? '\u2716' : '?'}`),
@@ -545,22 +545,51 @@ window.__ModuleLoader__.load({
     }
 
     return {
-      inject: ['slots', 'theme', 'locale', 'styles'],
+      // v1.1.4 fix: `inject` must name ONLY services the client loader really
+      // provides. There is no `styles` (nor `locale`) service registered on
+      // the client, and a bad inject list keeps this entry `pending` forever,
+      // which aborts the entire web boot ("1 entry did not activate").
+      inject: ['slots', 'theme'],
       apply(ctx) {
-        const stylesApi = (() => {
-          try { return ctx.styles; } catch { /* façade property fenced */ }
-          try { if (ctx.get) return ctx.get('styles'); } catch { /* not resolvable */ }
+        const svc = (name) => {
+          try { if (ctx && ctx[name]) return ctx[name]; } catch { /* façade property fenced */ }
+          try { if (ctx && typeof ctx.get === 'function') return ctx.get(name); } catch { /* not resolvable */ }
           return null;
-        })();
-        const theme = ctx.theme;
-        const t = makeT(ctx.get('locale'));
+        };
+        const stylesSvc = svc('styles');
+        const theme = svc('theme');
+        const localeSvc = svc('locale');
+        const slotsSvc = svc('slots');
+        const domSheets = [];
+        // Prefer the façade's styles API; always fall back to direct <style>
+        // injection on document.head so CSS lands even without the service.
+        const insertCss = (css) => {
+          if (!css) return null;
+          if (stylesSvc && typeof stylesSvc.insert === 'function') {
+            try { return stylesSvc.insert(css); } catch { /* fall back to DOM */ }
+          }
+          try {
+            const doc = (typeof document !== 'undefined' && document)
+              || (typeof globalThis !== 'undefined' && globalThis.document) || null;
+            if (doc && doc.head && typeof doc.createElement === 'function') {
+              const el = doc.createElement('style');
+              el.setAttribute('data-dsh-aurora-glass', '1');
+              try { el.textContent = css; } catch { el.appendChild(doc.createTextNode(css)); }
+              doc.head.appendChild(el);
+              domSheets.push(el);
+              return () => { try { el.remove(); } catch { /* already gone */ } };
+            }
+          } catch { /* no DOM */ }
+          return null;
+        };
+        const t = makeT(localeSvc);
         let tokenUndo = null;
         let auraUndo = null;
         let varUndo = null;
         let varTier = 0;
         let sheetUndo = null;
 
-        try { if (stylesApi) sheetUndo = stylesApi.insert(BASE_CSS); } catch { /* panel renders unstyled */ }
+        try { sheetUndo = insertCss(BASE_CSS); } catch { /* panel renders unstyled */ }
 
         const getScheme = () => {
           try { return theme.getTheme().active.colorScheme; } catch { return 'dark'; }
@@ -572,7 +601,7 @@ window.__ModuleLoader__.load({
           if (varUndo) { varUndo(); varUndo = null; }
           if (!s.enabled) return;
           const css = buildVarCss(s, scheme, varTier);
-          if (css && stylesApi) varUndo = stylesApi.insert(css);
+          if (css) varUndo = insertCss(css);
         };
 
         /**
@@ -597,7 +626,7 @@ window.__ModuleLoader__.load({
             for (let tier = 0; tier < VAR_SELECTORS.length; tier += 1) {
               if (varUndo) { varUndo(); varUndo = null; }
               const css = buildVarCss(s, scheme, tier);
-              if (css && stylesApi) varUndo = stylesApi.insert(css);
+              if (css) varUndo = insertCss(css);
               const got = norm(doc.defaultView.getComputedStyle(target).getPropertyValue('--dsw-alias-bg-base'));
               if (got && got === want) { varTier = tier; return { tier, ok: true }; }
             }
@@ -620,7 +649,7 @@ window.__ModuleLoader__.load({
             const scheme = getScheme();
             applyVarLayer(s, scheme);
             if (auraUndo) { auraUndo(); auraUndo = null; }
-            if (s.enabled && stylesApi) auraUndo = stylesApi.insert(buildAuraCss(s, scheme));
+            if (s.enabled) auraUndo = insertCss(buildAuraCss(s, scheme));
           } catch (err) {
             try { console.error('[dsh-aurora-glass] theme apply failed:', err); } catch { /* no console */ }
           }
@@ -630,11 +659,17 @@ window.__ModuleLoader__.load({
         const offDeep = store.subscribeDeep(() => rebuild(false));
         // Theme flips (system light/dark) re-resolve both the direct var
         // layer and the aurora sheet for the new scheme.
-        const offTheme = ctx.on('theme/change', () => rebuild(true));
+        const offTheme = (() => {
+          try { return ctx && typeof ctx.on === 'function' ? ctx.on('theme/change', () => rebuild(true)) : null; } catch { return null; }
+        })();
 
-        ctx.slots.inject(OVERLAY_SLOT, () => ctx.slots.register({
-          name: OVERLAY_SLOT, id: PACKAGE + '.panel', order: 1000, label: PACKAGE,
-        }, () => h(FloatingButton, { store, t, ensureVarLayer })));
+        try {
+          if (slotsSvc && typeof slotsSvc.inject === 'function' && typeof slotsSvc.register === 'function') {
+            slotsSvc.inject(OVERLAY_SLOT, () => slotsSvc.register({
+              name: OVERLAY_SLOT, id: PACKAGE + '.panel', order: 1000, label: PACKAGE,
+            }, () => h(FloatingButton, { store, t, ensureVarLayer })));
+          }
+        } catch { /* overlay unavailable */ }
 
         try {
           ctx.effect(() => () => {
@@ -647,7 +682,7 @@ window.__ModuleLoader__.load({
           });
         } catch { /* disposal best-effort */ }
 
-        /* ------------------------- v1.1.3 runtime diagnostics ------------------------- */
+        /* ------------------------- v1.1.4 runtime diagnostics ------------------------- */
         // Besides the visible panel diag line, this build phones home with the
         // page's real state through the package-private host.call bridge so the
         // exercising agent can see exactly which steps landed on a page it
@@ -663,7 +698,7 @@ window.__ModuleLoader__.load({
         // page's Local Storage can tell whether this bundle ever ran.
         try {
           writeDiag('dsh-aurora-glass:boot:v1', {
-            v: '1.1.2', pkg: PACKAGE, time: Date.now(),
+            v: '1.1.4', pkg: PACKAGE, time: Date.now(),
             href: (() => { try { return String(window.location && window.location.href || '').slice(0, 200); } catch { return ''; } })(),
             title0: (() => { try { return String(document.title || '').slice(0, 80); } catch { return ''; } })(),
           });
@@ -673,7 +708,7 @@ window.__ModuleLoader__.load({
           diagSent = true;
           const s = store.get();
           const payload = {
-            v: '1.1.3', pkg: PACKAGE, time: Date.now(),
+            v: '1.1.4', pkg: PACKAGE, time: Date.now(),
             vis: (() => { try { return String(document.visibilityState); } catch { return ''; } })(),
             settings: s,
             steps: {
@@ -758,7 +793,7 @@ window.__ModuleLoader__.load({
               } catch { return null; }
             })(),
           };
-          try { console.error('[dsh-aurora-glass][diag-v1.1.3]', JSON.stringify(payload)); } catch { /* no console */ }
+          try { console.error('[dsh-aurora-glass][diag-v1.1.4]', JSON.stringify(payload)); } catch { /* no console */ }
           try {
             writeDiag('dsh-aurora-glass:diag:v1', payload);
           } catch { /* never break activation */ }

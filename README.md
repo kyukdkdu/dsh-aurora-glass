@@ -3,7 +3,7 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness (DSH).
 
-![Version](https://img.shields.io/badge/version-1.1.3-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Type](https://img.shields.io/badge/type-Cordis%20bundle-7c3aed) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.1.4-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Type](https://img.shields.io/badge/type-Cordis%20bundle-7c3aed) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <!-- SCREENSHOTS: 请在此处粘贴面板/界面截图 -->
 
@@ -22,7 +22,7 @@
 
 ### 简介
 
-**dsh-aurora-glass**（显示名 **Aurora Glass / 极光玻璃**，v1.1.3，MIT 许可）是面向 DeepSeek Harness（DSH）的全局美化插件：为整套界面带来玻璃拟态（glassmorphism）+ 极光渐变（aurora glow）主题。视觉风格受 codex 类深色高级设计启发，实现上完全独立原创——不包含、也不依赖任何第三方主题包与资源。
+**dsh-aurora-glass**（显示名 **Aurora Glass / 极光玻璃**，v1.1.4，MIT 许可）是面向 DeepSeek Harness（DSH）的全局美化插件：为整套界面带来玻璃拟态（glassmorphism）+ 极光渐变（aurora glow）主题。视觉风格受 codex 类深色高级设计启发，实现上完全独立原创——不包含、也不依赖任何第三方主题包与资源。
 
 一次启用、全局生效：侧栏、对话区、输入框、弹窗、菜单、设置页共享同一套半透明「玻璃」表面与柔和极光背景；浅色 / 深色模式自动跟随系统，无需任何手动切换。
 
@@ -87,7 +87,9 @@ pnpm add dsh-aurora-glass
 
 > 💡 版本升级后如果界面没有立刻更新，请**刷新页面**（替换已安装的包需要重新加载新的 JavaScript 模块代次）。若刷新后仍感觉"没有效果"，先看面板右下角的 ✦ 按钮是否存在、面板底部诊断行是否为 `CSS L0 ✔`。
 >
-> 🛠️ v1.1.0 曾出现过的「启用后完全无效果」问题已根修：旧版本在部分安装路径下会以空配置启动前台面板（视觉层被包裹在错误的条件里）。**v1.1.3 起**面板与全局玻璃层改为独立的注入通道，并内置一次性自愈逻辑（页面空闲隐藏时自动刷新一次，次日首次打开即恢复）。因此：**如果菜单里显示已启用但仍无效果，升级到 v1.1.3+ 后按一次 F5（或重启应用）即可**，无需反复重装。
+> 🛠️ **v1.1.4 重要修复**：v1.1.2 / v1.1.3 曾出现「升级后整个界面无法启动」的严重问题 —— 客户端模块把不存在的 `styles` 服务写进了注入依赖（`inject`）声明，加载器永远等不到它，插件停在 `pending`，整个 Web 启动被判定失败（错误页显示 `web boot: 1 entry did not activate — dsh-aurora-glass: pending (waiting for service: styles)`），同时宿主会自动停用全部第三方插件。**v1.1.4 已根修**：只声明真实存在的服务（`slots`、`theme`），样式注入带 DOM 兜底、永不阻塞。升级到 v1.1.4 后按一次 **F5**（或重启应用）即可恢复正常；若其他插件此前被宿主自动停用，请到插件管理页重新启用它们。
+>
+> 🧰 排查顺序：先看右下角 ✦ 悬浮按钮是否存在；展开面板看底部诊断行是否为 `CSS L0 ✔`。仍然无效果时再检查插件管理页中的启用状态。
 
 ### 性能表现
 
@@ -112,7 +114,7 @@ pnpm add dsh-aurora-glass
 
 ### Overview
 
-**dsh-aurora-glass** (display name **Aurora Glass / 极光玻璃**, v1.1.3, MIT licensed) is a global beautification plugin for DeepSeek Harness (DSH): it gives the entire UI a glassmorphism + aurora glow theme. The visual style is inspired by codex-style premium dark interfaces, while the implementation is fully original — no third-party theme package or asset is bundled or required.
+**dsh-aurora-glass** (display name **Aurora Glass / 极光玻璃**, v1.1.4, MIT licensed) is a global beautification plugin for DeepSeek Harness (DSH): it gives the entire UI a glassmorphism + aurora glow theme. The visual style is inspired by codex-style premium dark interfaces, while the implementation is fully original — no third-party theme package or asset is bundled or required.
 
 Enable once, effective everywhere: sidebar, conversation area, composer, popovers, menus and the settings page all share the same translucent "glass" surfaces and a soft aurora backdrop. Light / dark mode follows your system automatically — no manual switching.
 

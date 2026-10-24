@@ -3,6 +3,14 @@
 本文件记录 dsh-aurora-glass 的重要变更，采用简易维护格式（Keep a Changelog 风格）。
 All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a Changelog style).
 
+## [1.1.4] - 2026-10-24
+
+### Fixed (critical)
+
+- **修复客户端注入依赖声明导致整个 Web 界面无法启动的问题**：v1.1.2 / v1.1.3 的客户端模块把并不存在的 `styles`（以及 `locale`）服务写进了 `inject` 依赖声明。客户端加载器会一直等待从未注册的服务，本插件永远停在 `pending`，页面启动直接失败（错误屏幕："web boot: 1 entry did not activate — dsh-aurora-glass: pending (waiting for service: styles)"）。v1.1.4 只声明真实存在的服务（`slots`、`theme`），其余服务一律在运行时 `ctx.get` 取用，取不到时安全降级。
+- **样式注入永不阻塞**：`styles` 服务不可用时，全部样式改由直接把 `<style>` 元素注入 `document.head` 完成（可清理），彻底消除"注入失败"的可能。
+- 面板徽标、自检上报、注释中的版本号同步升级到 1.1.4。
+
 ## [1.1.3] - 2026-10-24
 
 ### Fixed

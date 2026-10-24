@@ -62,6 +62,7 @@ This file covers detailed install / uninstall / upgrade steps and troubleshootin
 
 | 症状 | 可能原因 | 处理 |
 | --- | --- | --- |
+| **启动报错**：`web boot: 1 entry did not activate — dsh-aurora-glass: pending (waiting for service: styles)`（v1.1.2 / v1.1.3）| 旧版客户端把不存在的 `styles` 服务写进了 `inject` 依赖声明，加载器永远等待 → 整个 Web 启动失败，宿主并会停用全部第三方插件 | 这是 v1.1.2 / v1.1.3 的已知缺陷：**升级到 v1.1.4**（重装 → 启用 → 刷新页面），然后到插件管理页重新启用此前被自动停用的插件 |
 | 安装后无任何效果 | 客户端资源尚未重载；bundle 未启用 | 刷新页面；到插件管理器确认已启用 |
 | 主题看起来没变化 | ✦ 按钮被其它悬浮插件**遮挡**（别的 overlay 插件叠在上面）；玻璃主题总开关被关闭；玻璃强度被调到 0%（≈ 原版观感） | 检查右下角 ✦ 是否可见/可点；关闭或调整与其它悬浮插件的层级；检查总开关与玻璃强度滑块 |
 | 极光背景不显示 | 「极光背景」「玻璃主题」开关被关闭 | 打开面板确认两个开关均为开 |
