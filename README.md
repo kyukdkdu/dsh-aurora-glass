@@ -5,6 +5,11 @@
 
 ![Version](https://img.shields.io/badge/version-1.4.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
+<p align="center">
+  <img src="docs/preview-dark.png" alt="Aurora Glass 深色主题" width="780">
+  <img src="docs/preview-panel.png" alt="设置面板" width="300">
+</p>
+
 不替换任何组件，只改 CSS token 层 —— 侧栏、对话区、输入框、代码块、弹窗会一起变；
 深浅色跟随宿主自己的 `data-ds-dark-theme` 属性切换，不需要重新注入样式；
 控件是挂在 `document.body` 上的独立浮层（`z-index: 2147483647`），不会被别的插件盖住。
