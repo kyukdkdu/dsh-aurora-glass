@@ -3,11 +3,11 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-1.2.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.3.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 不替换任何组件，只改 CSS token 层 —— 侧栏、对话区、输入框、代码块、弹窗会一起变；
 深浅色跟随宿主自己的 `data-ds-dark-theme` 属性切换，不需要重新注入样式；
-宿主侧没有任何逻辑：不写文件、不开路由、不连网络。
+控件是挂在 `document.body` 上的独立浮层（`z-index: 2147483647`），不会被别的插件盖住。
 
 ---
 
@@ -36,7 +36,7 @@
 
 ### 使用
 
-右下角闪光按钮 → 设置面板：
+左下角头像正上方有个小闪光按钮（平时半透明，鼠标移上去才显形），点开是设置面板：
 
 | 分区 | 内容 |
 | --- | --- |
@@ -47,6 +47,7 @@
 
 设置存在 `localStorage` 的 `dsh-aurora-glass:settings:v2`，删掉这个键即恢复默认。
 "原版观感"把玻璃强度归零并关掉极光与噪点，等于临时回到原生外观。
+点面板外或按 Esc 关闭。
 
 ### 工作原理（也是踩过的坑）
 
@@ -55,10 +56,10 @@ DSH 的客户端插件是一段**惰性 CJS**：`client.js` 只注册工厂，�
 ```js
 window.__ModuleLoader__.load({
   id: 'dsh-aurora-glass',
-  factory(require) {
+  factory() {
     return {
-      inject: ['slots'],            // 只能是真实存在的客户端服务
-      apply(ctx) { /* 注入 <style> + ctx.slots.register(...) */ },
+      inject: [],                   // 一个服务都不依赖
+      apply(ctx) { /* 注入 <style> + 往 body 挂浮层 */ },
     };
   },
 });
@@ -72,19 +73,20 @@ window.__ModuleLoader__.load({
 
 所以这一版的写法是：
 
-- `inject: ['slots']`，只有它；`theme` / `locale` 一概不依赖
+- `inject: []`，一个服务都不要；UI 是原生 DOM，不需要 React、不需要插槽
 - `apply()` 整体包在 try/catch 里，任何异常只打一条 warning
-- 模块体只有 `require('react')` 一处外部依赖，取不到就返回一个空插件
 - 宿主半侧 `index.js` 是空的 `apply()`，没有可失败的代码
 
 主题本身：宿主的 alias token（`--dsw-alias-bg-base`、`--dsw-alias-bg-layer-1/2/3`、`--dsw-alias-border-l1..4`、`--dsw-specific-sidebar-fill` 等）声明在 `body` 上，所以
 
 ```css
-body { --dsw-alias-bg-base: rgba(...) !important; }
-body[data-ds-dark-theme] { --dsw-alias-bg-base: rgba(...) !important; }
+body { --dsw-alias-bg-base: rgb(11 13 22 / calc(.80 - .36 * var(--ag-g))) !important; }
+body[data-ds-dark-theme] { --dsw-alias-bg-base: rgb(11 13 22 / calc(.80 - .36 * var(--ag-g))) !important; }
 ```
 
-就能在不碰任何组件的前提下把整套界面改成半透明表面；极光画在 `body::before`（`z-index:-1`、`pointer-events:none`），透过半透明表面显出来。按钮用 `ctx.slots.register({ name: 'shell.overlay', id, order }, Component)` 挂进宿主浮层插槽。
+就能在不碰任何组件的前提下把整套界面改成半透明表面。透明度写成 `calc(... * var(--ag-g))`，所以拖"玻璃强度"滑杆只是改一个 CSS 变量，不用重建样式表。
+
+极光是一个挂在 `body` 上的固定层（`#dsh-ag-bg`，`z-index:-1`）：三团径向渐变各自漂移 + 缓慢色相旋转，上面压一层 scrim 保证正文对比度，最上面是噪点。输入框走 `[class*="composerHero"] [class$="_card"]` 加 `backdrop-filter`，做真正的毛玻璃卡片。控件浮层是 `#dsh-ag-root`，`z-index: 2147483647`，固定挂在 `document.body` 上，所以不会被任何插件的浮层盖住。
 
 ### 故障排查
 

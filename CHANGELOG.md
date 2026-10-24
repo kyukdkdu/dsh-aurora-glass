@@ -3,6 +3,22 @@
 本文件记录 dsh-aurora-glass 的重要变更，采用简易维护格式（Keep a Changelog 风格）。
 All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a Changelog style).
 
+## [1.3.0] - 2026-10-24
+
+### Changed
+
+- **控件位置**：从右下角移到**左下角头像正上方**（`left:10px; bottom:184px`），缩成 34px 小圆钮，平时半透明，鼠标移上去才完全显形。
+- **最上层**：控件不再是插槽里的 React 节点，而是直接挂在 `document.body` 上的独立浮层，`z-index: 2147483647`，任何插件的 overlay 都盖不住它。
+- **零依赖**：`inject: []`，不再依赖 `slots` / `theme` / `react`。整个 UI 是原生 DOM，模块体里没有任何可能抛错的东西。
+- **背景真的在流动**：三团极光（`#dsh-ag-bg i`）各自以 34s / 44s / 54s 的节奏漂移 + 缩放，外加 72s 的 `hue-rotate` 色相往返，颜色会缓慢游走而不是静止。动效三档可切（关闭 / 柔和 / 丰富）。
+- **滑杆改成写 CSS 变量**：`--ag-g / --ag-blur / --ag-sat`，token 层的 alpha 用 `rgb(… / calc(… * var(--ag-g)))` 计算。拖滑杆不再重建样式表，跟手。
+- **对话框毛玻璃**：`[class*="composerHero"] [class$="_card"]` 加 `backdrop-filter: blur(20px)`、半透明底、内高光和聚焦光圈；输入框下方的渐隐也按主题重算。
+- 新增一层 scrim（暗色 26–40% / 浅色 8–18%），压住极光亮度，保证正文对比度。
+
+### Added
+
+- 面板关闭方式：点按钮、点面板外、按 Esc。
+
 ## [1.2.0] - 2026-10-24
 
 ### Fixed (critical)
