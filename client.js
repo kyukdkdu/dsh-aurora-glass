@@ -208,10 +208,10 @@ window.__ModuleLoader__.load({
       return `/* ${PKG} v${VERSION} — palette:${pal.id} */
 :root{
   --ag-g:.78; --ag-blur:30; --ag-sat:1.15; --ag-grain:1;
-  --ag-d1:34s; --ag-d2:44s; --ag-d3:54s;
+  --ag-d1:22s; --ag-d2:28s; --ag-d3:34s;
 }
 html.ag-m0 #${BG_ID} i{ animation:none !important; }
-html.ag-m2{ --ag-d1:18s; --ag-d2:24s; --ag-d3:30s; }
+html.ag-m2{ --ag-d1:12s; --ag-d2:15s; --ag-d3:18s; }
 
 /* ---- canvas -------------------------------------------------------- */
 html{
@@ -262,7 +262,7 @@ body[data-ds-dark-theme] #${BG_ID} .ag-scrim{
   background-image:${NOISE}; background-size:160px 160px;
   opacity:calc(.45 * var(--ag-grain)); mix-blend-mode:soft-light;
 }
-@keyframes ag-hue{ from{ filter:hue-rotate(-14deg) } to{ filter:hue-rotate(16deg) } }
+@keyframes ag-hue{ from{ filter:hue-rotate(-18deg) } to{ filter:hue-rotate(20deg) } }
 @keyframes ag-f1{
   from{ transform:translate3d(0,0,0) scale(1) }
   to{ transform:translate3d(11vmax,9vmax,0) scale(1.28) }
