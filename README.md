@@ -3,11 +3,12 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-1.7.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.8.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <p align="center">
   <img src="docs/preview-dark.png" alt="Aurora Glass 深色主题" width="780">
   <img src="docs/preview-silk.png" alt="丝绸背景" width="780">
+  <img src="docs/preview-metal.png" alt="液态金属背景" width="780">
   <img src="docs/preview-light.png" alt="浅色主题" width="780">
   <img src="docs/preview-panel.png" alt="设置面板" width="300">
 </p>
@@ -63,12 +64,22 @@
 - **随场景变色**：会话标题算出一个稳定的色相偏移，再叠加按时段的正弦偏移——切会话、过时间，主色都会慢慢变
 - **输入脉动**：焦点在输入框时背景亮一档
 
-### 背景：极光 / 丝绸
+### 背景：极光 / 丝绸 / 金属
 
 - **极光**：四团径向渐变，各自沿闭环路径漂移、缩放、旋转，纯 CSS `transform`，走合成器。
-- **丝绸**：一块 384×216 的 Canvas，七条渐变波带缓慢起伏，绘制时用 `ctx.filter: blur(1.6px)` 把硬边磨成缎面，再叠一道白色高光。30fps 上限、页面隐藏时停画、切走就 `cancelAnimationFrame`。
+- **丝绸**：一块 384×216 的 Canvas，七条渐变波带缓慢起伏，绘制时用 `ctx.filter: blur(1.6px)` 把硬边磨成缎面，再叠一道白色高光。
+- **金属**：同一套画布，换成黑银波带 + 硬高光，浅色下是拉丝银白。
 
-两者共用同一套色板和 `--ag-hue`，所以换色板、换会话，背景都会跟着变。
+画布背景有四个轻量交互（都在绘制循环里，不额外起动画）：
+
+| 交互 | 效果 |
+| --- | --- |
+| 鼠标划过 | 整张布被光标推开，波带局部下陷 |
+| 点击背景 | 荡开一圈椭圆涟漪，2.2 秒自然消散（最多 3 圈） |
+| 打字 | 流速 ×1.75，跟着手速走 |
+| 切换会话 | 整片背景涌一下 |
+
+三种背景共用同一套色板和 `--ag-hue`，所以换色板、换会话，背景都会跟着变。浅色模式用的是同一组颜色的**加深版**，不是靠透明度糊出来的粉彩。
 
 ### 性能
 

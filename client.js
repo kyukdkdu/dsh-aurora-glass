@@ -88,6 +88,7 @@ window.__ModuleLoader__.load({
         'bg.label': '背景',
         'bg.aurora': '极光',
         'bg.silk': '丝绸',
+        'bg.metal': '金属',
         'preset.default': '默认',
         'preset.mist': '轻雾',
         'preset.depth': '深空',
@@ -117,6 +118,7 @@ window.__ModuleLoader__.load({
         'bg.label': 'Backdrop',
         'bg.aurora': 'Aurora',
         'bg.silk': 'Silk',
+        'bg.metal': 'Metal',
         'preset.default': 'Default',
         'preset.mist': 'Mist',
         'preset.depth': 'Deep',
@@ -157,7 +159,7 @@ window.__ModuleLoader__.load({
       zh: {
         preset: '一键套一组参数。想快速换个感觉时用它，细调再去下面的滑杆。',
         palette: '极光的配色。深色和浅色各取一组，悬停色块可以直接预览。',
-        bg: '背景用柔和的光晕，还是用一层缓慢流动的丝绸。丝绸是低分辨率画布，很省。',
+        bg: '背景用柔和光晕、流动丝绸，还是液态金属。后两个是低分辨率画布，很省；点一下背景会荡开一圈。',
         glass: '表面有多透。100% 几乎全靠背景撑，0% 等于回到原生外观。',
         blur: '极光边缘的柔化程度，越大越朦胧。松手才生效，所以拖动不会卡。',
         saturation: '极光的鲜艳程度。往右更艳，往左偏灰。',
@@ -171,7 +173,7 @@ window.__ModuleLoader__.load({
       en: {
         preset: 'Applies a whole set of values at once. Use it to change the mood quickly.',
         palette: 'The aurora colours. Dark and light each pick their own; hover a swatch to preview.',
-        bg: 'Soft light blobs, or a slowly flowing silk sheet. Silk is a low-res canvas, so it is cheap.',
+        bg: 'Soft light blobs, flowing silk, or liquid metal. The last two are low-res canvases; click the backdrop for a ripple.',
         glass: 'How transparent the surfaces are. 100% leans on the background, 0% is the stock look.',
         blur: 'Softness of the aurora edge. Applied on release, so dragging stays smooth.',
         saturation: 'Colour intensity. Right is richer, left is greyer.',
@@ -229,15 +231,23 @@ window.__ModuleLoader__.load({
       const c1 = pal.rgb[0];
       const c2 = pal.rgb[1];
       const c3 = pal.rgb[2];
-      // Two-tone falloff with an off-centre core: rotation is visible, and the
-      // edge melts into the next palette hue instead of fading to grey.
+      const dim = (c, k) => `rgb(${Math.round(c[0] * k)},${Math.round(c[1] * k)},${Math.round(c[2] * k)})`;
+      // Colours live in custom properties so light mode can use deeper inks on
+      // its white canvas instead of the pale pastels alpha blending gives.
+      const mix = (v, pct) => `color-mix(in srgb, var(${v}) ${pct}%, transparent)`;
       const soft = (a, b) =>
-        `radial-gradient(circle at 44% 46%, ${rgbaOf(a, 0.96)} 0%, ${rgbaOf(a, 0.6)} 26%, ${rgbaOf(b, 0.26)} 50%, ${rgbaOf(b, 0)} 70%)`;
+        `radial-gradient(circle at 44% 46%, ${mix(a, 96)} 0%, ${mix(a, 60)} 26%, ${mix(b, 26)} 50%, ${mix(b, 0)} 70%)`;
 
       return `/* ${PKG} v${VERSION} — palette:${pal.id} */
 :root{
   --ag-g:.82; --ag-blur:34; --ag-sat:1.15; --ag-grain:1; --ag-hue:0deg;
   --ag-d1:11s; --ag-d2:14s; --ag-d3:18s;
+  --ag-c1:${solidOf(c1)}; --ag-c2:${solidOf(c2)}; --ag-c3:${solidOf(c3)};
+}
+/* Light mode gets the same strength as dark: the ink is deepened so it reads
+   on a white canvas instead of washing out to pastel. */
+body:not([data-ds-dark-theme]){
+  --ag-c1:${dim(c1, 0.7)}; --ag-c2:${dim(c2, 0.7)}; --ag-c3:${dim(c3, 0.7)};
 }
 html.ag-m0 #${BG_ID} i{ animation:none !important; }
 html.ag-m2{ --ag-d1:6s; --ag-d2:8s; --ag-d3:10s; }
@@ -298,25 +308,25 @@ body{
 }
 #${BG_ID} i:nth-of-type(1){
   width:62vmax; height:62vmax; left:-18%; top:-22%;
-  background:${soft(c1, c2)};
+  background:${soft("--ag-c1", "--ag-c2")};
   animation:ag-f1 var(--ag-d1) ease-in-out infinite;
 }
 #${BG_ID} i:nth-of-type(2){
   width:56vmax; height:56vmax; right:-16%; top:-18%;
-  background:${soft(c2, c3)};
+  background:${soft("--ag-c2", "--ag-c3")};
   animation:ag-f2 var(--ag-d2) ease-in-out infinite;
   animation-delay:-4s;
 }
 #${BG_ID} i:nth-of-type(3){
   width:66vmax; height:66vmax; left:-6%; bottom:-26%;
-  background:${soft(c3, c1)};
+  background:${soft("--ag-c3", "--ag-c1")};
   animation:ag-f3 var(--ag-d3) ease-in-out infinite;
   animation-delay:-9s;
 }
 /* the sidebar column gets its own slow glow so the workspace list is never flat */
 #${BG_ID} i:nth-of-type(4){
   width:46vmax; height:86vmax; left:-22%; top:0;
-  background:${soft(c2, c1)};
+  background:${soft("--ag-c2", "--ag-c1")};
   opacity:calc(.18 + .2 * var(--ag-g));
   animation:ag-f4 calc(var(--ag-d3) * 1.25) ease-in-out infinite;
   animation-delay:-7s;
@@ -329,15 +339,15 @@ body{
 #${BG_ID} .ag-scrim{
   position:absolute; inset:0; display:block; pointer-events:none;
   background:
-    radial-gradient(64% 58% at 52% 44%, rgb(248 250 255 / calc(.12 + .14 * var(--ag-g))), rgb(248 250 255 / 0) 80%),
-    rgb(248 250 255 / calc(.02 + .03 * var(--ag-g)));
+    radial-gradient(64% 58% at 52% 44%, rgb(248 250 255 / calc(.2 + .12 * var(--ag-g))), rgb(248 250 255 / 0) 80%),
+    rgb(248 250 255 / calc(.05 + .05 * var(--ag-g)));
   transition:opacity .6s ease;
 }
 body:not([data-ds-dark-theme]) #${BG_ID} i{ opacity:calc(.9 + .1 * var(--ag-g)) }
 body[data-ds-dark-theme] #${BG_ID} .ag-scrim{
   background:
-    radial-gradient(64% 58% at 52% 44%, rgb(4 6 12 / calc(.14 + .18 * var(--ag-g))), rgb(4 6 12 / 0) 82%),
-    rgb(4 6 12 / calc(.05 + .05 * var(--ag-g)));
+    radial-gradient(64% 58% at 52% 44%, rgb(4 6 12 / calc(.34 + .12 * var(--ag-g))), rgb(4 6 12 / 0) 82%),
+    rgb(4 6 12 / calc(.2 + .08 * var(--ag-g)));
 }
 html.ag-typing #${BG_ID} .ag-scrim{ opacity:.55 }
 #${BG_ID} .ag-grain{
@@ -383,40 +393,43 @@ html.ag-silk.ag-m0 #${SILK_ID}{ opacity:.9 }
 }
 
 /* ---- alias tokens, light ------------------------------------------- */
+/* bg-base is nearly nothing on purpose: the frame, the tab hosts and the
+   sidebar all paint it, and stacking it twice is exactly what made the panes
+   look like separate slabs. One continuous sheet instead. */
 body{
-  --dsw-alias-bg-base: rgb(247 249 254 / calc(.85 - .55 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-1: rgb(255 255 255 / calc(.62 + .22 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-2: rgb(255 255 255 / calc(.74 + .16 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-3: rgb(255 255 255 / calc(.86 + .1 * var(--ag-g))) !important;
+  --dsw-alias-bg-base: rgb(247 249 254 / calc(.02 + .05 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-1: rgb(255 255 255 / calc(.6 + .24 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-2: rgb(255 255 255 / calc(.72 + .18 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-3: rgb(255 255 255 / calc(.84 + .12 * var(--ag-g))) !important;
   --dsw-alias-bg-overlay: rgb(250 251 254 / calc(.99 - .02 * var(--ag-g))) !important;
   --dsw-alias-bg-module-platform: rgb(255 255 255 / calc(.58 + .28 * var(--ag-g))) !important;
   --dsw-alias-bg-multi-select: rgb(255 255 255 / calc(.62 + .24 * var(--ag-g))) !important;
   --dsw-alias-bg-mask-1: rgb(15 23 42 / .3) !important;
   --dsw-alias-bg-mask-2: rgb(15 23 42 / .18) !important;
-  --dsw-alias-border-l1: rgb(15 23 42 / .14) !important;
-  --dsw-alias-border-l2: rgb(15 23 42 / .11) !important;
-  --dsw-alias-border-l3: rgb(15 23 42 / .16) !important;
-  --dsw-alias-border-l4: rgb(15 23 42 / .2) !important;
-  --dsw-specific-sidebar-fill: rgb(255 255 255 / calc(.2 + .2 * var(--ag-g))) !important;
+  --dsw-alias-border-l1: rgb(15 23 42 / .15) !important;
+  --dsw-alias-border-l2: rgb(15 23 42 / .12) !important;
+  --dsw-alias-border-l3: rgb(15 23 42 / .17) !important;
+  --dsw-alias-border-l4: rgb(15 23 42 / .21) !important;
+  --dsw-specific-sidebar-fill: transparent !important;
   --dsw-alias-brand-primary: ${pal.brand.light} !important;
 }
 
 /* ---- alias tokens, dark -------------------------------------------- */
 body[data-ds-dark-theme]{
-  --dsw-alias-bg-base: rgb(11 13 22 / calc(.8 - .36 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-1: rgb(255 255 255 / calc(.08 + .06 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-2: rgb(255 255 255 / calc(.11 + .07 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-3: rgb(255 255 255 / calc(.14 + .08 * var(--ag-g))) !important;
+  --dsw-alias-bg-base: rgb(11 13 22 / calc(.02 + .05 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-1: rgb(255 255 255 / calc(.09 + .06 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-2: rgb(255 255 255 / calc(.12 + .07 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-3: rgb(255 255 255 / calc(.15 + .08 * var(--ag-g))) !important;
   --dsw-alias-bg-overlay: rgb(12 14 22 / calc(.995 - .01 * var(--ag-g))) !important;
-  --dsw-alias-bg-module-platform: rgb(255 255 255 / calc(.07 + .05 * var(--ag-g))) !important;
-  --dsw-alias-bg-multi-select: rgb(255 255 255 / calc(.1 + .05 * var(--ag-g))) !important;
+  --dsw-alias-bg-module-platform: rgb(255 255 255 / calc(.08 + .05 * var(--ag-g))) !important;
+  --dsw-alias-bg-multi-select: rgb(255 255 255 / calc(.11 + .05 * var(--ag-g))) !important;
   --dsw-alias-bg-mask-1: rgb(2 4 10 / .64) !important;
   --dsw-alias-bg-mask-2: rgb(2 4 10 / .42) !important;
-  --dsw-alias-border-l1: rgb(255 255 255 / calc(.12 + .06 * var(--ag-g))) !important;
-  --dsw-alias-border-l2: rgb(255 255 255 / calc(.09 + .04 * var(--ag-g))) !important;
-  --dsw-alias-border-l3: rgb(255 255 255 / calc(.15 + .06 * var(--ag-g))) !important;
-  --dsw-alias-border-l4: rgb(255 255 255 / calc(.19 + .07 * var(--ag-g))) !important;
-  --dsw-specific-sidebar-fill: rgb(255 255 255 / calc(.03 + .03 * var(--ag-g))) !important;
+  --dsw-alias-border-l1: rgb(255 255 255 / calc(.13 + .06 * var(--ag-g))) !important;
+  --dsw-alias-border-l2: rgb(255 255 255 / calc(.1 + .04 * var(--ag-g))) !important;
+  --dsw-alias-border-l3: rgb(255 255 255 / calc(.16 + .06 * var(--ag-g))) !important;
+  --dsw-alias-border-l4: rgb(255 255 255 / calc(.2 + .07 * var(--ag-g))) !important;
+  --dsw-specific-sidebar-fill: transparent !important;
   --dsw-alias-brand-primary: ${pal.brand.dark} !important;
 }
 
@@ -701,6 +714,10 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
     let silkRaf = 0;
     let silkT = 0;
     let silkLast = 0;
+    let silkSpeed = 1;
+    let silkBurst = 0;
+    let silkRipples = [];
+    const silkPointer = { x: -999, y: -999, active: false };
     let refs = {};
     let written = {};
     let rafPending = 0;
@@ -763,7 +780,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       });
       html.classList.toggle('ag-m0', !on || !state.aurora || state.motion === 'off');
       html.classList.toggle('ag-m2', on && state.aurora && state.motion === 'full');
-      html.classList.toggle('ag-silk', on && state.aurora && state.bgmode === 'silk');
+      html.classList.toggle('ag-silk', on && state.aurora && (state.bgmode === 'silk' || state.bgmode === 'metal'));
       if (bg) bg.style.display = on && state.aurora ? '' : 'none';
       syncSilk();
       updateHue();
@@ -941,7 +958,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         }, t('seg.motion.' + lv)),
       );
 
-      const bgButtons = ['aurora', 'silk'].map((mode) =>
+      const bgButtons = ['aurora', 'silk', 'metal'].map((mode) =>
         el('button', {
           class: 'ag-seg-btn',
           type: 'button',
@@ -1062,6 +1079,16 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       pointerX = e.clientX / w - 0.5;
       pointerY = e.clientY / h - 0.5;
 
+      // the canvas backdrop reacts to the cursor: the sheet is pushed away
+      if (silk && (state.bgmode === 'silk' || state.bgmode === 'metal')) {
+        const rect = silk.getBoundingClientRect ? silk.getBoundingClientRect() : null;
+        if (rect && rect.width > 0 && rect.height > 0) {
+          silkPointer.x = ((e.clientX - rect.left) / rect.width) * (silk.width || 384);
+          silkPointer.y = ((e.clientY - rect.top) / rect.height) * (silk.height || 216);
+          silkPointer.active = true;
+        }
+      }
+
       if (parallaxQueued) return;
       parallaxQueued = requestAnimationFrame(() => {
         parallaxQueued = 0;
@@ -1070,6 +1097,18 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
             'translate3d(' + (-pointerX * 16).toFixed(2) + 'px,' + (-pointerY * 16).toFixed(2) + 'px,0)';
         }
       });
+    }
+
+    function addRipple(clientX, clientY) {
+      if (!silk || !(state.bgmode === 'silk' || state.bgmode === 'metal')) return;
+      const rect = silk.getBoundingClientRect ? silk.getBoundingClientRect() : null;
+      if (!rect || !rect.width) return;
+      silkRipples.push({
+        x: ((clientX - rect.left) / rect.width) * (silk.width || 384),
+        y: ((clientY - rect.top) / rect.height) * (silk.height || 216),
+        t0: (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now()),
+      });
+      if (silkRipples.length > 3) silkRipples.shift();
     }
 
     function onFocusIn(e) {
@@ -1188,7 +1227,19 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       if (now - silkLast < 33) return;
       const dt = silkLast ? Math.min(80, now - silkLast) : 16;
       silkLast = now;
-      silkT += dt * 0.00035;
+
+      // speed: typing pushes it, a session switch surges it, then it settles
+      let typing = false;
+      try {
+        typing = document.documentElement.classList.contains('ag-typing');
+      } catch {
+        typing = false;
+      }
+      const target = 1 + (typing ? 0.75 : 0) + silkBurst * 2.2;
+      silkSpeed += (target - silkSpeed) * 0.06;
+      silkBurst *= 0.985;
+      if (silkBurst < 0.01) silkBurst = 0;
+      silkT += dt * 0.00035 * silkSpeed;
 
       const W = silk.width || 384;
       const H = silk.height || 216;
@@ -1199,14 +1250,24 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       } catch {
         dark = false;
       }
+      const metal = state.bgmode === 'metal';
+
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = dark ? '#070a12' : '#eef2f9';
+      ctx.fillStyle = metal ? (dark ? '#04050a' : '#e6eaf1') : dark ? '#070a12' : '#eef2f9';
       ctx.fillRect(0, 0, W, H);
+
+      // live ripples expire on their own
+      if (silkRipples.length) {
+        silkRipples = silkRipples.filter((r) => now - r.t0 < 2200);
+      }
 
       // Blur is applied at draw time on the small bitmap — cheap, and it is what
       // turns flat bands into satin.
-      ctx.filter = 'blur(1.6px)';
+      ctx.filter = metal ? 'blur(0.9px)' : 'blur(1.6px)';
       const cols = paletteOf(state.palette).rgb;
+      const px = silkPointer.x;
+      const py = silkPointer.y;
+
       for (let i = 0; i < 7; i += 1) {
         const a = cols[i % 3];
         const b = cols[(i + 1) % 3];
@@ -1215,9 +1276,27 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         const thick = H * (0.15 + 0.02 * i);
         const ph = i * 1.7;
         const sp = 1 + i * 0.12;
-        const wave = (x, off) =>
-          baseY + off + Math.sin(x * 0.012 + silkT * sp + ph) * amp +
-          Math.sin(x * 0.03 - silkT * 1.7 + ph * 1.4) * amp * 0.42;
+
+        const wave = (x, off) => {
+          let y = baseY + off +
+            Math.sin(x * 0.012 + silkT * sp + ph) * amp +
+            Math.sin(x * 0.03 - silkT * 1.7 + ph * 1.4) * amp * 0.42;
+          // pointer pushes the sheet away
+          if (silkPointer.active) {
+            const dx = x - px;
+            y += Math.exp(-(dx * dx) / 2400) * (py - y) * 0.16;
+          }
+          // click ripples
+          for (let k = 0; k < silkRipples.length; k += 1) {
+            const r = silkRipples[k];
+            const age = (now - r.t0) / 1000;
+            const front = age * 240;
+            const d = Math.abs(x - r.x);
+            const band = Math.exp(-Math.pow((d - front) / 80, 2));
+            if (band > 0.01) y += band * 22 * Math.max(0, 1 - age / 2.2) * (i % 2 ? 1 : -1);
+          }
+          return y;
+        };
 
         ctx.beginPath();
         for (let x = 0; x <= W; x += 6) {
@@ -1230,12 +1309,22 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         const g = ctx.createLinearGradient(0, baseY - amp, 0, baseY + thick + amp);
         const A = (al) => 'rgba(' + a[0] + ',' + a[1] + ',' + a[2] + ',' + al + ')';
         const B = (al) => 'rgba(' + b[0] + ',' + b[1] + ',' + b[2] + ',' + al + ')';
-        g.addColorStop(0, A(dark ? 0.08 : 0.06));
-        g.addColorStop(0.16, A(dark ? 0.62 : 0.52));
-        g.addColorStop(0.3, dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.72)');
-        g.addColorStop(0.52, B(dark ? 0.46 : 0.38));
-        g.addColorStop(0.82, B(dark ? 0.14 : 0.1));
-        g.addColorStop(1, A(0.04));
+        if (metal) {
+          // liquid-metal: dark troughs, a hard specular line, coloured body
+          g.addColorStop(0, dark ? 'rgba(2,3,7,0.72)' : 'rgba(120,132,150,0.5)');
+          g.addColorStop(0.18, A(dark ? 0.5 : 0.42));
+          g.addColorStop(0.3, dark ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.98)');
+          g.addColorStop(0.4, B(dark ? 0.44 : 0.4));
+          g.addColorStop(0.66, dark ? 'rgba(3,4,9,0.66)' : 'rgba(140,150,168,0.4)');
+          g.addColorStop(1, dark ? 'rgba(2,3,7,0.5)' : 'rgba(150,160,178,0.3)');
+        } else {
+          g.addColorStop(0, A(dark ? 0.08 : 0.06));
+          g.addColorStop(0.16, A(dark ? 0.62 : 0.52));
+          g.addColorStop(0.3, dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.72)');
+          g.addColorStop(0.52, B(dark ? 0.46 : 0.38));
+          g.addColorStop(0.82, B(dark ? 0.14 : 0.1));
+          g.addColorStop(1, A(0.04));
+        }
         ctx.fillStyle = g;
         ctx.fill();
 
@@ -1245,15 +1334,32 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           if (x === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }
-        ctx.strokeStyle = dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.65)';
-        ctx.lineWidth = 1.4;
+        ctx.strokeStyle = metal
+          ? dark ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.95)'
+          : dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.65)';
+        ctx.lineWidth = metal ? 1.8 : 1.4;
+        ctx.stroke();
+      }
+
+      // ripple rings, drawn on top so a click reads immediately
+      for (let k = 0; k < silkRipples.length; k += 1) {
+        const r = silkRipples[k];
+        const age = (now - r.t0) / 1000;
+        const rad = age * 240;
+        const fade = Math.max(0, 1 - age / 2.2);
+        if (fade <= 0) continue;
+        ctx.beginPath();
+        ctx.ellipse(r.x, r.y, rad, rad * 0.45, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = dark ? 'rgba(255,255,255,' + (0.28 * fade) + ')' : 'rgba(255,255,255,' + (0.7 * fade) + ')';
+        ctx.lineWidth = 2.4 * fade + 0.4;
         ctx.stroke();
       }
       ctx.filter = 'none';
     }
 
     function syncSilk() {
-      const on = !!state.enabled && !!state.aurora && state.bgmode === 'silk' && silkCtx;
+      const canvasMode = state.bgmode === 'silk' || state.bgmode === 'metal';
+      const on = !!state.enabled && !!state.aurora && canvasMode && silkCtx;
       if (on) {
         if (!silkRaf && typeof requestAnimationFrame === 'function') {
           silkLast = 0;
@@ -1347,6 +1453,10 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       bg = null;
       silk = null;
       silkCtx = null;
+      silkRipples = [];
+      silkBurst = 0;
+      silkSpeed = 1;
+      silkPointer.active = false;
       tipEl = null;
       refs = {};
       written = {};
@@ -1368,9 +1478,13 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           mount();
 
           const onDocDown = (e) => {
-            if (!root || root.getAttribute('data-open') !== '1') return;
-            if (root.contains(e.target)) return;
+            if (!root) return;
+            if (root.contains(e.target)) {
+              if (root.getAttribute('data-open') !== '1') return;
+              return;
+            }
             setOpen(false);
+            addRipple(e.clientX, e.clientY);
           };
           const onKey = (e) => {
             if (e.key === 'Escape') setOpen(false);
@@ -1389,7 +1503,12 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
             const titleNode = document.querySelector('title');
             if (titleNode && typeof MutationObserver === 'function') {
               titleObserver = new MutationObserver(() => {
-                sessionHue = hueFromTitle(String(document.title || ''));
+                const next = hueFromTitle(String(document.title || ''));
+                if (next !== sessionHue) {
+                  sessionHue = next;
+                  // a session switch makes the whole sheet surge once
+                  silkBurst = 1;
+                }
                 updateHue();
               });
               titleObserver.observe(titleNode, { childList: true, characterData: true, subtree: true });
