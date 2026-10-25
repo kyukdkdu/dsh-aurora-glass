@@ -36,7 +36,7 @@ window.__ModuleLoader__.load({
     const UI_STYLE_ID = 'dsh-aurora-glass-ui';
     const ROOT_ID = 'dsh-ag-root';
     const BG_ID = 'dsh-ag-bg';
-    const GLOW_ID = 'dsh-ag-glow';
+    const SILK_ID = 'dsh-ag-silk';
 
     /* ------------------------------------------------------------------ *
      * palettes & presets
@@ -51,10 +51,10 @@ window.__ModuleLoader__.load({
     ];
 
     const PRESETS = [
-      { id: 'default', key: 'preset.default', set: { glass: 0.82, blur: 34, saturation: 1.15, motion: 'soft', aurora: true, grain: true, tint: true } },
-      { id: 'mist', key: 'preset.mist', set: { glass: 0.92, blur: 52, saturation: 0.85, motion: 'off', aurora: true, grain: true, tint: true } },
-      { id: 'depth', key: 'preset.depth', set: { glass: 0.55, blur: 22, saturation: 1.3, motion: 'full', aurora: true, grain: true, tint: true } },
-      { id: 'pure', key: 'preset.pure', set: { glass: 0, blur: 0, saturation: 1, motion: 'off', aurora: false, grain: false, tint: false } },
+      { id: 'default', key: 'preset.default', set: { glass: 0.82, blur: 34, saturation: 1.15, motion: 'soft', aurora: true, grain: true, tint: true, bgmode: 'aurora' } },
+      { id: 'mist', key: 'preset.mist', set: { glass: 0.92, blur: 52, saturation: 0.85, motion: 'off', aurora: true, grain: true, tint: true, bgmode: 'aurora' } },
+      { id: 'depth', key: 'preset.depth', set: { glass: 0.55, blur: 22, saturation: 1.3, motion: 'full', aurora: true, grain: true, tint: true, bgmode: 'silk' } },
+      { id: 'pure', key: 'preset.pure', set: { glass: 0, blur: 0, saturation: 1, motion: 'off', aurora: false, grain: false, tint: false, bgmode: 'aurora' } },
     ];
 
     const DEFAULT_SETTINGS = {
@@ -68,6 +68,9 @@ window.__ModuleLoader__.load({
       grain: true,
       aurora: true,
       tint: true,
+      bgmode: 'aurora',
+      posX: null,
+      posY: null,
     };
 
     /* ------------------------------------------------------------------ *
@@ -82,6 +85,9 @@ window.__ModuleLoader__.load({
         'sec.palette': '色板',
         'sec.surface': '表面',
         'sec.look': '氛围',
+        'bg.label': '背景',
+        'bg.aurora': '极光',
+        'bg.silk': '丝绸',
         'preset.default': '默认',
         'preset.mist': '轻雾',
         'preset.depth': '深空',
@@ -108,6 +114,9 @@ window.__ModuleLoader__.load({
         'sec.palette': 'Palette',
         'sec.surface': 'Surface',
         'sec.look': 'Atmosphere',
+        'bg.label': 'Backdrop',
+        'bg.aurora': 'Aurora',
+        'bg.silk': 'Silk',
         'preset.default': 'Default',
         'preset.mist': 'Mist',
         'preset.depth': 'Deep',
@@ -148,6 +157,7 @@ window.__ModuleLoader__.load({
       zh: {
         preset: '一键套一组参数。想快速换个感觉时用它，细调再去下面的滑杆。',
         palette: '极光的配色。深色和浅色各取一组，悬停色块可以直接预览。',
+        bg: '背景用柔和的光晕，还是用一层缓慢流动的丝绸。丝绸是低分辨率画布，很省。',
         glass: '表面有多透。100% 几乎全靠背景撑，0% 等于回到原生外观。',
         blur: '极光边缘的柔化程度，越大越朦胧。松手才生效，所以拖动不会卡。',
         saturation: '极光的鲜艳程度。往右更艳，往左偏灰。',
@@ -161,6 +171,7 @@ window.__ModuleLoader__.load({
       en: {
         preset: 'Applies a whole set of values at once. Use it to change the mood quickly.',
         palette: 'The aurora colours. Dark and light each pick their own; hover a swatch to preview.',
+        bg: 'Soft light blobs, or a slowly flowing silk sheet. Silk is a low-res canvas, so it is cheap.',
         glass: 'How transparent the surfaces are. 100% leans on the background, 0% is the stock look.',
         blur: 'Softness of the aurora edge. Applied on release, so dragging stays smooth.',
         saturation: 'Colour intensity. Right is richer, left is greyer.',
@@ -310,34 +321,40 @@ body{
   animation:ag-f4 calc(var(--ag-d3) * 1.25) ease-in-out infinite;
   animation-delay:-7s;
 }
-#${BG_ID} .ag-vignette{
-  position:absolute; inset:0; display:block; pointer-events:none;
-  background:radial-gradient(120% 100% at 50% 0%, transparent 46%, rgb(0 0 0 / .18) 100%);
-  opacity:calc(.5 + .5 * var(--ag-g));
-}
+/* No vignette and no cursor-follow glow: both read as a dark rim that appears
+   out of nowhere when the pointer nears an edge, which felt detached. */
 /* Centre-weighted scrim: the content area stays calm so surfaces read as glass,
-   while the corners keep their colour. This is what makes the shell feel deep
-   instead of one flat wash of purple. */
+   while the corners keep their colour. Kept light — the shell is translucent on
+   purpose and the sidebar has to look like the same sheet of glass. */
 #${BG_ID} .ag-scrim{
   position:absolute; inset:0; display:block; pointer-events:none;
   background:
-    radial-gradient(64% 58% at 52% 44%, rgb(248 250 255 / calc(.24 + .2 * var(--ag-g))), rgb(248 250 255 / 0) 80%),
-    rgb(248 250 255 / calc(.04 + .05 * var(--ag-g)));
+    radial-gradient(64% 58% at 52% 44%, rgb(248 250 255 / calc(.12 + .14 * var(--ag-g))), rgb(248 250 255 / 0) 80%),
+    rgb(248 250 255 / calc(.02 + .03 * var(--ag-g)));
   transition:opacity .6s ease;
 }
-body:not([data-ds-dark-theme]) #${BG_ID} i{ opacity:calc(.78 + .22 * var(--ag-g)) }
-body:not([data-ds-dark-theme]) #${BG_ID} .ag-vignette{ opacity:.34 }
+body:not([data-ds-dark-theme]) #${BG_ID} i{ opacity:calc(.9 + .1 * var(--ag-g)) }
 body[data-ds-dark-theme] #${BG_ID} .ag-scrim{
   background:
-    radial-gradient(64% 58% at 52% 44%, rgb(4 6 12 / calc(.3 + .28 * var(--ag-g))), rgb(4 6 12 / 0) 82%),
-    rgb(4 6 12 / calc(.1 + .08 * var(--ag-g)));
+    radial-gradient(64% 58% at 52% 44%, rgb(4 6 12 / calc(.14 + .18 * var(--ag-g))), rgb(4 6 12 / 0) 82%),
+    rgb(4 6 12 / calc(.05 + .05 * var(--ag-g)));
 }
-html.ag-typing #${BG_ID} .ag-scrim{ opacity:.62 }
+html.ag-typing #${BG_ID} .ag-scrim{ opacity:.55 }
 #${BG_ID} .ag-grain{
   position:absolute; inset:0; display:block; pointer-events:none;
   background-image:${NOISE}; background-size:160px 160px;
   opacity:calc(.42 * var(--ag-grain)); mix-blend-mode:soft-light;
 }
+
+/* ---- silk backdrop -------------------------------------------------- */
+#${SILK_ID}{
+  position:absolute; inset:0; display:none; width:100%; height:100%;
+  object-fit:cover; pointer-events:none;
+  filter:saturate(var(--ag-sat)) hue-rotate(var(--ag-hue));
+}
+html.ag-silk #${BG_ID} i{ display:none }
+html.ag-silk #${SILK_ID}{ display:block }
+html.ag-silk.ag-m0 #${SILK_ID}{ opacity:.9 }
 
 /* closed loops with rotation — the off-centre core orbits, so motion reads
    even when the blob itself barely moves */
@@ -365,35 +382,22 @@ html.ag-typing #${BG_ID} .ag-scrim{ opacity:.62 }
   100%{ transform:translate3d(0,0,0) scale(1) rotate(360deg) }
 }
 
-/* pointer glow that follows the cursor inside the sidebar column */
-#${GLOW_ID}{
-  position:fixed; left:0; top:0; width:360px; height:360px; border-radius:50%;
-  pointer-events:none; z-index:-1; opacity:0;
-  background:radial-gradient(circle at 50% 50%, rgb(255 255 255 / .1), rgb(255 255 255 / 0) 66%);
-  transform:translate3d(-50%,-50%,0);
-  transition:opacity .35s ease;
-  will-change:transform, opacity;
-}
-body[data-ds-dark-theme] #${GLOW_ID}{
-  background:radial-gradient(circle at 50% 50%, rgb(160 190 255 / .13), rgb(160 190 255 / 0) 66%);
-}
-
 /* ---- alias tokens, light ------------------------------------------- */
 body{
-  --dsw-alias-bg-base: rgb(247 249 254 / calc(.86 - .46 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-1: rgb(255 255 255 / calc(.66 + .2 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-2: rgb(255 255 255 / calc(.78 + .14 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-3: rgb(255 255 255 / calc(.88 + .08 * var(--ag-g))) !important;
+  --dsw-alias-bg-base: rgb(247 249 254 / calc(.85 - .55 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-1: rgb(255 255 255 / calc(.62 + .22 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-2: rgb(255 255 255 / calc(.74 + .16 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-3: rgb(255 255 255 / calc(.86 + .1 * var(--ag-g))) !important;
   --dsw-alias-bg-overlay: rgb(250 251 254 / calc(.99 - .02 * var(--ag-g))) !important;
-  --dsw-alias-bg-module-platform: rgb(255 255 255 / calc(.62 + .26 * var(--ag-g))) !important;
-  --dsw-alias-bg-multi-select: rgb(255 255 255 / calc(.66 + .22 * var(--ag-g))) !important;
+  --dsw-alias-bg-module-platform: rgb(255 255 255 / calc(.58 + .28 * var(--ag-g))) !important;
+  --dsw-alias-bg-multi-select: rgb(255 255 255 / calc(.62 + .24 * var(--ag-g))) !important;
   --dsw-alias-bg-mask-1: rgb(15 23 42 / .3) !important;
   --dsw-alias-bg-mask-2: rgb(15 23 42 / .18) !important;
   --dsw-alias-border-l1: rgb(15 23 42 / .14) !important;
   --dsw-alias-border-l2: rgb(15 23 42 / .11) !important;
   --dsw-alias-border-l3: rgb(15 23 42 / .16) !important;
   --dsw-alias-border-l4: rgb(15 23 42 / .2) !important;
-  --dsw-specific-sidebar-fill: rgb(255 255 255 / calc(.3 + .22 * var(--ag-g))) !important;
+  --dsw-specific-sidebar-fill: rgb(255 255 255 / calc(.2 + .2 * var(--ag-g))) !important;
   --dsw-alias-brand-primary: ${pal.brand.light} !important;
 }
 
@@ -517,23 +521,26 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 
     const UI_CSS = `
 #${ROOT_ID}{
-  position:fixed; right:16px; top:96px; z-index:2147483647;
+  position:fixed; left:0; top:0; z-index:2147483647;
   display:flex; flex-direction:column; align-items:flex-end;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
   font-size:13px; line-height:1.45; color:#eef1f8; text-align:left;
   -webkit-font-smoothing:antialiased;
+  touch-action:none;
 }
 #${ROOT_ID} *{ box-sizing:border-box; }
+#${ROOT_ID}.ag-dragging #dsh-ag-btn{ cursor:grabbing; transform:scale(1.06); transition:transform .12s ease; }
 
 #dsh-ag-btn{
   width:36px; height:36px; padding:0; margin:0; border-radius:50%;
-  display:grid; place-items:center; cursor:pointer;
+  display:grid; place-items:center; cursor:grab;
   border:1px solid rgba(255,255,255,.26);
   background:linear-gradient(150deg,rgba(255,255,255,.22),rgba(255,255,255,.07));
   backdrop-filter:blur(10px) saturate(1.4); -webkit-backdrop-filter:blur(10px) saturate(1.4);
   color:#e6ecff; opacity:.62;
   box-shadow:0 6px 18px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.22);
   transition:opacity .25s ease, transform .38s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease;
+  touch-action:none;
 }
 #dsh-ag-btn:hover{ opacity:1; transform:scale(1.1) rotate(28deg); box-shadow:0 10px 26px rgba(0,0,0,.44), 0 0 0 6px rgba(143,176,255,.13), inset 0 1px 0 rgba(255,255,255,.3); }
 #dsh-ag-btn:active{ transform:scale(.92); transition-duration:.1s; }
@@ -553,6 +560,9 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
   box-shadow:0 26px 70px rgba(2,6,20,.68), 0 2px 10px rgba(2,6,20,.42), inset 0 1px 0 rgba(255,255,255,.07);
   display:none; text-align:left; isolation:isolate;
 }
+/* flip toward whichever side has room, so a dragged control never opens off-screen */
+#${ROOT_ID}.ag-up #dsh-ag-panel{ top:auto; bottom:48px; }
+#${ROOT_ID}.ag-flip #dsh-ag-panel{ right:auto; left:0; }
 #dsh-ag-panel::before{
   content:""; position:absolute; left:16px; right:16px; top:0; height:1px;
   background:linear-gradient(90deg, transparent, rgba(255,255,255,.34), transparent);
@@ -686,7 +696,11 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 
     let root = null;
     let bg = null;
-    let glow = null;
+    let silk = null;
+    let silkCtx = null;
+    let silkRaf = 0;
+    let silkT = 0;
+    let silkLast = 0;
     let refs = {};
     let written = {};
     let rafPending = 0;
@@ -749,8 +763,9 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       });
       html.classList.toggle('ag-m0', !on || !state.aurora || state.motion === 'off');
       html.classList.toggle('ag-m2', on && state.aurora && state.motion === 'full');
+      html.classList.toggle('ag-silk', on && state.aurora && state.bgmode === 'silk');
       if (bg) bg.style.display = on && state.aurora ? '' : 'none';
-      if (glow) glow.style.display = on && state.aurora && state.motion !== 'off' ? '' : 'none';
+      syncSilk();
       updateHue();
     }
 
@@ -926,6 +941,16 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         }, t('seg.motion.' + lv)),
       );
 
+      const bgButtons = ['aurora', 'silk'].map((mode) =>
+        el('button', {
+          class: 'ag-seg-btn',
+          type: 'button',
+          'data-bgmode': mode,
+          'data-tip': tip('bg'),
+          onClick: () => set({ bgmode: mode }),
+        }, t('bg.' + mode)),
+      );
+
       const sw = (key, label) => {
         const btn = el('button', {
           class: 'ag-switch',
@@ -957,6 +982,10 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         el('div', { class: 'ag-sec' }, [
           el('div', { class: 'ag-label', text: t('sec.look') }),
           el('div', { class: 'ag-row', style: 'margin-top:0' }, [
+            el('span', { text: t('bg.label') }),
+            el('div', { class: 'ag-seg', style: 'width:156px' }, bgButtons),
+          ]),
+          el('div', { class: 'ag-row' }, [
             el('span', { text: t('ctl.motion') }),
             el('div', { class: 'ag-seg', style: 'width:156px' }, segButtons),
           ]),
@@ -985,6 +1014,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       refs.presetChips = presetChips;
       refs.swatches = swatches;
       refs.segButtons = segButtons;
+      refs.bgButtons = bgButtons;
       return panel;
     }
 
@@ -998,6 +1028,9 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       });
       (refs.segButtons || []).forEach((node) => {
         node.classList.toggle('on', node.getAttribute('data-motion') === state.motion);
+      });
+      (refs.bgButtons || []).forEach((node) => {
+        node.classList.toggle('on', node.getAttribute('data-bgmode') === state.bgmode);
       });
       ['aurora', 'grain', 'tint', 'enabled'].forEach((key) => {
         const node = refs['sw-' + key];
@@ -1029,26 +1062,12 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       pointerX = e.clientX / w - 0.5;
       pointerY = e.clientY / h - 0.5;
 
-      // the sidebar column is roughly the left 260px; only light it up there
-      const inSidebar = e.clientX < 260;
-      if (inSidebar) {
-        glowX = e.clientX;
-        glowY = e.clientY;
-      }
-      if (inSidebar !== glowVisible && glow) {
-        glowVisible = inSidebar;
-        glow.style.opacity = inSidebar ? '1' : '0';
-      }
-
       if (parallaxQueued) return;
       parallaxQueued = requestAnimationFrame(() => {
         parallaxQueued = 0;
         if (bg) {
           bg.style.transform =
             'translate3d(' + (-pointerX * 16).toFixed(2) + 'px,' + (-pointerY * 16).toFixed(2) + 'px,0)';
-        }
-        if (glow && glowVisible) {
-          glow.style.transform = 'translate3d(' + (glowX - 180).toFixed(0) + 'px,' + (glowY - 180).toFixed(0) + 'px,0)';
         }
       });
     }
@@ -1072,6 +1091,184 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       }
     }
 
+    /* ---------------------------- position / drag ---------------------------- */
+
+    const BTN = 36;
+    let dragState = null;
+    let suppressClick = false;
+
+    function applyPosition() {
+      if (!root) return;
+      const w = window.innerWidth || 1280;
+      const h = window.innerHeight || 800;
+      let x;
+      let y;
+      if (state.posX === null || state.posX === undefined || state.posY === null || state.posY === undefined) {
+        x = w - 16 - BTN;
+        y = h - 80 - BTN;
+      } else {
+        x = clamp(state.posX, 8, w - BTN - 8);
+        y = clamp(state.posY, 8, h - BTN - 8);
+      }
+      root.style.left = Math.round(x) + 'px';
+      root.style.top = Math.round(y) + 'px';
+      root.style.right = 'auto';
+      root.style.bottom = 'auto';
+      // open the panel toward the roomier side
+      root.classList.toggle('ag-up', y > h * 0.55);
+      root.classList.toggle('ag-flip', x < 330);
+    }
+
+    function onBtnDown(e) {
+      if (!root || (e && e.button !== undefined && e.button !== 0)) return;
+      const rect = root.getBoundingClientRect ? root.getBoundingClientRect() : null;
+      dragState = {
+        sx: e.clientX,
+        sy: e.clientY,
+        ox: rect ? rect.left : parseFloat(root.style.left) || 0,
+        oy: rect ? rect.top : parseFloat(root.style.top) || 0,
+        moved: false,
+      };
+      try {
+        if (e.currentTarget && e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        /* capture is optional */
+      }
+      document.addEventListener('pointermove', onDragMove, true);
+      document.addEventListener('pointerup', onDragEnd, true);
+      document.addEventListener('pointercancel', onDragEnd, true);
+      if (e.preventDefault) e.preventDefault();
+    }
+
+    function onDragMove(e) {
+      if (!dragState) return;
+      const dx = e.clientX - dragState.sx;
+      const dy = e.clientY - dragState.sy;
+      if (!dragState.moved && Math.abs(dx) + Math.abs(dy) < 4) return;
+      dragState.moved = true;
+      if (root) root.classList.add('ag-dragging');
+      const w = window.innerWidth || 1280;
+      const h = window.innerHeight || 800;
+      const x = clamp(dragState.ox + dx, 8, w - BTN - 8);
+      const y = clamp(dragState.oy + dy, 8, h - BTN - 8);
+      if (root) {
+        root.style.left = Math.round(x) + 'px';
+        root.style.top = Math.round(y) + 'px';
+      }
+    }
+
+    function onDragEnd() {
+      document.removeEventListener('pointermove', onDragMove, true);
+      document.removeEventListener('pointerup', onDragEnd, true);
+      document.removeEventListener('pointercancel', onDragEnd, true);
+      if (!dragState) return;
+      const moved = dragState.moved;
+      dragState = null;
+      if (root) root.classList.remove('ag-dragging');
+      suppressClick = moved;
+      if (moved) {
+        state = { ...state, posX: parseFloat(root.style.left) || 0, posY: parseFloat(root.style.top) || 0 };
+        save();
+        applyPosition();
+      }
+    }
+
+    /* ---------------------------- silk backdrop ---------------------------- */
+
+    function silkDraw(now) {
+      silkRaf = requestAnimationFrame(silkDraw);
+      if (!silkCtx || !silk) return;
+      let hidden = false;
+      try {
+        hidden = document.hidden === true;
+      } catch {
+        hidden = false;
+      }
+      if (hidden) return;
+      if (now - silkLast < 33) return;
+      const dt = silkLast ? Math.min(80, now - silkLast) : 16;
+      silkLast = now;
+      silkT += dt * 0.00035;
+
+      const W = silk.width || 384;
+      const H = silk.height || 216;
+      const ctx = silkCtx;
+      let dark = false;
+      try {
+        dark = document.body.getAttribute('data-ds-dark-theme') !== null;
+      } catch {
+        dark = false;
+      }
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = dark ? '#070a12' : '#eef2f9';
+      ctx.fillRect(0, 0, W, H);
+
+      // Blur is applied at draw time on the small bitmap — cheap, and it is what
+      // turns flat bands into satin.
+      ctx.filter = 'blur(1.6px)';
+      const cols = paletteOf(state.palette).rgb;
+      for (let i = 0; i < 7; i += 1) {
+        const a = cols[i % 3];
+        const b = cols[(i + 1) % 3];
+        const amp = 8 + i * 3.4;
+        const baseY = H * (0.06 + i * 0.13);
+        const thick = H * (0.15 + 0.02 * i);
+        const ph = i * 1.7;
+        const sp = 1 + i * 0.12;
+        const wave = (x, off) =>
+          baseY + off + Math.sin(x * 0.012 + silkT * sp + ph) * amp +
+          Math.sin(x * 0.03 - silkT * 1.7 + ph * 1.4) * amp * 0.42;
+
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 6) {
+          const y = wave(x, 0);
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        for (let x = W; x >= 0; x -= 6) ctx.lineTo(x, wave(x, thick));
+        ctx.closePath();
+        const g = ctx.createLinearGradient(0, baseY - amp, 0, baseY + thick + amp);
+        const A = (al) => 'rgba(' + a[0] + ',' + a[1] + ',' + a[2] + ',' + al + ')';
+        const B = (al) => 'rgba(' + b[0] + ',' + b[1] + ',' + b[2] + ',' + al + ')';
+        g.addColorStop(0, A(dark ? 0.08 : 0.06));
+        g.addColorStop(0.16, A(dark ? 0.62 : 0.52));
+        g.addColorStop(0.3, dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.72)');
+        g.addColorStop(0.52, B(dark ? 0.46 : 0.38));
+        g.addColorStop(0.82, B(dark ? 0.14 : 0.1));
+        g.addColorStop(1, A(0.04));
+        ctx.fillStyle = g;
+        ctx.fill();
+
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 6) {
+          const y = wave(x, 0);
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.65)';
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+      }
+      ctx.filter = 'none';
+    }
+
+    function syncSilk() {
+      const on = !!state.enabled && !!state.aurora && state.bgmode === 'silk' && silkCtx;
+      if (on) {
+        if (!silkRaf && typeof requestAnimationFrame === 'function') {
+          silkLast = 0;
+          silkRaf = requestAnimationFrame(silkDraw);
+        }
+      } else if (silkRaf) {
+        try {
+          cancelAnimationFrame(silkRaf);
+        } catch {
+          /* ignore */
+        }
+        silkRaf = 0;
+      }
+    }
+
     /* ---------------------------- mount ---------------------------- */
 
     function mount() {
@@ -1079,22 +1276,24 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       if (stale) stale.remove();
       const staleBg = document.getElementById(BG_ID);
       if (staleBg) staleBg.remove();
-      const staleGlow = document.getElementById(GLOW_ID);
-      if (staleGlow) staleGlow.remove();
+
+      silk = el('canvas', { id: SILK_ID, 'aria-hidden': 'true', width: '384', height: '216' });
+      try {
+        silkCtx = typeof silk.getContext === 'function' ? silk.getContext('2d') : null;
+      } catch {
+        silkCtx = null;
+      }
 
       bg = el('div', { id: BG_ID, 'aria-hidden': 'true' }, [
+        silk,
         el('i'),
         el('i'),
         el('i'),
         el('i'),
-        el('span', { class: 'ag-vignette' }),
         el('span', { class: 'ag-scrim' }),
         el('span', { class: 'ag-grain' }),
       ]);
       document.body.appendChild(bg);
-
-      glow = el('div', { id: GLOW_ID, 'aria-hidden': 'true' });
-      document.body.appendChild(glow);
 
       const btn = el('button', {
         id: 'dsh-ag-btn',
@@ -1103,8 +1302,13 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         'aria-label': t('panel.toggle'),
         onClick: (e) => {
           e.stopPropagation();
+          if (suppressClick) {
+            suppressClick = false;
+            return;
+          }
           setOpen(root.getAttribute('data-open') !== '1');
         },
+        onPointerdown: onBtnDown,
       }, sparkle(17));
 
       root = el('div', { id: ROOT_ID, 'data-open': '0' }, [buildPanel(), btn]);
@@ -1121,18 +1325,28 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 
       written = {};
       sessionHue = hueFromTitle(String(document.title || ''));
+      applyPosition();
       applyPalette();
       syncUI();
     }
 
     function unmount() {
-      [ROOT_ID, BG_ID, GLOW_ID, 'dsh-ag-tip', STYLE_ID, UI_STYLE_ID].forEach((id) => {
+      [ROOT_ID, BG_ID, 'dsh-ag-tip', STYLE_ID, UI_STYLE_ID].forEach((id) => {
         const node = document.getElementById(id);
         if (node && node.parentNode) node.parentNode.removeChild(node);
       });
+      if (silkRaf) {
+        try {
+          cancelAnimationFrame(silkRaf);
+        } catch {
+          /* ignore */
+        }
+        silkRaf = 0;
+      }
       root = null;
       bg = null;
-      glow = null;
+      silk = null;
+      silkCtx = null;
       tipEl = null;
       refs = {};
       written = {};
@@ -1166,6 +1380,8 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           document.addEventListener('pointermove', onPointerMove, { passive: true });
           document.addEventListener('focusin', onFocusIn, true);
           document.addEventListener('focusout', onFocusOut, true);
+          const onResize = () => applyPosition();
+          window.addEventListener('resize', onResize);
 
           // per-session tint: the shell writes the session title into <title>
           let titleObserver = null;
@@ -1189,7 +1405,12 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
               document.removeEventListener('pointermove', onPointerMove);
               document.removeEventListener('focusin', onFocusIn, true);
               document.removeEventListener('focusout', onFocusOut, true);
+              document.removeEventListener('pointermove', onDragMove, true);
+              document.removeEventListener('pointerup', onDragEnd, true);
+              document.removeEventListener('pointercancel', onDragEnd, true);
+              window.removeEventListener('resize', onResize);
               document.documentElement.classList.remove('ag-typing');
+              document.documentElement.classList.remove('ag-silk');
               if (titleObserver) titleObserver.disconnect();
               if (rafPending) cancelAnimationFrame(rafPending);
               if (parallaxQueued) cancelAnimationFrame(parallaxQueued);

@@ -3,10 +3,12 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-1.6.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.7.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <p align="center">
   <img src="docs/preview-dark.png" alt="Aurora Glass 深色主题" width="780">
+  <img src="docs/preview-silk.png" alt="丝绸背景" width="780">
+  <img src="docs/preview-light.png" alt="浅色主题" width="780">
   <img src="docs/preview-panel.png" alt="设置面板" width="300">
 </p>
 
@@ -41,26 +43,32 @@
 
 ### 使用
 
-右上角有个小闪光按钮（平时半透明，鼠标移上去才显形），点开是设置面板：
+右下角有个小闪光按钮（平时半透明，鼠标移上去才显形），**按住可以拖到任意位置**，松手后记住坐标。点开是设置面板：
 
 | 分区 | 内容 |
 | --- | --- |
 | 预设 | 默认 / 轻雾 / 深空 / 原版观感 |
 | 色板 | Aurora / Ocean / Ember / Jade / Mono（悬停即可预览） |
 | 表面 | 玻璃强度、柔化、色彩三个滑杆 |
-| 氛围 | 动效（关 / 柔和 / 丰富）、极光背景、噪点、随场景变色、玻璃主题总开关 |
+| 氛围 | 背景（极光 / 丝绸）、动效（关 / 柔和 / 丰富）、极光背景、噪点、随场景变色、玻璃主题总开关 |
 
 每个控件都有悬停说明：鼠标停在预设、色板、滑杆或开关上，面板左侧会浮出一句话讲它做什么。
 
 设置存在 `localStorage` 的 `dsh-aurora-glass:settings:v2`，删掉这个键即恢复默认。
 "原版观感"把玻璃强度归零并关掉极光与噪点，等于临时回到原生外观。
-点面板外或按 Esc 关闭。
+点面板外或按 Esc 关闭。面板会根据控件位置自动向上或向左翻，拖到哪个角都能正常展开。
 
-除了手动调，还有三个自动行为：
+除了手动调，还有两个自动行为：
 
 - **随场景变色**：会话标题算出一个稳定的色相偏移，再叠加按时段的正弦偏移——切会话、过时间，主色都会慢慢变
 - **输入脉动**：焦点在输入框时背景亮一档
-- **侧栏微光**：鼠标在左侧 260px 内移动时，一层很淡的光晕跟着走
+
+### 背景：极光 / 丝绸
+
+- **极光**：四团径向渐变，各自沿闭环路径漂移、缩放、旋转，纯 CSS `transform`，走合成器。
+- **丝绸**：一块 384×216 的 Canvas，七条渐变波带缓慢起伏，绘制时用 `ctx.filter: blur(1.6px)` 把硬边磨成缎面，再叠一道白色高光。30fps 上限、页面隐藏时停画、切走就 `cancelAnimationFrame`。
+
+两者共用同一套色板和 `--ag-hue`，所以换色板、换会话，背景都会跟着变。
 
 ### 性能
 
