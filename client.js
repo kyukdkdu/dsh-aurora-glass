@@ -44,17 +44,18 @@ window.__ModuleLoader__.load({
 
     const PALETTES = [
       { id: 'aurora', label: 'Aurora', brand: { light: '#4763ff', dark: '#8fb0ff' }, rgb: [[96, 126, 255], [168, 85, 247], [236, 72, 153]] },
-      { id: 'ocean', label: 'Ocean', brand: { light: '#0b7bf1', dark: '#7cc4ff' }, rgb: [[34, 211, 238], [59, 130, 246], [16, 185, 129]] },
-      { id: 'ember', label: 'Ember', brand: { light: '#ea580c', dark: '#ffb27d' }, rgb: [[251, 146, 60], [244, 63, 94], [217, 70, 239]] },
-      { id: 'jade', label: 'Jade', brand: { light: '#059669', dark: '#6ee7b7' }, rgb: [[52, 211, 153], [45, 212, 191], [56, 189, 248]] },
+      { id: 'bloom', label: 'Bloom', brand: { light: '#e0348b', dark: '#ff9ccb' }, rgb: [[255, 64, 129], [255, 138, 76], [186, 85, 255]] },
+      { id: 'neon', label: 'Neon', brand: { light: '#0891b2', dark: '#67e8f9' }, rgb: [[34, 230, 255], [64, 120, 255], [160, 255, 120]] },
+      { id: 'pastel', label: 'Pastel', brand: { light: '#8b5cf6', dark: '#c4b5fd' }, rgb: [[196, 170, 255], [150, 235, 205], [255, 205, 180]] },
+      { id: 'dusk', label: 'Dusk', brand: { light: '#c2410c', dark: '#fdba74' }, rgb: [[255, 140, 80], [140, 70, 190], [60, 180, 180]] },
       { id: 'mono', label: 'Mono', brand: { light: '#4b5563', dark: '#cbd5e1' }, rgb: [[148, 163, 184], [203, 213, 225], [99, 102, 241]] },
     ];
 
     const PRESETS = [
-      { id: 'default', key: 'preset.default', set: { glass: 0.82, blur: 34, saturation: 1.15, motion: 'soft', aurora: true, grain: true, tint: true, bgmode: 'aurora' } },
-      { id: 'mist', key: 'preset.mist', set: { glass: 0.92, blur: 52, saturation: 0.85, motion: 'off', aurora: true, grain: true, tint: true, bgmode: 'aurora' } },
-      { id: 'depth', key: 'preset.depth', set: { glass: 0.55, blur: 22, saturation: 1.3, motion: 'full', aurora: true, grain: true, tint: true, bgmode: 'silk' } },
-      { id: 'pure', key: 'preset.pure', set: { glass: 0, blur: 0, saturation: 1, motion: 'off', aurora: false, grain: false, tint: false, bgmode: 'aurora' } },
+      { id: 'default', key: 'preset.default', set: { glass: 0.82, blur: 34, saturation: 1.15, motion: 'soft', aurora: true, grain: true, tint: true } },
+      { id: 'clear', key: 'preset.clear', set: { glass: 1, blur: 46, saturation: 1.05, motion: 'soft', aurora: true, grain: false, tint: true } },
+      { id: 'rich', key: 'preset.rich', set: { glass: 0.62, blur: 24, saturation: 1.3, motion: 'full', aurora: true, grain: true, tint: true } },
+      { id: 'stock', key: 'preset.stock', set: { glass: 0, blur: 0, saturation: 1, motion: 'off', aurora: false, grain: false, tint: false } },
     ];
 
     const DEFAULT_SETTINGS = {
@@ -87,18 +88,17 @@ window.__ModuleLoader__.load({
         'sec.look': '动效',
         'bg.label': '背景',
         'bg.aurora': '极光',
-        'bg.silk': '丝绸',
-        'bg.ink': '墨流',
-        'bg.construct': '构成',
-        'bg.glass': '玻璃',
-        'bg.organic': '有机',
-        'bg.ascii': 'ASCII',
-        'bg.relief': '光雕',
-        'bg.minimal': '极简',
-        'preset.default': '默认',
-        'preset.mist': '轻雾',
-        'preset.depth': '深空',
-        'preset.pure': '原版观感',
+        'bg.bloom': '超绽放',
+        'bg.pixel': '像素',
+        'bg.future': '新未来',
+        'bg.surreal': '超现实',
+        'bg.bio': '生物形态',
+        'bg.concept': '概念艺术',
+        'bg.dream': '梦核',
+        'preset.default': '标准',
+        'preset.clear': '通透',
+        'preset.rich': '浓郁',
+        'preset.stock': '原版',
         'ctl.glass': '玻璃强度',
         'ctl.blur': '柔化',
         'ctl.saturation': '色彩',
@@ -123,18 +123,17 @@ window.__ModuleLoader__.load({
         'sec.look': 'Motion',
         'bg.label': 'Backdrop',
         'bg.aurora': 'Aurora',
-        'bg.silk': 'Silk',
-        'bg.ink': 'Ink',
-        'bg.construct': 'Construct',
-        'bg.glass': 'Glass',
-        'bg.organic': 'Organic',
-        'bg.ascii': 'ASCII',
-        'bg.relief': 'Relief',
-        'bg.minimal': 'Minimal',
-        'preset.default': 'Default',
-        'preset.mist': 'Mist',
-        'preset.depth': 'Deep',
-        'preset.pure': 'Original',
+        'bg.bloom': 'Bloom',
+        'bg.pixel': 'Pixel',
+        'bg.future': 'Future',
+        'bg.surreal': 'Surreal',
+        'bg.bio': 'Bio',
+        'bg.concept': 'Concept',
+        'bg.dream': 'Dream',
+        'preset.default': 'Standard',
+        'preset.clear': 'Clear',
+        'preset.rich': 'Rich',
+        'preset.stock': 'Stock',
         'ctl.glass': 'Glass',
         'ctl.blur': 'Softness',
         'ctl.saturation': 'Color',
@@ -172,14 +171,13 @@ window.__ModuleLoader__.load({
         preset: '一键套一组参数。想快速换个感觉时用它，细调再去下面的滑杆。',
         palette: '极光的配色。深色和浅色各取一组，悬停色块可以直接预览。',
         'bg.aurora': '四团光晕在四角缓慢漂移、旋转，最轻，纯 CSS。',
-        'bg.silk': '七条缎带横向流动，边缘磨砂、带一道高光，像被风吹起的绸子。',
-        'bg.ink': '墨团缓慢下沉、扩散、互相晕开，深色下最沉。',
-        'bg.construct': '构成主义：圆、斜杠、方块压在一张纸上，整组缓慢旋转，鼠标让每块错位。',
-        'bg.glass': '玻璃态：五块磨砂玻璃浮在彩色光斑上，鼠标靠近会把最近那块推开。',
-        'bg.organic': '人工自然：三丛枝状结构从底部生长，鼠标经过会把枝叶拨开。',
-        'bg.ascii': 'ASCII：一张干涉波场用字符画出来，鼠标是一枚透镜，靠近会扭曲字阵。',
-        'bg.glitch': '故障手作：色带、扫描线、通道分离，鼠标快速划动会触发一次撕裂。',
-        'bg.minimal': '极简：一根线加一个点，鼠标经过线会弯一下，点哪里点就落到哪里。',
+        'bg.bloom': '超绽放：十四片花瓣从中心向外绽放，鼠标就是花心，点一下整朵炸开。',
+        'bg.pixel': '像素美学：32×18 的粗像素格随波场明灭，鼠标是一支笔刷，靠近的格子会亮起来。',
+        'bg.future': '新未来主义：细密的横向光线 + 一条扫过全屏的扫描带，鼠标经过时光线会向你弯。',
+        'bg.surreal': '超现实主义：黄昏天空、低垂的太阳、漂浮的拱形，鼠标移动时三层景深各自错开。',
+        'bg.bio': '生物形态：六团软体缓慢游动、互相融合，鼠标像一根探针，会把它们推开。',
+        'bg.concept': '概念艺术：三层山脊 + 雾气 + 一束天光，鼠标就是光源，光束和雾会跟着走。',
+        'bg.dream': '梦核：粉紫渐变、发光球体、悬浮的空画框，光球会慢慢向你靠拢。',
         glass: '表面有多透。100% 几乎全靠背景撑，0% 等于回到原生外观。',
         blur: '极光边缘的柔化程度，越大越朦胧。松手才生效，所以拖动不会卡。',
         saturation: '极光的鲜艳程度。往右更艳，往左偏灰。',
@@ -194,14 +192,13 @@ window.__ModuleLoader__.load({
         preset: 'Applies a whole set of values at once. Use it to change the mood quickly.',
         palette: 'The aurora colours. Dark and light each pick their own; hover a swatch to preview.',
         'bg.aurora': 'Four soft glows drifting and rotating at the corners — the lightest, pure CSS.',
-        'bg.silk': 'Seven satin bands flowing sideways, soft edges with a highlight, like silk in a breeze.',
-        'bg.ink': 'Ink clouds sinking, spreading and bleeding into each other. Heaviest in dark mode.',
-        'bg.construct': 'Constructivism: circles, bars and blocks on one sheet, slowly rotating; the pointer offsets each piece.',
-        'bg.glass': 'Glassmorphism: five frosted panes over colour blooms; the nearest pane is pushed away by the pointer.',
-        'bg.organic': 'Artificial nature: three branching systems grow from the floor; the pointer parts the canopy.',
-        'bg.ascii': 'ASCII: an interference field drawn as characters; the pointer is a lens that warps the grid.',
-        'bg.relief': 'Relief: volumetric rays from the top-right across carved grooves; the pointer is the light.',
-        'bg.minimal': 'Minimal: one line and one dot; the line bends near the pointer, a click drops the dot.',
+        'bg.bloom': 'Superbloom: fourteen petals open from the centre; the pointer is the core, a click makes it burst.',
+        'bg.pixel': 'Pixel: a 32x18 grid pulsing with a wave field; the pointer is a brush that lights up nearby cells.',
+        'bg.future': 'Neo-futurism: fine horizontal light lines and a scanner band; lines bend toward the pointer.',
+        'bg.surreal': 'Surrealism: dusk sky, a low sun and floating arches; three parallax depths follow the pointer.',
+        'bg.bio': 'Biomorphic: six soft bodies drifting and merging; the pointer acts like a probe that pushes them apart.',
+        'bg.concept': 'Concept art: three ridges, drifting fog and a shaft of light; the pointer is the light source.',
+        'bg.dream': 'Dreamcore: pastel gradient, glowing orbs and empty floating frames; orbs drift toward the pointer.',
         glass: 'How transparent the surfaces are. 100% leans on the background, 0% is the stock look.',
         blur: 'Softness of the aurora edge. Applied on release, so dragging stays smooth.',
         saturation: 'Colour intensity. Right is richer, left is greyer.',
@@ -480,12 +477,9 @@ body:not([data-ds-dark-theme]) [class*="Popover"]{
 }
 
 /* ---- composer: frosted glass card ----------------------------------- */
-[class*="composerSeat"]{
-  background:linear-gradient(180deg, rgb(8 10 18 / 0) 0px, rgb(8 10 18 / calc(.22 + .28 * var(--ag-g))) 48px) !important;
-}
-body:not([data-ds-dark-theme]) [class*="composerSeat"]{
-  background:linear-gradient(180deg, rgb(238 242 249 / 0) 0px, rgb(238 242 249 / calc(.3 + .32 * var(--ag-g))) 48px) !important;
-}
+/* No background on the seat itself: it used to paint a dark gradient band
+   that ended in a hard edge and read as a separate block at the bottom of
+   the window. The card below carries the glass, the seat stays transparent. */
 [class*="composerHero"] [class$="_card"],
 [class*="composerSeat"] [class$="_card"]{
   background:rgb(255 255 255 / calc(.05 + .07 * var(--ag-g))) !important;
@@ -505,6 +499,21 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
   background:rgb(255 255 255 / calc(.56 + .28 * var(--ag-g))) !important;
   border-color:rgb(15 23 42 / .1) !important;
   box-shadow:0 16px 42px rgb(23 33 64 / .12), inset 0 1px 0 rgb(255 255 255 / .7) !important;
+}
+
+/* ---- global hover feedback ------------------------------------------ *
+ * One rule for every control in the app, so nothing feels dead under the
+ * cursor. brightness() only runs on state change, never per frame. */
+button,[role="button"],[role="menuitem"],[role="tab"],[role="option"],[role="switch"],a{
+  transition:filter .16s ease;
+}
+button:hover,[role="button"]:hover,[role="menuitem"]:hover,
+[role="tab"]:hover,[role="option"]:hover,[role="switch"]:hover,a:hover{
+  filter:brightness(1.13) saturate(1.05);
+}
+button:active,[role="button"]:active,[role="menuitem"]:active,
+[role="tab"]:active,[role="option"]:active,[role="switch"]:active,a:active{
+  filter:brightness(.93);
 }
 `;
     }
@@ -930,7 +939,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 
       const presetChips = PRESETS.map((p) =>
         el('button', {
-          class: 'ag-chip',
+          class: 'ag-seg-btn',
           type: 'button',
           'data-preset': p.id,
           'data-tip': tip('preset'),
@@ -996,7 +1005,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         }, t('seg.motion.' + lv)),
       );
 
-      const bgChips = ['aurora', 'silk', 'ink', 'relief', 'glass', 'organic'].map((mode) =>
+      const bgChips = ['aurora', 'bloom', 'pixel', 'future', 'surreal', 'bio', 'concept', 'dream'].map((mode) =>
         el('button', {
           class: 'ag-chip ag-chip-sm',
           type: 'button',
@@ -1022,7 +1031,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         head,
         el('div', { class: 'ag-sec' }, [
           el('div', { class: 'ag-label', text: t('sec.preset') }),
-          el('div', { class: 'ag-chips' }, presetChips),
+          el('div', { class: 'ag-seg' }, presetChips),
         ]),
         el('div', { class: 'ag-sec' }, [
           el('div', { class: 'ag-label', text: t('sec.palette') }),
@@ -1142,10 +1151,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       const cy = ((clientY - rect.top) / rect.height) * (silk.height || 216);
 
       // each backdrop answers a click in its own way
-      if (state.bgmode === 'minimal') {
-        dotX = Math.max(0.05, Math.min(0.95, cx / (silk.width || 384)));
-        return;
-      }
+      if (state.bgmode === 'bloom') bloomBurst = 1;
       silkRipples.push({ x: cx, y: cy, t0: now0() });
       if (silkRipples.length > 3) silkRipples.shift();
     }
@@ -1303,17 +1309,15 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       if (silkRipples.length) silkRipples = silkRipples.filter((r) => now - r.t0 < 2200);
 
       const mode = state.bgmode;
-      if (mode === 'ink') drawPlumes(ctx, W, H, dark);
-      else if (mode === 'construct') drawConstruct(ctx, W, H, dark);
-      else if (mode === 'glass') drawGlass(ctx, W, H, dark);
-      else if (mode === 'organic') drawOrganic(ctx, W, H, dark);
-      else if (mode === 'ascii') drawAscii(ctx, W, H, dark);
-      else if (mode === 'relief') drawRelief(ctx, W, H, dark);
-      else if (mode === 'minimal') drawMinimal(ctx, W, H, dark);
-      else drawWaves(ctx, W, H, dark);
+      if (mode === 'bloom') drawBloom(ctx, W, H, dark);
+      else if (mode === 'pixel') drawPixel(ctx, W, H, dark);
+      else if (mode === 'future') drawFuture(ctx, W, H, dark);
+      else if (mode === 'surreal') drawSurreal(ctx, W, H, dark);
+      else if (mode === 'bio') drawBio(ctx, W, H, dark);
+      else if (mode === 'concept') drawConcept(ctx, W, H, dark);
+      else if (mode === 'dream') drawDream(ctx, W, H, dark);
 
-      // ripple rings only make sense on the fluid backdrops
-      if (mode === 'silk' || mode === 'ink') drawRippleRings(ctx, dark, now);
+      drawRippleRings(ctx, dark, now);
       ctx.filter = 'none';
     }
 
@@ -1332,575 +1336,353 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       }
     }
 
-    /* ---- ink: plumes made of soft blobs ------------------------------- */
+    /* ---- bloom: superbloom, petals bursting from a moving core -------- */
 
-    const PLUMES = (() => {
-      const list = [];
-      let seed = 20261025;
-      const rnd = () => {
-        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-        return seed / 0x7fffffff;
-      };
-      for (let i = 0; i < 16; i += 1) {
-        list.push({
-          x: rnd(),
-          y: rnd(),
-          r: 0.1 + rnd() * 0.22,
-          vx: (rnd() - 0.5) * 0.05,
-          vy: (rnd() - 0.5) * 0.05,
-          ph: rnd() * 6.28,
-          tone: i % 3,
-          wob: 0.4 + rnd() * 0.8,
-        });
-      }
-      return list;
-    })();
+    let bloomBurst = 0;
 
-    function drawPlumes(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#04060c' : '#eef2f9';
+    function drawBloom(ctx, W, H, dark) {
+      const g0 = ctx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, W * 0.72);
+      g0.addColorStop(0, dark ? '#1b0f24' : '#fff3f9');
+      g0.addColorStop(1, dark ? '#08060d' : '#f2edfb');
+      ctx.fillStyle = g0;
       ctx.fillRect(0, 0, W, H);
-      ctx.filter = 'blur(3.2px)';
 
       const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 26;
-      const px = silkPointer.active ? silkPointer.x : -9999;
-      const py = silkPointer.active ? silkPointer.y : -9999;
+      const t = silkT * 9;
+      const cx = silkPointer.active ? silkPointer.x : W * 0.5;
+      const cy = silkPointer.active ? silkPointer.y : H * 0.5;
+      bloomBurst *= 0.93;
 
-      for (let i = 0; i < PLUMES.length; i += 1) {
-        const p = PLUMES[i];
-        // slow swirl + a downward drift: ink sinks
-        let x = (p.x + Math.sin(t * 0.11 * p.wob + p.ph) * 0.16 + p.vx * t * 0.4) % 1.2;
-        let y = (p.y + Math.cos(t * 0.09 * p.wob + p.ph * 1.7) * 0.14 + p.vy * t * 0.35) % 1.2;
-        if (x < 0) x += 1.2;
-        if (y < 0) y += 1.2;
-
-        let cx = x * W;
-        let cy = y * H;
-        const rad = p.r * (0.7 + 0.3 * Math.sin(t * 0.13 + p.ph)) * H * 0.72;
-        const c = cols[p.tone];
-
-        // pointer pushes the cloud aside
-        if (px > -999) {
-          const dx = cx - px;
-          const dy = cy - py;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < 9000) {
-            const push = (1 - d2 / 9000) * 26;
-            const d = Math.sqrt(d2) || 1;
-            cx += (dx / d) * push;
-            cy += (dy / d) * push;
-          }
-        }
-
-        // a plume is three lobes strung along its drift direction, so it reads
-        // as ink with tendrils rather than one round blob
-        const ang = p.ph + t * 0.05 * p.wob;
-        const dirX = Math.cos(ang) * -0.5;
-        const dirY = Math.sin(ang);
-        for (let k = 0; k < 3; k += 1) {
-          const spread = rad * (0.15 + k * 0.55);
-          const bx = cx + dirX * spread;
-          const by = cy + dirY * spread;
-          const br = rad * (1 - k * 0.26);
-          if (br <= 0.5) continue;
-          const alpha = (dark ? 0.62 : 0.52) * (1 - k * 0.24);
-          const g = ctx.createRadialGradient(bx, by, 0, bx, by, br);
-          g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')');
-          g.addColorStop(0.5, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha * 0.42 + ')');
-          g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
-          ctx.fillStyle = g;
-          ctx.beginPath();
-          ctx.arc(bx, by, br, 0, Math.PI * 2);
-          ctx.fill();
-        }
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.filter = 'blur(2px)';
+      for (let i = 0; i < 16; i += 1) {
+        const a = (i / 16) * Math.PI * 2 + t * 0.22;
+        const len = (0.14 + 0.07 * Math.sin(t * 1.2 + i)) * W * (1 + bloomBurst * 0.6);
+        const wid = 5 + 4 * Math.sin(t * 0.85 + i * 1.7);
+        const c = cols[i % 3];
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(a);
+        const g = ctx.createLinearGradient(0, 0, len, 0);
+        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.5 : 0.42) + ')');
+        g.addColorStop(0.6, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.18 : 0.14) + ')');
+        g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.ellipse(len * 0.5, 0, len * 0.5, wid, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       }
+      const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * (0.1 + bloomBurst * 0.1));
+      core.addColorStop(0, 'rgba(255,255,255,' + (dark ? 0.5 : 0.75) + ')');
+      core.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = core;
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalCompositeOperation = 'source-over';
     }
 
-    /* ---- constructivism: bold flat geometry --------------------------- */
+    /* ---- pixel: chunky grid with a brush that follows the pointer ----- */
 
-    const BARS = (() => {
-      const list = [];
-      let seed = 918273;
-      const rnd = () => {
-        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-        return seed / 0x7fffffff;
-      };
-      for (let i = 0; i < 7; i += 1) {
-        list.push({
-          kind: i % 3,
-          x: 0.12 + rnd() * 0.76,
-          y: 0.14 + rnd() * 0.7,
-          s: 0.1 + rnd() * 0.26,
-          rot: rnd() * Math.PI,
-          tone: i % 3,
-          depth: 0.3 + rnd() * 0.9,
-        });
-      }
-      return list;
-    })();
-
-    function drawConstruct(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#0c0a09' : '#f1eee7';
+    function drawPixel(ctx, W, H, dark) {
+      ctx.fillStyle = dark ? '#0a0a12' : '#f2f4f8';
       ctx.fillRect(0, 0, W, H);
       ctx.filter = 'none';
 
       const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 6;
+      const t = silkT * 7;
+      const CX = 32;
+      const CY = 18;
+      const cw = W / CX;
+      const ch = H / CY;
+      const px = silkPointer.active ? silkPointer.x : -999;
+      const py = silkPointer.active ? silkPointer.y : -999;
+
+      for (let y = 0; y < CY; y += 1) {
+        for (let x = 0; x < CX; x += 1) {
+          const v = Math.sin(x * 1.55 + t * 1.4) * 0.5 + Math.cos(y * 1.35 - t * 1.1) * 0.5;
+          const k = (v + 1) / 2;
+          const d = Math.sqrt(Math.pow(x * cw + cw / 2 - px, 2) + Math.pow(y * ch + ch / 2 - py, 2));
+          const near = d < 34 ? 1 - d / 34 : 0;
+          if (k < 0.52 && near < 0.12) continue;
+          const c = cols[Math.min(2, Math.floor(k * 3))];
+          const a = Math.min(1, 0.03 + k * 0.2 + near * 0.4);
+          ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
+          ctx.fillRect(x * cw + 0.5, y * ch + 0.5, cw - 1, ch - 1);
+        }
+      }
+    }
+
+    /* ---- future: neo-futurist lines and a scanner --------------------- */
+
+    function drawFuture(ctx, W, H, dark) {
+      const g0 = ctx.createLinearGradient(0, 0, 0, H);
+      g0.addColorStop(0, dark ? '#070a14' : '#eef2fa');
+      g0.addColorStop(1, dark ? '#03050b' : '#e2e8f4');
+      ctx.fillStyle = g0;
+      ctx.fillRect(0, 0, W, H);
+
+      const cols = paletteOf(state.palette).rgb;
+      const t = silkT * 5;
+      const px = silkPointer.active ? silkPointer.x : -9999;
+      const py = silkPointer.active ? silkPointer.y : H * 0.5;
+
+      ctx.filter = 'blur(0.6px)';
+      for (let i = 0; i < 16; i += 1) {
+        const y0 = H * (0.08 + i * 0.058);
+        const c = cols[i % 3];
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 12) {
+          let y = y0 + Math.sin(x * 0.01 + t + i * 0.6) * 2.5;
+          if (px > -9999) {
+            const dx = x - px;
+            y += Math.exp(-(dx * dx) / 3000) * (py - y) * 0.1;
+          }
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.1 + (i % 4) * 0.06 : 0.14 + (i % 4) * 0.06) + ')';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // the scanner: a bright band sweeping down, plus its reflection
+      const sy = ((t * 26) % (H + 60)) - 30;
+      const gs = ctx.createLinearGradient(0, sy - 26, 0, sy + 26);
+      gs.addColorStop(0, 'rgba(255,255,255,0)');
+      gs.addColorStop(0.5, dark ? 'rgba(180,220,255,0.22)' : 'rgba(90,140,220,0.18)');
+      gs.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = gs;
+      ctx.fillRect(0, sy - 26, W, 52);
+
+      // a horizon arc that brightens near the pointer
+      ctx.beginPath();
+      ctx.ellipse(W * 0.5, H * 1.15, W * 0.55, H * 0.55, 0, Math.PI, Math.PI * 2);
+      ctx.strokeStyle = dark ? 'rgba(255,255,255,0.16)' : 'rgba(30,50,90,0.16)';
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+    }
+
+    /* ---- surreal: floating forms over a dusk gradient ----------------- */
+
+    function drawSurreal(ctx, W, H, dark) {
+      const sky = ctx.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0, dark ? '#241536' : '#f6d9c8');
+      sky.addColorStop(0.55, dark ? '#3a1f3d' : '#e8b7a8');
+      sky.addColorStop(1, dark ? '#0b0a14' : '#c9a3a8');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, W, H);
+
+      const cols = paletteOf(state.palette).rgb;
+      const t = silkT * 2.4;
       const px = silkPointer.active ? silkPointer.x / W - 0.5 : 0;
       const py = silkPointer.active ? silkPointer.y / H - 0.5 : 0;
 
-      ctx.save();
-      ctx.translate(W * 0.5 + px * 26, H * 0.5 + py * 18);
-      ctx.rotate(Math.sin(t * 0.12) * 0.06);
-      ctx.translate(-W * 0.5, -H * 0.5);
+      // a low sun disc
+      const sx = W * 0.5 + px * 14;
+      const sy = H * 0.62 + py * 8;
+      ctx.filter = 'blur(3px)';
+      const sun = ctx.createRadialGradient(sx, sy, 0, sx, sy, W * 0.16);
+      sun.addColorStop(0, 'rgba(255,225,190,' + (dark ? 0.5 : 0.9) + ')');
+      sun.addColorStop(1, 'rgba(255,200,170,0)');
+      ctx.fillStyle = sun;
+      ctx.fillRect(0, 0, W, H);
 
-      for (let i = 0; i < BARS.length; i += 1) {
-        const b = BARS[i];
-        const c = cols[b.tone];
-        const cx = b.x * W + px * 34 * b.depth + Math.sin(t * 0.4 + i) * 3;
-        const cy = b.y * H + py * 22 * b.depth + Math.cos(t * 0.33 + i) * 3;
-        const s = b.s * Math.min(W, H);
-
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(b.rot + t * 0.05 * (i % 2 ? 1 : -1));
-        // Screen-print logic: no gaussian shadow (it just reads as blur after the
-        // canvas is upscaled) — a solid fill plus a crisp keyline instead.
-        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.72 : 0.62) + ')';
-        if (b.kind === 0) {
-          ctx.beginPath();
-          ctx.arc(0, 0, s * 0.5, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.7)';
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
-        } else if (b.kind === 1) {
-          ctx.fillRect(-s * 0.9, -s * 0.11, s * 1.8, s * 0.22);
-          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.65)';
-          ctx.lineWidth = 0.7;
-          ctx.strokeRect(-s * 0.9, -s * 0.11, s * 1.8, s * 0.22);
-        } else {
-          ctx.fillRect(-s * 0.42, -s * 0.42, s * 0.84, s * 0.84);
-          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.65)';
-          ctx.lineWidth = 0.7;
-          ctx.strokeRect(-s * 0.42, -s * 0.42, s * 0.84, s * 0.84);
-        }
-        ctx.restore();
+      // floating arches, each on its own parallax depth
+      ctx.filter = 'blur(0.8px)';
+      for (let i = 0; i < 3; i += 1) {
+        const depth = 0.4 + i * 0.5;
+        const cx = W * (0.28 + i * 0.24) + px * 34 * depth + Math.sin(t * 0.5 + i) * 4;
+        const cy = H * (0.44 + (i % 2) * 0.1) + py * 20 * depth + Math.cos(t * 0.4 + i) * 3;
+        const rw = W * (0.05 + i * 0.012);
+        const rh = H * (0.16 + i * 0.04);
+        const c = cols[i % 3];
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rw, rh, 0.2, 0, Math.PI * 2);
+        ctx.fillStyle = dark ? 'rgba(12,10,20,0.75)' : 'rgba(60,40,60,0.28)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.5 : 0.6) + ')';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
       }
 
-      // one hard black bar anchors the composition, like a Rodchenko plate
-      ctx.fillStyle = dark ? 'rgba(255,255,255,0.9)' : 'rgba(16,14,12,0.9)';
-      ctx.save();
-      ctx.translate(W * (0.5 + px * 0.1), H * (0.5 + py * 0.1));
-      ctx.rotate(-0.6 + Math.sin(t * 0.1) * 0.05);
-      ctx.fillRect(-W * 0.7, -1.6, W * 1.4, 3.2);
-      ctx.restore();
-
-      ctx.restore();
+      // ground haze
+      const gr = ctx.createLinearGradient(0, H * 0.72, 0, H);
+      gr.addColorStop(0, 'rgba(0,0,0,0)');
+      gr.addColorStop(1, dark ? 'rgba(4,4,10,0.85)' : 'rgba(90,60,80,0.35)');
+      ctx.fillStyle = gr;
+      ctx.fillRect(0, H * 0.72, W, H * 0.28);
     }
 
-    /* ---- glassmorphism: floating frosted panes ------------------------ */
+    /* ---- bio: biomorphic blobs that merge and split ------------------- */
 
-    const PANES = (() => {
+    const BIO = (() => {
       const list = [];
-      let seed = 5150;
+      let seed = 31337;
       const rnd = () => {
         seed = (seed * 1103515245 + 12345) & 0x7fffffff;
         return seed / 0x7fffffff;
       };
-      for (let i = 0; i < 5; i += 1) {
-        list.push({
-          x: 0.2 + rnd() * 0.6,
-          y: 0.2 + rnd() * 0.6,
-          w: 0.2 + rnd() * 0.26,
-          h: 0.16 + rnd() * 0.2,
-          ph: rnd() * 6.28,
-          tone: i % 3,
-        });
+      for (let i = 0; i < 6; i += 1) {
+        list.push({ x: rnd(), y: rnd(), r: 0.14 + rnd() * 0.14, ph: rnd() * 6.28, tone: i % 3 });
       }
       return list;
     })();
 
-    function drawGlass(ctx, W, H, dark) {
-      const cols = paletteOf(state.palette).rgb;
-      const g0 = ctx.createLinearGradient(0, 0, W, H);
-      g0.addColorStop(0, dark ? '#0b0e16' : '#eef2f9');
-      g0.addColorStop(1, dark ? '#141a2a' : '#e2e9f4');
-      ctx.fillStyle = g0;
+    function drawBio(ctx, W, H, dark) {
+      ctx.fillStyle = dark ? '#05090c' : '#eef4f4';
       ctx.fillRect(0, 0, W, H);
 
-      // colour blooms sit behind the panes and get diffused by them
-      ctx.filter = 'blur(16px)';
-      for (let i = 0; i < 3; i += 1) {
-        const c = cols[i];
-        const bx = W * (0.25 + i * 0.26) + Math.sin(silkT * 7 + i) * 14;
-        const by = H * (0.35 + (i % 2) * 0.3) + Math.cos(silkT * 6 + i) * 10;
-        const g = ctx.createRadialGradient(bx, by, 0, bx, by, W * 0.3);
-        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.5 : 0.42) + ')');
-        g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
-        ctx.fillStyle = g;
-        ctx.fillRect(0, 0, W, H);
-      }
+      const cols = paletteOf(state.palette).rgb;
+      const t = silkT * 5;
+      const px = silkPointer.active ? silkPointer.x : -9999;
+      const py = silkPointer.active ? silkPointer.y : -9999;
 
-      ctx.filter = 'blur(0.4px)';
-      const t = silkT * 6;
-      const px = silkPointer.active ? silkPointer.x / W - 0.5 : 0;
-      const py = silkPointer.active ? silkPointer.y / H - 0.5 : 0;
+      ctx.filter = 'blur(9px)';
+      for (let i = 0; i < BIO.length; i += 1) {
+        const b = BIO[i];
+        let cx = (b.x + Math.sin(t * 0.35 + b.ph) * 0.14) * W;
+        let cy = (b.y + Math.cos(t * 0.28 + b.ph * 1.6) * 0.12) * H;
+        const r = b.r * (0.85 + 0.15 * Math.sin(t * 0.6 + b.ph)) * W;
 
-      for (let i = 0; i < PANES.length; i += 1) {
-        const p = PANES[i];
-        const w = p.w * W;
-        const h = p.h * H;
-        let cx = p.x * W + Math.sin(t * 0.5 + p.ph) * 10 + px * 40 * (0.4 + i * 0.16);
-        let cy = p.y * H + Math.cos(t * 0.42 + p.ph) * 8 + py * 28 * (0.4 + i * 0.16);
-
-        // the pointer repels the nearest pane
-        if (silkPointer.active) {
-          const dx = cx - silkPointer.x;
-          const dy = cy - silkPointer.y;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < 12000) {
-            const k = (1 - d2 / 12000) * 22;
-            const d = Math.sqrt(d2) || 1;
+        if (px > -999) {
+          const dx = cx - px;
+          const dy = cy - py;
+          const d = Math.sqrt(dx * dx + dy * dy) || 1;
+          if (d < r * 1.6) {
+            const k = (1 - d / (r * 1.6)) * 26;
             cx += (dx / d) * k;
             cy += (dy / d) * k;
           }
         }
 
-        const r = Math.min(w, h) * 0.22;
-        const tone = cols[p.tone];
+        const c = cols[b.tone];
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.55 : 0.42) + ')');
+        g.addColorStop(0.55, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.22 : 0.16) + ')');
+        g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+        ctx.fillStyle = g;
         ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(cx - w / 2, cy - h / 2, w, h, r);
-        else ctx.rect(cx - w / 2, cy - h / 2, w, h);
-        ctx.fillStyle = dark ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.42)';
-        ctx.fill();
-
-        // the rim picks up the colour behind the pane — that is what sells glass
-        const rim = ctx.createLinearGradient(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2);
-        rim.addColorStop(0, 'rgba(255,255,255,' + (dark ? 0.55 : 0.95) + ')');
-        rim.addColorStop(0.45, 'rgba(' + tone[0] + ',' + tone[1] + ',' + tone[2] + ',' + (dark ? 0.5 : 0.4) + ')');
-        rim.addColorStop(1, 'rgba(255,255,255,' + (dark ? 0.22 : 0.6) + ')');
-        ctx.strokeStyle = rim;
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
-
-        // inner shadow along the bottom edge
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(cx - w / 2 + 1.5, cy - h / 2 + 1.5, w - 3, h - 3, r * 0.9);
-        else ctx.rect(cx - w / 2 + 1.5, cy - h / 2 + 1.5, w - 3, h - 3);
-        const inner = ctx.createLinearGradient(0, cy + h * 0.1, 0, cy + h / 2);
-        inner.addColorStop(0, 'rgba(255,255,255,0)');
-        inner.addColorStop(1, dark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.55)');
-        ctx.strokeStyle = inner;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // a specular sliver along the top edge
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(cx - w / 2 + 2, cy - h / 2 + 1, w - 4, h * 0.3, r * 0.7);
-        else ctx.rect(cx - w / 2 + 2, cy - h / 2 + 1, w - 4, h * 0.3);
-        const gg = ctx.createLinearGradient(0, cy - h / 2, 0, cy - h / 2 + h * 0.3);
-        gg.addColorStop(0, dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.7)');
-        gg.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = gg;
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.fill();
       }
     }
 
-    /* ---- artificial nature: quiet branching forms --------------------- */
+    /* ---- concept: matte painting with drifting fog -------------------- */
 
-    function branch(ctx, x, y, ang, len, depth, cols, dark, t, px, py, wid) {
-      if (depth <= 0 || len < 1.2) return;
-      // slow, small sway — the old version wobbled fast enough to be tiring
-      const sway = Math.sin(t * 0.55 + depth * 1.2 + x * 0.01) * 0.1;
-      let a = ang + sway;
-      if (px > -999) {
-        const dx = x - px;
-        const dy = y - py;
-        const d = Math.sqrt(dx * dx + dy * dy) || 1;
-        if (d < 90) a += ((dx / d) * (1 - d / 90)) * 0.42;
-      }
-      const nx = x + Math.cos(a) * len;
-      const ny = y + Math.sin(a) * len;
-      const c = cols[Math.min(2, Math.floor(depth / 2))];
-      // narrow, uniform alpha range: no flickering contrast between branches
-      const alpha = dark ? 0.14 + depth * 0.055 : 0.16 + depth * 0.05;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.quadraticCurveTo(x + Math.cos(a - 0.16) * len * 0.6, y + Math.sin(a - 0.16) * len * 0.6, nx, ny);
-      ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')';
-      ctx.lineWidth = wid;
-      ctx.stroke();
-
-      branch(ctx, nx, ny, a - 0.36, len * 0.74, depth - 1, cols, dark, t, px, py, wid * 0.72);
-      branch(ctx, nx, ny, a + 0.34, len * 0.7, depth - 1, cols, dark, t, px, py, wid * 0.72);
-    }
-
-    function drawOrganic(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#080b0a' : '#f2f4f0';
-      ctx.fillRect(0, 0, W, H);
-      ctx.filter = 'blur(0.6px)';
-      const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 2.4;
-      const px = silkPointer.active ? silkPointer.x : -999;
-      const py = silkPointer.active ? silkPointer.y : -999;
-
-      // two quiet stands instead of three busy ones
-      for (let i = 0; i < 2; i += 1) {
-        const rx = W * (0.32 + i * 0.36);
-        branch(ctx, rx, H * 1.04, -Math.PI / 2 + (i - 0.5) * 0.14, H * 0.33, 4, cols, dark, t + i * 2.4, px, py, 3.2);
-      }
-
-      // fog toward the top so the canopy fades out instead of stopping dead
-      const fog = ctx.createLinearGradient(0, 0, 0, H * 0.7);
-      fog.addColorStop(0, dark ? 'rgba(8,11,10,0.95)' : 'rgba(242,244,240,0.95)');
-      fog.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = fog;
-      ctx.fillRect(0, 0, W, H * 0.7);
-    }
-
-    /* ---- ascii: a wave field drawn as characters ---------------------- */
-
-    const ASCII_RAMP = ' .:-=+*#%@';
-
-    function drawAscii(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#06080c' : '#f4f6fa';
-      ctx.fillRect(0, 0, W, H);
-      ctx.filter = 'none';
-      ctx.font = Math.round(9 * (W / 384)) + 'px monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-
-      const base = paletteOf(state.palette).rgb[0];
-      const cols = dark
-        ? [Math.round(base[0] + (255 - base[0]) * 0.5), Math.round(base[1] + (255 - base[1]) * 0.5), Math.round(base[2] + (255 - base[2]) * 0.5)]
-        : [Math.round(base[0] * 0.55), Math.round(base[1] * 0.55), Math.round(base[2] * 0.55)];
-      const t = silkT * 6;
-      const px = silkPointer.active ? silkPointer.x / W : -9;
-      const py = silkPointer.active ? silkPointer.y / H : -9;
-      const stepX = 12 * (W / 384);
-      const stepY = 12 * (W / 384);
-      const cx0 = W / 2;
-      const cy0 = H / 2;
-
-      for (let y = stepY * 0.5; y < H; y += stepY) {
-        for (let x = stepX * 0.5; x < W; x += stepX) {
-          const u = (x - cx0) / W;
-          const v = (y - cy0) / H;
-          // a slow interference pattern, warped into a lens around the pointer
-          let f = Math.sin(u * 9 + t) * 0.5 + Math.cos(v * 11 - t * 0.8) * 0.5;
-          const dx = x / W - px;
-          const dy = y / H - py;
-          const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < 0.22) f += (1 - d / 0.22) * 0.9 * Math.sin(t * 2.2 - d * 26);
-          const k = Math.max(0, Math.min(1, (f + 1) / 2));
-          const ch = ASCII_RAMP[Math.min(ASCII_RAMP.length - 1, Math.floor(k * ASCII_RAMP.length))];
-          if (ch === ' ') continue;
-          const cc = paletteOf(state.palette).rgb[k > 0.72 ? 1 : 0];
-          ctx.fillStyle = 'rgba(' + Math.round((cc[0] + cols[0]) / 2) + ',' + Math.round((cc[1] + cols[1]) / 2) + ',' + Math.round((cc[2] + cols[2]) / 2) + ',' + (dark ? 0.16 + k * 0.92 : 0.18 + k * 0.86) + ')';
-          ctx.fillText(ch, x, y);
-        }
-      }
-    }
-
-    /* ---- relief: wide volumetric bands swept by a moving light -------- *
-     * Everything here is deliberately SOFT (gradients only, no strokes).
-     * The host blurs the backdrop behind the main pane, so any detail
-     * finer than ~40px would be destroyed there and survive in the
-     * sidebar — which is exactly what produced the visible seam.
-     * ------------------------------------------------------------------ */
-
-    function drawRelief(ctx, W, H, dark) {
-      const g0 = ctx.createLinearGradient(0, 0, W * 0.5, H);
-      g0.addColorStop(0, dark ? '#0d1018' : '#f4f6fa');
-      g0.addColorStop(1, dark ? '#06070c' : '#e8ecf3');
-      ctx.fillStyle = g0;
+    function drawConcept(ctx, W, H, dark) {
+      const sky = ctx.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0, dark ? '#0d1524' : '#dfe8f2');
+      sky.addColorStop(0.6, dark ? '#16233a' : '#c9d6e6');
+      sky.addColorStop(1, dark ? '#070a12' : '#b9c6d8');
+      ctx.fillStyle = sky;
       ctx.fillRect(0, 0, W, H);
 
       const cols = paletteOf(state.palette).rgb;
       const t = silkT * 1.6;
-      const lx = silkPointer.active ? silkPointer.x : W * 0.5;
-      const ly = silkPointer.active ? silkPointer.y : H * 0.18;
+      const lx = silkPointer.active ? silkPointer.x : W * 0.72;
+      const ly = silkPointer.active ? silkPointer.y : H * 0.2;
 
-      ctx.filter = 'none';
-      const BANDS = 7;
-      for (let i = 0; i < BANDS; i += 1) {
-        const y0 = H * (i / BANDS);
-        const bh = H / BANDS;
-        const c = cols[i % 3];
-
-        // the lamp's reach on this band — this is what travels with the cursor
-        const my = y0 + bh * 0.5;
-        const ddx = (lx - W * 0.5) / W;
-        const ddy = (ly - my) / H;
-        const lit = Math.max(0, 1 - Math.sqrt(ddx * ddx * 1.2 + ddy * ddy) * 1.25);
-
-        // body: a wide soft slab, bright at the crest, fading into shadow
-        const gb = ctx.createLinearGradient(0, y0, 0, y0 + bh);
-        gb.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (0.1 + lit * 0.34) + ')');
-        gb.addColorStop(0.35, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (0.05 + lit * 0.16) + ')');
-        gb.addColorStop(1, dark ? 'rgba(3,4,8,0.5)' : 'rgba(120,130,150,0.12)');
-        ctx.fillStyle = gb;
-        ctx.fillRect(-W * 0.1, y0 + Math.sin(t + i * 0.8) * 6, W * 1.2, bh * 1.02);
-
-        // crest glow — a fat blurred gradient strip, not a line
-        const gc = ctx.createLinearGradient(0, y0 - bh * 0.3, 0, y0 + bh * 0.32);
-        gc.addColorStop(0, 'rgba(255,255,255,0)');
-        gc.addColorStop(0.55, 'rgba(255,255,255,' + (0.05 + lit * 0.42) + ')');
-        gc.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = gc;
-        ctx.fillRect(-W * 0.1, y0 - bh * 0.3 + Math.sin(t + i * 0.8) * 6, W * 1.2, bh * 0.62);
-      }
-
-      // the lamp itself: a big soft bloom plus a downward cone
-      ctx.globalCompositeOperation = 'lighter';
-      const bloom = ctx.createRadialGradient(lx, ly, 0, lx, ly, W * 0.42);
-      bloom.addColorStop(0, 'rgba(255,255,255,' + (dark ? 0.34 : 0.55) + ')');
-      bloom.addColorStop(0.3, 'rgba(255,255,255,' + (dark ? 0.1 : 0.18) + ')');
-      bloom.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = bloom;
+      // light bloom
+      ctx.filter = 'blur(14px)';
+      const glow = ctx.createRadialGradient(lx, ly, 0, lx, ly, W * 0.36);
+      glow.addColorStop(0, 'rgba(255,246,230,' + (dark ? 0.34 : 0.7) + ')');
+      glow.addColorStop(1, 'rgba(255,246,230,0)');
+      ctx.fillStyle = glow;
       ctx.fillRect(0, 0, W, H);
 
-      ctx.save();
-      ctx.translate(lx, ly);
-      ctx.rotate(Math.PI / 2 + Math.sin(t * 0.3) * 0.06);
-      const cone = ctx.createLinearGradient(0, 0, 0, H * 1.6);
-      cone.addColorStop(0, 'rgba(255,255,255,' + (dark ? 0.14 : 0.2) + ')');
-      cone.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.beginPath();
-      ctx.moveTo(-10, 0);
-      ctx.lineTo(W * 0.52, H * 1.6);
-      ctx.lineTo(-W * 0.52, H * 1.6);
-      ctx.closePath();
-      ctx.fillStyle = cone;
-      ctx.fill();
-      ctx.restore();
-      ctx.globalCompositeOperation = 'source-over';
-    }
-
-    /* ---- minimal: one line, one dot ----------------------------------- */
-
-    let dotX = 0.5;
-
-    function drawMinimal(ctx, W, H, dark) {
-      const ground = ctx.createLinearGradient(0, 0, 0, H);
-      ground.addColorStop(0, dark ? '#0a0b0f' : '#fbfcfe');
-      ground.addColorStop(1, dark ? '#05060a' : '#eef1f6');
-      ctx.fillStyle = ground;
-      ctx.fillRect(0, 0, W, H);
-      ctx.filter = 'blur(0.3px)';
-
-      const c = paletteOf(state.palette).rgb[0];
-      const t = silkT * 4;
-      const baseY = H * 0.52;
-      const px = silkPointer.active ? silkPointer.x : -9999;
-
-      // a fainter second line gives the composition depth without clutter
-      ctx.beginPath();
-      for (let x = 0; x <= W; x += 8) {
-        const y = baseY + H * 0.12 + Math.sin(x * 0.004 - t * 0.7) * H * 0.015;
-        if (x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.strokeStyle = dark ? 'rgba(255,255,255,0.14)' : 'rgba(20,24,32,0.12)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // the main line bends toward the pointer
-      ctx.beginPath();
-      for (let x = 0; x <= W; x += 8) {
-        let y = baseY + Math.sin(x * 0.006 + t) * H * 0.02;
-        if (px > -9999) {
-          const dx = x - px;
-          y -= Math.exp(-(dx * dx) / 5200) * H * 0.075;
-        }
-        if (x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.strokeStyle = dark ? 'rgba(255,255,255,0.82)' : 'rgba(20,24,32,0.8)';
-      ctx.lineWidth = 1.4;
-      ctx.stroke();
-
-      // the dot drifts, a click drops it where you clicked
-      dotX += (0.5 + Math.sin(t * 0.5) * 0.3 - dotX) * 0.02;
-      const dxp = dotX * W;
-      for (let k = 3; k >= 0; k -= 1) {
-        const tx = dxp - k * 5;
-        const ty = baseY + Math.sin(tx * 0.006 + t) * H * 0.02;
+      // ridge silhouettes, three depths
+      ctx.filter = 'blur(1.2px)';
+      for (let layer = 0; layer < 3; layer += 1) {
+        const baseY = H * (0.62 + layer * 0.1);
+        const amp = 14 - layer * 3;
         ctx.beginPath();
-        ctx.arc(tx, ty - 14, 4.2 - k * 0.7, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.95 : 0.9) * (1 - k * 0.26) + ')';
-        ctx.fill();
-      }
-    }
-
-    /* ---- silk: horizontal satin bands --------------------------------- */
-
-    function drawWaves(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#070a12' : '#eef2f9';
-      ctx.fillRect(0, 0, W, H);
-
-      ctx.filter = 'blur(1.6px)';
-      const cols = paletteOf(state.palette).rgb;
-      const px = silkPointer.x;
-      const py = silkPointer.y;
-
-      for (let i = 0; i < 7; i += 1) {
-        const a = cols[i % 3];
-        const b = cols[(i + 1) % 3];
-        const amp = 8 + i * 3.4;
-        const baseY = H * (0.06 + i * 0.13);
-        const thick = H * (0.15 + 0.02 * i);
-        const ph = i * 1.7;
-        const sp = 1 + i * 0.12;
-
-        const wave = (x, off) => {
-          let y = baseY + off +
-            Math.sin(x * 0.012 + silkT * sp + ph) * amp +
-            Math.sin(x * 0.03 - silkT * 1.7 + ph * 1.4) * amp * 0.42;
-          if (silkPointer.active) {
-            const dx = x - px;
-            y += Math.exp(-(dx * dx) / 2400) * (py - y) * 0.16;
-          }
-          for (let k = 0; k < silkRipples.length; k += 1) {
-            const r = silkRipples[k];
-            const age = (now0() - r.t0) / 1000;
-            const front = age * 240;
-            const d = Math.abs(x - r.x);
-            const band = Math.exp(-Math.pow((d - front) / 80, 2));
-            if (band > 0.01) y += band * 22 * Math.max(0, 1 - age / 2.2) * (i % 2 ? 1 : -1);
-          }
-          return y;
-        };
-
-        ctx.beginPath();
-        for (let x = 0; x <= W; x += 6) {
-          const y = wave(x, 0);
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+        ctx.moveTo(0, H);
+        for (let x = 0; x <= W; x += 10) {
+          const y = baseY + Math.sin(x * 0.008 + t * (0.4 + layer * 0.2) + layer * 2) * amp +
+            Math.sin(x * 0.021 - t * 0.5 + layer) * amp * 0.4;
+          ctx.lineTo(x, y);
         }
-        for (let x = W; x >= 0; x -= 6) ctx.lineTo(x, wave(x, thick));
+        ctx.lineTo(W, H);
         ctx.closePath();
-        const g = ctx.createLinearGradient(0, baseY - amp, 0, baseY + thick + amp);
-        const A = (al) => 'rgba(' + a[0] + ',' + a[1] + ',' + a[2] + ',' + al + ')';
-        const B = (al) => 'rgba(' + b[0] + ',' + b[1] + ',' + b[2] + ',' + al + ')';
-        g.addColorStop(0, A(dark ? 0.08 : 0.06));
-        g.addColorStop(0.16, A(dark ? 0.62 : 0.52));
-        g.addColorStop(0.3, dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.72)');
-        g.addColorStop(0.52, B(dark ? 0.46 : 0.38));
-        g.addColorStop(0.82, B(dark ? 0.14 : 0.1));
-        g.addColorStop(1, A(0.04));
-        ctx.fillStyle = g;
+        ctx.fillStyle = dark
+          ? 'rgba(' + Math.round(8 + layer * 6) + ',' + Math.round(12 + layer * 8) + ',' + Math.round(20 + layer * 10) + ',0.9)'
+          : 'rgba(' + Math.round(150 - layer * 22) + ',' + Math.round(165 - layer * 22) + ',' + Math.round(185 - layer * 20) + ',0.85)';
         ctx.fill();
+      }
 
+      // fog band drifting across
+      ctx.filter = 'blur(16px)';
+      const fx = ((t * 18) % (W + 200)) - 100;
+      const fog = ctx.createLinearGradient(fx - 160, 0, fx + 160, 0);
+      fog.addColorStop(0, 'rgba(' + cols[0][0] + ',' + cols[0][1] + ',' + cols[0][2] + ',0)');
+      fog.addColorStop(0.5, 'rgba(' + cols[0][0] + ',' + cols[0][1] + ',' + cols[0][2] + ',' + (dark ? 0.16 : 0.22) + ')');
+      fog.addColorStop(1, 'rgba(' + cols[0][0] + ',' + cols[0][1] + ',' + cols[0][2] + ',0)');
+      ctx.fillStyle = fog;
+      ctx.fillRect(fx - 160, H * 0.45, 320, H * 0.4);
+    }
+
+    /* ---- dream: dreamcore pastel orbs and floating frames ------------- */
+
+    const ORBS = (() => {
+      const list = [];
+      let seed = 90210;
+      const rnd = () => {
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        return seed / 0x7fffffff;
+      };
+      for (let i = 0; i < 9; i += 1) {
+        list.push({ x: rnd(), y: rnd(), r: 0.04 + rnd() * 0.09, ph: rnd() * 6.28, tone: i % 3 });
+      }
+      return list;
+    })();
+
+    function drawDream(ctx, W, H, dark) {
+      const sky = ctx.createLinearGradient(0, 0, W, H);
+      sky.addColorStop(0, dark ? '#181428' : '#fdf3f8');
+      sky.addColorStop(0.5, dark ? '#221a34' : '#f0eafb');
+      sky.addColorStop(1, dark ? '#0c0a16' : '#e8f2fb');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, W, H);
+
+      const cols = paletteOf(state.palette).rgb;
+      const t = silkT * 2;
+      const px = silkPointer.active ? silkPointer.x : W * 0.5;
+      const py = silkPointer.active ? silkPointer.y : H * 0.5;
+
+      ctx.filter = 'blur(8px)';
+      for (let i = 0; i < ORBS.length; i += 1) {
+        const o = ORBS[i];
+        let cx = (o.x + Math.sin(t * 0.4 + o.ph) * 0.06) * W;
+        let cy = (o.y + Math.cos(t * 0.33 + o.ph) * 0.05) * H;
+        // orbs lean toward the cursor, slowly
+        cx += (px - cx) * 0.06;
+        cy += (py - cy) * 0.06;
+        const r = o.r * W;
+        const c = cols[o.tone];
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.6 : 0.5) + ')');
+        g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+        ctx.fillStyle = g;
         ctx.beginPath();
-        for (let x = 0; x <= W; x += 6) {
-          const y = wave(x, 0);
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.65)';
-        ctx.lineWidth = 1.4;
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // floating frames, a dreamcore staple
+      ctx.filter = 'blur(0.5px)';
+      for (let i = 0; i < 3; i += 1) {
+        const depth = 0.3 + i * 0.35;
+        const w = W * (0.14 + i * 0.03);
+        const h = H * (0.2 + i * 0.04);
+        const cx = W * (0.22 + i * 0.28) + (px - W * 0.5) * 0.05 * depth + Math.sin(t * 0.5 + i) * 5;
+        const cy = H * (0.4 + (i % 2) * 0.12) + (py - H * 0.5) * 0.04 * depth + Math.cos(t * 0.4 + i) * 4;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(cx - w / 2, cy - h / 2, w, h, 6);
+        else ctx.rect(cx - w / 2, cy - h / 2, w, h);
+        ctx.fillStyle = dark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.5)';
+        ctx.fill();
+        ctx.strokeStyle = dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.9)';
+        ctx.lineWidth = 1;
         ctx.stroke();
       }
     }

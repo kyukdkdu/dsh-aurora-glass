@@ -3,6 +3,30 @@
 本文件记录 dsh-aurora-glass 的重要变更，采用简易维护格式（Keep a Changelog 风格）。
 All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a Changelog style).
 
+## [1.14.0] - 2026-10-25
+
+### Changed
+
+- **背景整套换新**，八种设计语言各一套几何 + 各一种鼠标交互：
+  超绽放（花瓣跟随 + 点击炸开）、像素（笔刷点亮格子）、新未来（光线朝鼠标弯 + 扫描带）、
+  超现实（三层景深视差）、生物形态（探针推开软体）、概念艺术（鼠标当光源）、梦核（光球靠拢 + 画框视差）。
+  旧的丝绸 / 墨流 / 光雕 / 玻璃 / 有机 一并移除。
+- **色板重做**：Aurora / Bloom / Neon / Pastel / Dusk / Mono —— 对应上面几套风格的色调。
+  原链接是抖音分享页，需要 App 内才能观看，抓不到具体色值，所以按风格重新定了一套。
+- **预设表达简化**：四个 chip 改成**四段式**，名字也从「默认 / 轻雾 / 深空 / 原版观感」换成
+  「标准 / 通透 / 浓郁 / 原版」——说人话，且不再同时改背景（预设只管质感）。
+
+### Fixed
+
+- **工作区底部那块深色横条**：`composerSeat` 之前被我刷了一层从上到下的暗色渐变，
+  在输入框下面形成一条边界生硬的色块，和左右侧栏接不上。已移除，输入区现在是纯透的，
+  整窗只剩一层背景。
+
+### Added
+
+- **全局悬停反馈**：`button / [role=button] / [role=menuitem] / [role=tab] / [role=option] / [role=switch] / a`
+  统一加 `transition: filter` + hover 提亮 13% + 按下压暗 7%。只在状态变化时算一次，不逐帧。
+
 ## [1.13.0] - 2026-10-25
 
 ### Fixed
