@@ -83,8 +83,8 @@ window.__ModuleLoader__.load({
         'panel.title': '极光玻璃',
         'sec.preset': '预设',
         'sec.palette': '色板',
-        'sec.surface': '表面',
-        'sec.look': '氛围',
+        'sec.surface': '质感',
+        'sec.look': '动效',
         'bg.label': '背景',
         'bg.aurora': '极光',
         'bg.silk': '丝绸',
@@ -119,8 +119,8 @@ window.__ModuleLoader__.load({
         'panel.title': 'Aurora Glass',
         'sec.preset': 'Presets',
         'sec.palette': 'Palette',
-        'sec.surface': 'Surface',
-        'sec.look': 'Atmosphere',
+        'sec.surface': 'Texture',
+        'sec.look': 'Motion',
         'bg.label': 'Backdrop',
         'bg.aurora': 'Aurora',
         'bg.silk': 'Silk',
@@ -522,6 +522,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           if (key === 'class') node.className = value;
           else if (key === 'text') node.textContent = value;
           else if (key === 'style') node.setAttribute('style', value);
+          else if (key === 'ref' && typeof value === 'function') value(node);
           else if (key.slice(0, 2) === 'on' && typeof value === 'function') {
             node.addEventListener(key.slice(2).toLowerCase(), value);
           } else node.setAttribute(key, value);
@@ -619,6 +620,8 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 #dsh-ag-panel::-webkit-scrollbar-thumb:hover{ background:rgba(148,163,184,.5); }
 
 .ag-head{ display:flex; align-items:center; justify-content:space-between; }
+.ag-head-right{ display:flex; align-items:center; gap:8px; }
+.ag-switch-sm{ transform:scale(.85); transform-origin:center; margin-right:-2px; }
 .ag-title{ display:flex; align-items:center; gap:8px; font-size:14.5px; font-weight:700; letter-spacing:.2px; color:#f6f8ff; }
 .ag-badge{ font-size:10px; padding:2px 7px; border-radius:99px; background:rgba(255,255,255,.13); color:#c2cadd; font-weight:600; }
 .ag-x{
@@ -911,7 +914,18 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           el('span', { text: t('panel.title') }),
           el('span', { class: 'ag-badge', text: 'v' + VERSION }),
         ]),
-        el('button', { class: 'ag-x', type: 'button', 'aria-label': t('close'), onClick: () => setOpen(false) }, '\u2715'),
+        el('div', { class: 'ag-head-right' }, [
+          el('button', {
+            class: 'ag-switch ag-switch-sm',
+            type: 'button',
+            role: 'switch',
+            'data-switch': 'enabled',
+            'data-tip': tip('enabled'),
+            ref: (node) => { refs['sw-enabled'] = node; },
+            onClick: () => set({ enabled: !state.enabled }),
+          }),
+          el('button', { class: 'ag-x', type: 'button', 'aria-label': t('close'), onClick: () => setOpen(false) }, '\u2715'),
+        ]),
       ]);
 
       const presetChips = PRESETS.map((p) =>
@@ -1013,9 +1027,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         el('div', { class: 'ag-sec' }, [
           el('div', { class: 'ag-label', text: t('sec.palette') }),
           el('div', { class: 'ag-swatches' }, swatches),
-        ]),
-        el('div', { class: 'ag-sec' }, [
-          el('div', { class: 'ag-label', text: t('bg.label') }),
+          el('div', { class: 'ag-label', style: 'margin-top:11px', text: t('bg.label') }),
           el('div', { class: 'ag-chips' }, bgChips),
         ]),
         el('div', { class: 'ag-sec' }, [
@@ -1033,7 +1045,6 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           sw('aurora', t('sw.aurora')),
           sw('grain', t('sw.grain')),
           sw('tint', t('sw.tint')),
-          sw('enabled', t('sw.enabled')),
         ]),
         el('button', {
           class: 'ag-reset',
@@ -1596,55 +1607,56 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       }
     }
 
-    /* ---- artificial nature: branching forms --------------------------- */
+    /* ---- artificial nature: quiet branching forms --------------------- */
 
     function branch(ctx, x, y, ang, len, depth, cols, dark, t, px, py, wid) {
       if (depth <= 0 || len < 1.2) return;
-      const sway = Math.sin(t * 1.1 + depth * 1.7 + x * 0.02) * 0.22;
+      // slow, small sway — the old version wobbled fast enough to be tiring
+      const sway = Math.sin(t * 0.55 + depth * 1.2 + x * 0.01) * 0.1;
       let a = ang + sway;
-      // the pointer bends the whole canopy
       if (px > -999) {
         const dx = x - px;
         const dy = y - py;
         const d = Math.sqrt(dx * dx + dy * dy) || 1;
-        if (d < 90) a += ((dx / d) * (1 - d / 90)) * 0.5;
+        if (d < 90) a += ((dx / d) * (1 - d / 90)) * 0.42;
       }
       const nx = x + Math.cos(a) * len;
       const ny = y + Math.sin(a) * len;
-      const c = cols[depth % 3];
+      const c = cols[Math.min(2, Math.floor(depth / 2))];
+      // narrow, uniform alpha range: no flickering contrast between branches
+      const alpha = dark ? 0.14 + depth * 0.055 : 0.16 + depth * 0.05;
       ctx.beginPath();
       ctx.moveTo(x, y);
-      ctx.quadraticCurveTo(x + Math.cos(a - 0.2) * len * 0.6, y + Math.sin(a - 0.2) * len * 0.6, nx, ny);
-      ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.12 + depth * 0.16 : 0.18 + depth * 0.14) + ')';
+      ctx.quadraticCurveTo(x + Math.cos(a - 0.16) * len * 0.6, y + Math.sin(a - 0.16) * len * 0.6, nx, ny);
+      ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')';
       ctx.lineWidth = wid;
       ctx.stroke();
 
-      // tips get a leaf, so the structure reads as growth rather than a line tree
-      if (depth <= 2) {
-        ctx.beginPath();
-        ctx.ellipse(nx, ny, len * 0.2, len * 0.09, a, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.2 + depth * 0.14 : 0.26 + depth * 0.12) + ')';
-        ctx.fill();
-      }
-
-      branch(ctx, nx, ny, a - 0.44, len * 0.72, depth - 1, cols, dark, t, px, py, wid * 0.66);
-      branch(ctx, nx, ny, a + 0.4, len * 0.68, depth - 1, cols, dark, t, px, py, wid * 0.66);
+      branch(ctx, nx, ny, a - 0.36, len * 0.74, depth - 1, cols, dark, t, px, py, wid * 0.72);
+      branch(ctx, nx, ny, a + 0.34, len * 0.7, depth - 1, cols, dark, t, px, py, wid * 0.72);
     }
 
     function drawOrganic(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#070a09' : '#f0f3ee';
+      ctx.fillStyle = dark ? '#080b0a' : '#f2f4f0';
       ctx.fillRect(0, 0, W, H);
-      ctx.filter = 'blur(0.7px)';
+      ctx.filter = 'blur(0.6px)';
       const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 9;
+      const t = silkT * 2.4;
       const px = silkPointer.active ? silkPointer.x : -999;
       const py = silkPointer.active ? silkPointer.y : -999;
 
-      // three root systems anchored along the bottom, like coral reaching up
-      for (let i = 0; i < 3; i += 1) {
-        const rx = W * (0.22 + i * 0.28);
-        branch(ctx, rx, H * 1.02, -Math.PI / 2 + (i - 1) * 0.22, H * 0.3, 5, cols, dark, t + i, px, py, 3.4);
+      // two quiet stands instead of three busy ones
+      for (let i = 0; i < 2; i += 1) {
+        const rx = W * (0.32 + i * 0.36);
+        branch(ctx, rx, H * 1.04, -Math.PI / 2 + (i - 0.5) * 0.14, H * 0.33, 4, cols, dark, t + i * 2.4, px, py, 3.2);
       }
+
+      // fog toward the top so the canopy fades out instead of stopping dead
+      const fog = ctx.createLinearGradient(0, 0, 0, H * 0.7);
+      fog.addColorStop(0, dark ? 'rgba(8,11,10,0.95)' : 'rgba(242,244,240,0.95)');
+      fog.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = fog;
+      ctx.fillRect(0, 0, W, H * 0.7);
     }
 
     /* ---- ascii: a wave field drawn as characters ---------------------- */
@@ -1691,91 +1703,79 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       }
     }
 
-    /* ---- relief: a carved surface lit by god rays --------------------- */
-
-    const GROOVES = (() => {
-      const list = [];
-      let seed = 60613;
-      const rnd = () => {
-        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-        return seed / 0x7fffffff;
-      };
-      for (let i = 0; i < 13; i += 1) {
-        list.push({
-          r: 0.16 + i * 0.075,
-          y: 0.5 + (rnd() - 0.5) * 0.16,
-          w: 0.5 + rnd() * 0.9,
-          ph: rnd() * 6.28,
-          tone: i % 3,
-        });
-      }
-      return list;
-    })();
+    /* ---- relief: wide volumetric bands swept by a moving light -------- *
+     * Everything here is deliberately SOFT (gradients only, no strokes).
+     * The host blurs the backdrop behind the main pane, so any detail
+     * finer than ~40px would be destroyed there and survive in the
+     * sidebar — which is exactly what produced the visible seam.
+     * ------------------------------------------------------------------ */
 
     function drawRelief(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#07070a' : '#eceef3';
+      const g0 = ctx.createLinearGradient(0, 0, W * 0.5, H);
+      g0.addColorStop(0, dark ? '#0d1018' : '#f4f6fa');
+      g0.addColorStop(1, dark ? '#06070c' : '#e8ecf3');
+      ctx.fillStyle = g0;
       ctx.fillRect(0, 0, W, H);
 
       const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 5;
-      // the light source is the pointer; without one it sits top-right
-      const lx = silkPointer.active ? silkPointer.x : W * 0.78;
-      const ly = silkPointer.active ? silkPointer.y : -H * 0.12;
+      const t = silkT * 1.6;
+      const lx = silkPointer.active ? silkPointer.x : W * 0.5;
+      const ly = silkPointer.active ? silkPointer.y : H * 0.18;
 
-      // god rays fanning out of the light
-      ctx.filter = 'blur(11px)';
-      for (let i = 0; i < 7; i += 1) {
-        const ang = -1.9 + i * 0.19 + Math.sin(t * 0.4 + i) * 0.02;
-        const len = H * 1.9;
-        ctx.save();
-        ctx.translate(lx, ly);
-        ctx.rotate(ang);
-        const w = W * (0.045 + (i % 3) * 0.02);
-        const g = ctx.createLinearGradient(0, 0, 0, len);
-        g.addColorStop(0, dark ? 'rgba(255,255,255,0.46)' : 'rgba(255,255,255,0.7)');
-        g.addColorStop(0.35, dark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.28)');
-        g.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = g;
-        ctx.fillRect(-w / 2, 0, w, len);
-        ctx.restore();
+      ctx.filter = 'none';
+      const BANDS = 7;
+      for (let i = 0; i < BANDS; i += 1) {
+        const y0 = H * (i / BANDS);
+        const bh = H / BANDS;
+        const c = cols[i % 3];
+
+        // the lamp's reach on this band — this is what travels with the cursor
+        const my = y0 + bh * 0.5;
+        const ddx = (lx - W * 0.5) / W;
+        const ddy = (ly - my) / H;
+        const lit = Math.max(0, 1 - Math.sqrt(ddx * ddx * 1.2 + ddy * ddy) * 1.25);
+
+        // body: a wide soft slab, bright at the crest, fading into shadow
+        const gb = ctx.createLinearGradient(0, y0, 0, y0 + bh);
+        gb.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (0.1 + lit * 0.34) + ')');
+        gb.addColorStop(0.35, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (0.05 + lit * 0.16) + ')');
+        gb.addColorStop(1, dark ? 'rgba(3,4,8,0.5)' : 'rgba(120,130,150,0.12)');
+        ctx.fillStyle = gb;
+        ctx.fillRect(-W * 0.1, y0 + Math.sin(t + i * 0.8) * 6, W * 1.2, bh * 1.02);
+
+        // crest glow — a fat blurred gradient strip, not a line
+        const gc = ctx.createLinearGradient(0, y0 - bh * 0.3, 0, y0 + bh * 0.32);
+        gc.addColorStop(0, 'rgba(255,255,255,0)');
+        gc.addColorStop(0.55, 'rgba(255,255,255,' + (0.05 + lit * 0.42) + ')');
+        gc.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = gc;
+        ctx.fillRect(-W * 0.1, y0 - bh * 0.3 + Math.sin(t + i * 0.8) * 6, W * 1.2, bh * 0.62);
       }
 
-      // the carved body: nested grooves with a lit edge and a dark trough
-      ctx.filter = 'blur(0.8px)';
-      for (let i = 0; i < GROOVES.length; i += 1) {
-        const gv = GROOVES[i];
-        const c = cols[gv.tone];
-        const cx = W * 0.5 + Math.sin(t * 0.3 + gv.ph) * 6;
-        const cy = H * gv.y;
-        const rx = W * gv.r;
-        const ry = H * gv.r * gv.w;
-        const bend = Math.sin(t * 0.5 + gv.ph) * 0.06;
-        // the pointer dents the surface
-        let push = 0;
-        if (silkPointer.active) {
-          const d = Math.sqrt(Math.pow(silkPointer.x - cx, 2) + Math.pow(silkPointer.y - cy, 2));
-          push = Math.max(0, 1 - d / (W * 0.5)) * 7;
-        }
+      // the lamp itself: a big soft bloom plus a downward cone
+      ctx.globalCompositeOperation = 'lighter';
+      const bloom = ctx.createRadialGradient(lx, ly, 0, lx, ly, W * 0.42);
+      bloom.addColorStop(0, 'rgba(255,255,255,' + (dark ? 0.34 : 0.55) + ')');
+      bloom.addColorStop(0.3, 'rgba(255,255,255,' + (dark ? 0.1 : 0.18) + ')');
+      bloom.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = bloom;
+      ctx.fillRect(0, 0, W, H);
 
-        ctx.beginPath();
-        ctx.ellipse(cx, cy + push, rx, ry, bend, Math.PI * 0.08, Math.PI * 0.92);
-        const g = ctx.createLinearGradient(cx - rx, cy, cx + rx, cy);
-        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
-        g.addColorStop(0.28, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.8 : 0.6) + ')');
-        g.addColorStop(0.5, dark ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.95)');
-        g.addColorStop(0.72, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.55 : 0.45) + ')');
-        g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
-        ctx.strokeStyle = g;
-        ctx.lineWidth = 3 + (i % 3);
-        ctx.stroke();
-
-        // shadow just under the lit edge
-        ctx.beginPath();
-        ctx.ellipse(cx, cy + push + 3, rx, ry, bend, Math.PI * 0.08, Math.PI * 0.92);
-        ctx.strokeStyle = dark ? 'rgba(0,0,0,0.45)' : 'rgba(90,100,120,0.18)';
-        ctx.lineWidth = 1.6;
-        ctx.stroke();
-      }
+      ctx.save();
+      ctx.translate(lx, ly);
+      ctx.rotate(Math.PI / 2 + Math.sin(t * 0.3) * 0.06);
+      const cone = ctx.createLinearGradient(0, 0, 0, H * 1.6);
+      cone.addColorStop(0, 'rgba(255,255,255,' + (dark ? 0.14 : 0.2) + ')');
+      cone.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.beginPath();
+      ctx.moveTo(-10, 0);
+      ctx.lineTo(W * 0.52, H * 1.6);
+      ctx.lineTo(-W * 0.52, H * 1.6);
+      ctx.closePath();
+      ctx.fillStyle = cone;
+      ctx.fill();
+      ctx.restore();
+      ctx.globalCompositeOperation = 'source-over';
     }
 
     /* ---- minimal: one line, one dot ----------------------------------- */
