@@ -361,6 +361,7 @@ body{
 #${BG_ID} .ag-scrim{
   position:absolute; inset:0; display:block; pointer-events:none;
   background:
+    radial-gradient(40% 34% at var(--ag-px,50%) var(--ag-py,42%), rgb(255 255 255 / calc(.05 + .09 * var(--ag-g))), transparent 72%),
     radial-gradient(64% 58% at 52% 44%, rgb(248 250 255 / calc(.2 + .12 * var(--ag-g))), rgb(248 250 255 / 0) 80%),
     rgb(248 250 255 / calc(.05 + .05 * var(--ag-g)));
   transition:opacity .6s ease;
@@ -368,6 +369,7 @@ body{
 body:not([data-ds-dark-theme]) #${BG_ID} i{ opacity:calc(.9 + .1 * var(--ag-g)) }
 body[data-ds-dark-theme] #${BG_ID} .ag-scrim{
   background:
+    radial-gradient(40% 34% at var(--ag-px,50%) var(--ag-py,42%), rgb(255 255 255 / calc(.03 + .06 * var(--ag-g))), transparent 72%),
     radial-gradient(64% 58% at 52% 44%, rgb(4 6 12 / calc(.34 + .12 * var(--ag-g))), rgb(4 6 12 / 0) 82%),
     rgb(4 6 12 / calc(.2 + .08 * var(--ag-g)));
 }
@@ -1142,6 +1144,14 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
           bg.style.transform =
             'translate3d(' + (-pointerX * 16).toFixed(2) + 'px,' + (-pointerY * 16).toFixed(2) + 'px,0)';
         }
+        // the scrim carries a soft highlight that follows the cursor
+        try {
+          const html = document.documentElement;
+          html.style.setProperty('--ag-px', ((pointerX + 0.5) * 100).toFixed(1) + '%');
+          html.style.setProperty('--ag-py', ((pointerY + 0.5) * 100).toFixed(1) + '%');
+        } catch {
+          /* ignore */
+        }
       });
     }
 
@@ -1383,7 +1393,14 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
 
         let cx = x * W;
         let cy = y * H;
-        const rad = p.r * (0.7 + 0.3 * Math.sin(t * 0.13 + p.ph)) * H * 0.72;
+        // ink gathers where the cursor is: nearby plumes swell and darken,
+        // so the pointer feels like it is stirring the water
+        let gather = 0;
+        if (px > -999) {
+          const gd = Math.sqrt((cx - px) * (cx - px) + (cy - py) * (cy - py));
+          gather = Math.max(0, 1 - gd / 95);
+        }
+        const rad = p.r * (0.7 + 0.3 * Math.sin(t * 0.13 + p.ph)) * H * 0.72 * (1 + gather * 0.5);
         const c = cols[p.tone];
 
         // pointer pushes the cloud aside
@@ -1410,7 +1427,7 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
           const by = cy + dirY * spread;
           const br = rad * (1 - k * 0.26);
           if (br <= 0.5) continue;
-          const alpha = (dark ? 0.62 : 0.52) * (1 - k * 0.24);
+          const alpha = (dark ? 0.62 : 0.52) * (1 - k * 0.24) * (1 + gather * 0.55);
           const g = ctx.createRadialGradient(bx, by, 0, bx, by, br);
           g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')');
           g.addColorStop(0.5, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha * 0.42 + ')');
@@ -1573,6 +1590,16 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
         ctx.lineWidth = 1.4;
         ctx.stroke();
       }
+
+      // a travelling sheen: the satin only lights up where the cursor is,
+      // which is what sells "cloth catching a light" instead of a flat gradient
+      const sx = silkPointer.active ? silkPointer.x : W * 0.5;
+      const sheen = ctx.createLinearGradient(sx - W * 0.16, 0, sx + W * 0.16, 0);
+      sheen.addColorStop(0, 'rgba(255,255,255,0)');
+      sheen.addColorStop(0.5, 'rgba(255,255,255,' + (dark ? 0.1 : 0.24) + ')');
+      sheen.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = sheen;
+      ctx.fillRect(sx - W * 0.16, 0, W * 0.32, H);
     }
 
     /* ---- concept: matte painting with drifting fog -------------------- */
@@ -1598,6 +1625,23 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, W, H);
 
+      // a shaft of light from the source, so the pointer reads as a real lamp
+      ctx.filter = 'blur(16px)';
+      ctx.save();
+      ctx.translate(lx, ly);
+      ctx.rotate(Math.PI / 2 + Math.sin(t * 0.3) * 0.05);
+      const shaft = ctx.createLinearGradient(0, 0, 0, H * 1.5);
+      shaft.addColorStop(0, 'rgba(255,246,230,' + (dark ? 0.2 : 0.34) + ')');
+      shaft.addColorStop(1, 'rgba(255,246,230,0)');
+      ctx.beginPath();
+      ctx.moveTo(-6, 0);
+      ctx.lineTo(W * 0.34, H * 1.5);
+      ctx.lineTo(-W * 0.34, H * 1.5);
+      ctx.closePath();
+      ctx.fillStyle = shaft;
+      ctx.fill();
+      ctx.restore();
+
       // ridge silhouettes, three depths
       ctx.filter = 'blur(1.2px)';
       for (let layer = 0; layer < 3; layer += 1) {
@@ -1616,6 +1660,11 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
           ? 'rgba(' + Math.round(8 + layer * 6) + ',' + Math.round(12 + layer * 8) + ',' + Math.round(20 + layer * 10) + ',0.9)'
           : 'rgba(' + Math.round(150 - layer * 22) + ',' + Math.round(165 - layer * 22) + ',' + Math.round(185 - layer * 20) + ',0.85)';
         ctx.fill();
+        // rim light: the crest catches the lamp, and it follows the pointer
+        const rim = 0.1 + Math.max(0, 1 - Math.abs(lx - W * 0.5) / (W * 0.9)) * 0.45;
+        ctx.strokeStyle = 'rgba(255,246,230,' + (rim * (1 - layer * 0.22)).toFixed(3) + ')';
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
       }
 
       // fog band drifting across
@@ -1667,12 +1716,15 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
         cy += (py - cy) * 0.06;
         const r = o.r * W;
         const c = cols[o.tone];
-        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.6 : 0.5) + ')');
+        // orbs brighten as they get close to the cursor, like motes in a beam
+        const dd = Math.sqrt((cx - px) * (cx - px) + (cy - py) * (cy - py));
+        const near = Math.max(0, 1 - dd / (W * 0.42));
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * (1 + near * 0.35));
+        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + ((dark ? 0.6 : 0.5) + near * 0.3) + ')');
         g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.arc(cx, cy, r * (1 + near * 0.35), 0, Math.PI * 2);
         ctx.fill();
       }
 
