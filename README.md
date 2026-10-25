@@ -3,16 +3,15 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-1.17.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.18.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <p align="center">
   <img src="docs/preview-dark.png" alt="极光 · 墨紫" width="780">
   <img src="docs/preview-silk.png" alt="丝绸 · 石墨青" width="780">
   <img src="docs/preview-ink.png" alt="墨流 · 海军橙" width="780">
   <img src="docs/preview-petal.png" alt="花瓣 · 银红" width="780">
-  <img src="docs/preview-bands.png" alt="色带 · 石墨青" width="780">
   <img src="docs/preview-concept.png" alt="概念艺术 · 纸本钴" width="780">
-  <img src="docs/preview-dream.png" alt="梦核 · 森林金" width="780">
+  <img src="docs/preview-dream.png" alt="浮光 · 森林金" width="780">
   <img src="docs/preview-light.png" alt="浅色主题" width="780">
   <img src="docs/preview-panel.png" alt="设置面板" width="300">
 </p>
@@ -69,17 +68,16 @@
 - **随场景变色**：会话标题算出一个稳定的色相偏移，再叠加按时段的正弦偏移——切会话、过时间，主色都会慢慢变
 - **输入脉动**：焦点在输入框时背景亮一档
 
-### 背景：七种，各有各的几何和交互
+### 背景：六种，各有各的几何和交互
 
 | 背景 | 语言 | 交互 |
 | --- | --- | --- |
 | **极光** | 四团径向渐变沿闭环漂移（纯 CSS） | 指针视差 + **跟随光标的一团柔光** + 打字脉动 + 切会话涌动 |
 | **丝绸** | 七条横向缎带，磨边 + 一道白色高光 | 指针推开布面，同时带一条**跟着你走的缎面反光**；点击荡开涟漪 |
 | **墨流** | 三瓣一串的墨团缓慢下沉 | 指针附近的墨会**变浓变大**（像在搅水），点击荡开涟漪，打字加速 |
-| **花瓣** | 三层半透明褶皱花瓣缓慢绽放 | **鼠标就是花心**，花瓣按层朝你倾 |
-| **色带** | 像素量化的横向色带 + 亮脊 | 鼠标像一枚**透镜**，把色带顶起来 |
+| **花瓣** | 三层半透明褶皱花瓣，**固定在右下角** | 只缓慢绽放，**不跟随鼠标** |
 | **概念艺术** | 三层山脊 + 漂移的雾 + 一束天光 | **鼠标就是光源**：光束、雾、山脊的**轮廓光**全部跟着走 |
-| **梦核** | 粉紫渐变、发光球体、悬浮的空画框 | 光球会向你靠拢，**靠近时变亮**；画框按景深视差 |
+| **浮光** | 粉紫渐变、发光球体、悬浮的空画框 | 光球会向你靠拢，**靠近时变亮**；画框按景深视差 |
 
 ### 色板：六组三色卡
 
