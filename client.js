@@ -92,7 +92,6 @@ window.__ModuleLoader__.load({
         'bg.silk': '丝绸',
         'bg.ink': '墨流',
         'bg.petal': '花瓣',
-        'bg.concept': '概念艺术',
         'bg.dream': '浮光',
         'preset.default': '标准',
         'preset.clear': '通透',
@@ -125,7 +124,6 @@ window.__ModuleLoader__.load({
         'bg.silk': 'Silk',
         'bg.ink': 'Ink',
         'bg.petal': 'Petal',
-        'bg.concept': 'Concept',
         'bg.dream': 'Motes',
         'preset.default': 'Standard',
         'preset.clear': 'Clear',
@@ -171,7 +169,6 @@ window.__ModuleLoader__.load({
         'bg.silk': '七条缎带横向流动，边缘磨砂、带一道高光，像被风吹起的绸子。鼠标推开它，点一下荡开涟漪。',
         'bg.ink': '墨团缓慢下沉、扩散、互相晕开，鼠标经过会把墨挤开，点一下荡开涟漪。',
         'bg.petal': '三层半透明褶皱花瓣缓慢绽放，固定在右下角，不跟随鼠标。',
-        'bg.concept': '三层山脊 + 雾气 + 一束天光，鼠标就是光源，光束和雾会跟着走。',
         'bg.dream': '粉紫渐变、发光球体、悬浮的空画框；光球会向你靠拢，靠近时变亮。',
         glass: '表面有多透。100% 几乎全靠背景撑，0% 等于回到原生外观。',
         blur: '极光边缘的柔化程度，越大越朦胧。松手才生效，所以拖动不会卡。',
@@ -190,7 +187,6 @@ window.__ModuleLoader__.load({
         'bg.silk': 'Seven satin bands flowing sideways; the pointer pushes the sheet, a click ripples it.',
         'bg.ink': 'Ink clouds sinking and bleeding into each other; the pointer shoves them, a click ripples.',
         'bg.petal': 'Three layers of translucent ruffled petals opening slowly, anchored bottom-right and not following the pointer.',
-        'bg.concept': 'Concept art: three ridges, drifting fog and a shaft of light; the pointer is the light source.',
         'bg.dream': 'Pastel gradient, glowing orbs and empty floating frames; orbs drift toward the pointer and brighten.',
         glass: 'How transparent the surfaces are. 100% leans on the background, 0% is the stock look.',
         blur: 'Softness of the aurora edge. Applied on release, so dragging stays smooth.',
@@ -268,6 +264,9 @@ body:not([data-ds-dark-theme]){
   --ag-c1:${dim(c1, 0.7)}; --ag-c2:${dim(c2, 0.7)}; --ag-c3:${dim(c3, 0.7)};
 }
 html.ag-m0 #${BG_ID} i{ animation:none !important; }
+/* while a slider is being dragged we pause the drift, so changing --ag-blur
+   only re-filters static layers instead of moving ones (that was the jank) */
+html.ag-tuning #${BG_ID} i{ animation-play-state:paused !important; }
 html.ag-m2{ --ag-d1:6s; --ag-d2:8s; --ag-d3:10s; }
 
 /* ---- canvas + native controls -------------------------------------- */
@@ -373,8 +372,11 @@ html.ag-typing #${BG_ID} .ag-scrim{ opacity:.55 }
 #${BG_ID} .ag-grain{
   position:absolute; inset:0; display:block; pointer-events:none;
   background-image:${NOISE}; background-size:160px 160px;
-  opacity:calc(.42 * var(--ag-grain)); mix-blend-mode:soft-light;
+  opacity:calc(.28 * var(--ag-grain));
 }
+/* No mix-blend-mode here on purpose: a blended full-screen layer over a moving
+   backdrop forces a recomposite every frame. Plain opacity keeps the texture
+   and lets the compositor skip that work. */
 
 /* ---- silk backdrop -------------------------------------------------- */
 #${SILK_ID}{
@@ -689,7 +691,8 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
 }
 .ag-range:active::-webkit-slider-thumb{ transform:scale(1.04); }
 .ag-range:focus-visible::-webkit-slider-thumb{ box-shadow:0 0 0 5px rgba(143,176,255,.3); }
-.ag-val{ width:40px; flex:none; text-align:right; font-size:11px; color:#b7c0d4; font-variant-numeric:tabular-nums; }
+.ag-val{ width:40px; flex:none; text-align:right; font-size:11px; color:#b7c0d4; font-variant-numeric:tabular-nums; transition:color .15s ease, transform .15s ease; }
+.ag-val-live{ color:#fff; transform:scale(1.1); }
 
 .ag-row{ display:flex; align-items:center; justify-content:space-between; margin-top:10px; font-size:12.5px; color:#eef1f8; }
 .ag-switch{
@@ -754,6 +757,16 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
     let silkBurst = 0;
     let silkRipples = [];
     const silkPointer = { x: -999, y: -999, active: false };
+    let silkRect = null;
+
+    function refreshSilkRect() {
+      try {
+        silkRect = silk && silk.getBoundingClientRect ? silk.getBoundingClientRect() : null;
+      } catch {
+        silkRect = null;
+      }
+      return silkRect;
+    }
     let refs = {};
     let written = {};
     let rafPending = 0;
@@ -853,6 +866,28 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
       }
     }
 
+    // Same idea for the backdrop chips: hovering swaps the live backdrop
+    // without touching storage, leaving puts the chosen one back.
+    let previewBgMode = null;
+
+    function previewBg(mode) {
+      try {
+        if (mode) {
+          if (previewBgMode === null) previewBgMode = state.bgmode;
+          state = { ...state, bgmode: mode };
+        } else {
+          if (previewBgMode === null) return;
+          state = { ...state, bgmode: previewBgMode };
+          previewBgMode = null;
+        }
+        silkRect = null;
+        paintNow();
+        syncUI();
+      } catch {
+        /* preview is cosmetic */
+      }
+    }
+
     function set(patch) {
       state = { ...state, ...patch };
       save();
@@ -862,9 +897,22 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
     }
 
     function setOpen(open) {
-      if (root) root.setAttribute('data-open', open ? '1' : '0');
+      if (root) {
+        if (!open) {
+          // remember where you were in the panel
+          const p = document.getElementById('dsh-ag-panel');
+          if (p) panelScroll = p.scrollTop || 0;
+        }
+        root.setAttribute('data-open', open ? '1' : '0');
+        if (open) {
+          const p = document.getElementById('dsh-ag-panel');
+          if (p && panelScroll) p.scrollTop = panelScroll;
+        }
+      }
       if (!open) hideTip();
     }
+
+    let panelScroll = 0;
 
     /* ---------------------------- hover copy ---------------------------- */
 
@@ -971,16 +1019,38 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
           step: String(step),
           'data-slider': key,
           'data-tip': tip(key),
+          onPointerdown: () => {
+            // pause the blob animations while dragging: the expensive part of
+            // blur/saturation is re-filtering layers that are also moving
+            try {
+              document.documentElement.classList.add('ag-tuning');
+            } catch {
+              /* ignore */
+            }
+            const out = refs['val-' + key];
+            if (out) out.classList.add('ag-val-live');
+          },
+          onPointerup: () => {
+            try {
+              document.documentElement.classList.remove('ag-tuning');
+            } catch {
+              /* ignore */
+            }
+            const out = refs['val-' + key];
+            if (out) out.classList.remove('ag-val-live');
+          },
           onInput: (e) => {
-            const v = Number(e.target.value);
+            // Shift = fine control (a tenth of the step)
+            const raw = Number(e.target.value);
+            const v = e.shiftKey ? Math.round(raw * 10) / 10 : raw;
             state = { ...state, [key]: v };
             const out = refs['val-' + key];
             if (out) out.textContent = fmt(v);
-            if (key === 'glass') paint();
+            // every slider now updates live — the tuning class keeps it cheap
+            paint();
           },
           onChange: (e) => {
-            const v = Number(e.target.value);
-            state = { ...state, [key]: v };
+            state = { ...state, [key]: Number(e.target.value) };
             save();
             paintNow();
           },
@@ -1005,12 +1075,14 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
         }, t('seg.motion.' + lv)),
       );
 
-      const bgChips = ['aurora', 'silk', 'ink', 'petal', 'concept', 'dream'].map((mode) =>
+      const bgChips = ['aurora', 'silk', 'ink', 'petal', 'dream'].map((mode) =>
         el('button', {
           class: 'ag-chip ag-chip-sm',
           type: 'button',
           'data-bgmode': mode,
           'data-tip': tip('bg.' + mode),
+          onPointerenter: () => previewBg(mode),
+          onPointerleave: () => previewBg(null),
           onClick: () => set({ bgmode: mode }),
         }, t('bg.' + mode)),
       );
@@ -1125,7 +1197,8 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
 
       // the canvas backdrop reacts to the cursor: the sheet is pushed away
       if (silk && state.bgmode !== 'aurora') {
-        const rect = silk.getBoundingClientRect ? silk.getBoundingClientRect() : null;
+        // cached: getBoundingClientRect on every mousemove forces layout
+        const rect = silkRect || refreshSilkRect();
         if (rect && rect.width > 0 && rect.height > 0) {
           silkPointer.x = ((e.clientX - rect.left) / rect.width) * (silk.width || 384);
           silkPointer.y = ((e.clientY - rect.top) / rect.height) * (silk.height || 216);
@@ -1153,7 +1226,7 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
 
     function addRipple(clientX, clientY) {
       if (!silk || state.bgmode === 'aurora') return;
-      const rect = silk.getBoundingClientRect ? silk.getBoundingClientRect() : null;
+      const rect = silkRect || refreshSilkRect();
       if (!rect || !rect.width) return;
       const cx = ((clientX - rect.left) / rect.width) * (silk.width || 384);
       const cy = ((clientY - rect.top) / rect.height) * (silk.height || 216);
@@ -1193,6 +1266,7 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
       if (!root) return;
       const w = window.innerWidth || 1280;
       const h = window.innerHeight || 800;
+      silkRect = null; // the canvas is fixed, but a resize invalidates its box
       let x;
       let y;
       if (state.posX === null || state.posX === undefined || state.posY === null || state.posY === undefined) {
@@ -1320,7 +1394,6 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
       if (mode === 'silk') drawWaves(ctx, W, H, dark);
       else if (mode === 'ink') drawPlumes(ctx, W, H, dark);
       else if (mode === 'petal') drawPetal(ctx, W, H, dark);
-      else if (mode === 'concept') drawConcept(ctx, W, H, dark);
       else if (mode === 'dream') drawDream(ctx, W, H, dark);
 
       drawRippleRings(ctx, dark, now);
@@ -1595,82 +1668,6 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
       sheen.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.fillStyle = sheen;
       ctx.fillRect(sx - W * 0.16, 0, W * 0.32, H);
-    }
-
-    /* ---- concept: matte painting with drifting fog -------------------- */
-
-    function drawConcept(ctx, W, H, dark) {
-      const sky = ctx.createLinearGradient(0, 0, 0, H);
-      sky.addColorStop(0, dark ? '#0d1524' : '#dfe8f2');
-      sky.addColorStop(0.6, dark ? '#16233a' : '#c9d6e6');
-      sky.addColorStop(1, dark ? '#070a12' : '#b9c6d8');
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, W, H);
-
-      const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 1.6;
-      const lx = silkPointer.active ? silkPointer.x : W * 0.72;
-      const ly = silkPointer.active ? silkPointer.y : H * 0.2;
-
-      // light bloom
-      ctx.filter = 'blur(14px)';
-      const glow = ctx.createRadialGradient(lx, ly, 0, lx, ly, W * 0.36);
-      glow.addColorStop(0, 'rgba(255,246,230,' + (dark ? 0.34 : 0.7) + ')');
-      glow.addColorStop(1, 'rgba(255,246,230,0)');
-      ctx.fillStyle = glow;
-      ctx.fillRect(0, 0, W, H);
-
-      // a shaft of light from the source, so the pointer reads as a real lamp
-      ctx.filter = 'blur(16px)';
-      ctx.save();
-      ctx.translate(lx, ly);
-      ctx.rotate(Math.PI / 2 + Math.sin(t * 0.3) * 0.05);
-      const shaft = ctx.createLinearGradient(0, 0, 0, H * 1.5);
-      shaft.addColorStop(0, 'rgba(255,246,230,' + (dark ? 0.2 : 0.34) + ')');
-      shaft.addColorStop(1, 'rgba(255,246,230,0)');
-      ctx.beginPath();
-      ctx.moveTo(-6, 0);
-      ctx.lineTo(W * 0.34, H * 1.5);
-      ctx.lineTo(-W * 0.34, H * 1.5);
-      ctx.closePath();
-      ctx.fillStyle = shaft;
-      ctx.fill();
-      ctx.restore();
-
-      // ridge silhouettes, three depths
-      ctx.filter = 'blur(1.2px)';
-      for (let layer = 0; layer < 3; layer += 1) {
-        const baseY = H * (0.62 + layer * 0.1);
-        const amp = 14 - layer * 3;
-        ctx.beginPath();
-        ctx.moveTo(0, H);
-        for (let x = 0; x <= W; x += 10) {
-          const y = baseY + Math.sin(x * 0.008 + t * (0.4 + layer * 0.2) + layer * 2) * amp +
-            Math.sin(x * 0.021 - t * 0.5 + layer) * amp * 0.4;
-          ctx.lineTo(x, y);
-        }
-        ctx.lineTo(W, H);
-        ctx.closePath();
-        ctx.fillStyle = dark
-          ? 'rgba(' + Math.round(8 + layer * 6) + ',' + Math.round(12 + layer * 8) + ',' + Math.round(20 + layer * 10) + ',0.9)'
-          : 'rgba(' + Math.round(150 - layer * 22) + ',' + Math.round(165 - layer * 22) + ',' + Math.round(185 - layer * 20) + ',0.85)';
-        ctx.fill();
-        // rim light: the crest catches the lamp, and it follows the pointer
-        const rim = 0.1 + Math.max(0, 1 - Math.abs(lx - W * 0.5) / (W * 0.9)) * 0.45;
-        ctx.strokeStyle = 'rgba(255,246,230,' + (rim * (1 - layer * 0.22)).toFixed(3) + ')';
-        ctx.lineWidth = 1.3;
-        ctx.stroke();
-      }
-
-      // fog band drifting across
-      ctx.filter = 'blur(16px)';
-      const fx = ((t * 18) % (W + 200)) - 100;
-      const fog = ctx.createLinearGradient(fx - 160, 0, fx + 160, 0);
-      fog.addColorStop(0, 'rgba(' + cols[0][0] + ',' + cols[0][1] + ',' + cols[0][2] + ',0)');
-      fog.addColorStop(0.5, 'rgba(' + cols[0][0] + ',' + cols[0][1] + ',' + cols[0][2] + ',' + (dark ? 0.16 : 0.22) + ')');
-      fog.addColorStop(1, 'rgba(' + cols[0][0] + ',' + cols[0][1] + ',' + cols[0][2] + ',0)');
-      ctx.fillStyle = fog;
-      ctx.fillRect(fx - 160, H * 0.45, 320, H * 0.4);
     }
 
     /* ---- dream: dreamcore pastel orbs and floating frames ------------- */
