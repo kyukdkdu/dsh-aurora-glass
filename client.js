@@ -93,7 +93,7 @@ window.__ModuleLoader__.load({
         'bg.glass': '玻璃',
         'bg.organic': '有机',
         'bg.ascii': 'ASCII',
-        'bg.glitch': '故障',
+        'bg.relief': '光雕',
         'bg.minimal': '极简',
         'preset.default': '默认',
         'preset.mist': '轻雾',
@@ -129,7 +129,7 @@ window.__ModuleLoader__.load({
         'bg.glass': 'Glass',
         'bg.organic': 'Organic',
         'bg.ascii': 'ASCII',
-        'bg.glitch': 'Glitch',
+        'bg.relief': 'Relief',
         'bg.minimal': 'Minimal',
         'preset.default': 'Default',
         'preset.mist': 'Mist',
@@ -200,7 +200,7 @@ window.__ModuleLoader__.load({
         'bg.glass': 'Glassmorphism: five frosted panes over colour blooms; the nearest pane is pushed away by the pointer.',
         'bg.organic': 'Artificial nature: three branching systems grow from the floor; the pointer parts the canopy.',
         'bg.ascii': 'ASCII: an interference field drawn as characters; the pointer is a lens that warps the grid.',
-        'bg.glitch': 'Glitch: colour bands, scanlines and channel split; a fast pointer swipe tears the frame.',
+        'bg.relief': 'Relief: volumetric rays from the top-right across carved grooves; the pointer is the light.',
         'bg.minimal': 'Minimal: one line and one dot; the line bends near the pointer, a click drops the dot.',
         glass: 'How transparent the surfaces are. 100% leans on the background, 0% is the stock look.',
         blur: 'Softness of the aurora edge. Applied on release, so dragging stays smooth.',
@@ -264,7 +264,7 @@ window.__ModuleLoader__.load({
       // its white canvas instead of the pale pastels alpha blending gives.
       const mix = (v, pct) => `color-mix(in srgb, var(${v}) ${pct}%, transparent)`;
       const soft = (a, b) =>
-        `radial-gradient(circle at 44% 46%, ${mix(a, 96)} 0%, ${mix(a, 60)} 26%, ${mix(b, 26)} 50%, ${mix(b, 0)} 70%)`;
+        `radial-gradient(circle at 44% 46%, ${mix(a, 80)} 0%, ${mix(a, 50)} 26%, ${mix(b, 20)} 52%, ${mix(b, 0)} 74%)`;
 
       return `/* ${PKG} v${VERSION} — palette:${pal.id} */
 :root{
@@ -323,13 +323,13 @@ body{
 /* ---- aurora -------------------------------------------------------- */
 #${BG_ID}{
   position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden;
-  contain:paint; will-change:transform;
+  contain:paint;
   animation:ag-breathe 22s ease-in-out infinite alternate;
 }
 @keyframes ag-breathe{ from{ opacity:.94 } to{ opacity:1 } }
 #${BG_ID} i{
   position:absolute; display:block; border-radius:50%;
-  filter:blur(calc(var(--ag-blur) * .75px)) saturate(var(--ag-sat)) hue-rotate(var(--ag-hue));
+  filter:blur(calc(var(--ag-blur) * 1.8px)) saturate(var(--ag-sat)) hue-rotate(var(--ag-hue));
   opacity:calc(.58 + .36 * var(--ag-g));
   will-change:transform; backface-visibility:hidden;
   transition:filter .45s ease;
@@ -388,7 +388,8 @@ html.ag-typing #${BG_ID} .ag-scrim{ opacity:.55 }
 #${SILK_ID}{
   position:absolute; inset:0; display:none; width:100%; height:100%;
   object-fit:cover; pointer-events:none;
-  filter:saturate(var(--ag-sat)) hue-rotate(var(--ag-hue));
+  image-rendering:auto;
+  transform:translateZ(0);
 }
 html.ag-silk #${BG_ID} i{ display:none }
 html.ag-silk #${SILK_ID}{ display:block }
@@ -438,7 +439,7 @@ body{
   --dsw-alias-border-l2: rgb(15 23 42 / .12) !important;
   --dsw-alias-border-l3: rgb(15 23 42 / .17) !important;
   --dsw-alias-border-l4: rgb(15 23 42 / .21) !important;
-  --dsw-specific-sidebar-fill: transparent !important;
+  --dsw-specific-sidebar-fill: rgb(247 249 254 / calc(.02 + .05 * var(--ag-g))) !important;
   --dsw-alias-brand-primary: ${pal.brand.light} !important;
 }
 
@@ -457,7 +458,7 @@ body[data-ds-dark-theme]{
   --dsw-alias-border-l2: rgb(255 255 255 / calc(.1 + .04 * var(--ag-g))) !important;
   --dsw-alias-border-l3: rgb(255 255 255 / calc(.16 + .06 * var(--ag-g))) !important;
   --dsw-alias-border-l4: rgb(255 255 255 / calc(.2 + .07 * var(--ag-g))) !important;
-  --dsw-specific-sidebar-fill: transparent !important;
+  --dsw-specific-sidebar-fill: rgb(11 13 22 / calc(.02 + .05 * var(--ag-g))) !important;
   --dsw-alias-brand-primary: ${pal.brand.dark} !important;
 }
 
@@ -981,7 +982,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         }, t('seg.motion.' + lv)),
       );
 
-      const bgChips = ['aurora', 'silk', 'ink', 'construct', 'glass', 'organic', 'ascii', 'glitch', 'minimal'].map((mode) =>
+      const bgChips = ['aurora', 'silk', 'ink', 'relief', 'glass', 'organic'].map((mode) =>
         el('button', {
           class: 'ag-chip ag-chip-sm',
           type: 'button',
@@ -1012,12 +1013,6 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         el('div', { class: 'ag-sec' }, [
           el('div', { class: 'ag-label', text: t('sec.palette') }),
           el('div', { class: 'ag-swatches' }, swatches),
-        ]),
-        el('div', { class: 'ag-sec' }, [
-          el('div', { class: 'ag-label', text: t('sec.surface') }),
-          slider('glass', t('ctl.glass'), 0, 1, 0.02, (v) => Math.round(v * 100) + '%'),
-          slider('blur', t('ctl.blur'), 0, 60, 2, (v) => Math.round(v) + 'px'),
-          slider('saturation', t('ctl.saturation'), 0, 2, 0.05, (v) => Math.round(v * 100) + '%'),
         ]),
         el('div', { class: 'ag-sec' }, [
           el('div', { class: 'ag-label', text: t('bg.label') }),
@@ -1140,10 +1135,6 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         dotX = Math.max(0.05, Math.min(0.95, cx / (silk.width || 384)));
         return;
       }
-      if (state.bgmode === 'glitch') {
-        glitchBurst = 1;
-        return;
-      }
       silkRipples.push({ x: cx, y: cy, t0: now0() });
       if (silkRipples.length > 3) silkRipples.shift();
     }
@@ -1258,7 +1249,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
      *   glass     — frosted panes; the pointer repels the nearest pane
      *   organic   — branching forms; the pointer parts the canopy
      *   ascii     — character field; the pointer is a lens
-     *   glitch    — torn bands; a fast swipe tears the frame
+     *   relief    — carved grooves under god rays; the pointer is the light
      *   minimal   — one line, one dot; the line bends, a click drops the dot
      * ------------------------------------------------------------------- */
 
@@ -1306,7 +1297,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       else if (mode === 'glass') drawGlass(ctx, W, H, dark);
       else if (mode === 'organic') drawOrganic(ctx, W, H, dark);
       else if (mode === 'ascii') drawAscii(ctx, W, H, dark);
-      else if (mode === 'glitch') drawGlitch(ctx, W, H, dark);
+      else if (mode === 'relief') drawRelief(ctx, W, H, dark);
       else if (mode === 'minimal') drawMinimal(ctx, W, H, dark);
       else drawWaves(ctx, W, H, dark);
 
@@ -1440,7 +1431,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
     function drawConstruct(ctx, W, H, dark) {
       ctx.fillStyle = dark ? '#0c0a09' : '#f1eee7';
       ctx.fillRect(0, 0, W, H);
-      ctx.filter = 'blur(0.3px)';
+      ctx.filter = 'none';
 
       const cols = paletteOf(state.palette).rgb;
       const t = silkT * 6;
@@ -1462,15 +1453,26 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(b.rot + t * 0.05 * (i % 2 ? 1 : -1));
-        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.6 : 0.54) + ')';
+        // Screen-print logic: no gaussian shadow (it just reads as blur after the
+        // canvas is upscaled) — a solid fill plus a crisp keyline instead.
+        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.72 : 0.62) + ')';
         if (b.kind === 0) {
           ctx.beginPath();
           ctx.arc(0, 0, s * 0.5, 0, Math.PI * 2);
           ctx.fill();
+          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.7)';
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
         } else if (b.kind === 1) {
           ctx.fillRect(-s * 0.9, -s * 0.11, s * 1.8, s * 0.22);
+          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.65)';
+          ctx.lineWidth = 0.7;
+          ctx.strokeRect(-s * 0.9, -s * 0.11, s * 1.8, s * 0.22);
         } else {
           ctx.fillRect(-s * 0.42, -s * 0.42, s * 0.84, s * 0.84);
+          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.65)';
+          ctx.lineWidth = 0.7;
+          ctx.strokeRect(-s * 0.42, -s * 0.42, s * 0.84, s * 0.84);
         }
         ctx.restore();
       }
@@ -1555,13 +1557,31 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         }
 
         const r = Math.min(w, h) * 0.22;
+        const tone = cols[p.tone];
         ctx.beginPath();
         if (ctx.roundRect) ctx.roundRect(cx - w / 2, cy - h / 2, w, h, r);
         else ctx.rect(cx - w / 2, cy - h / 2, w, h);
         ctx.fillStyle = dark ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.42)';
         ctx.fill();
-        ctx.strokeStyle = dark ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.85)';
-        ctx.lineWidth = 1;
+
+        // the rim picks up the colour behind the pane — that is what sells glass
+        const rim = ctx.createLinearGradient(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2);
+        rim.addColorStop(0, 'rgba(255,255,255,' + (dark ? 0.55 : 0.95) + ')');
+        rim.addColorStop(0.45, 'rgba(' + tone[0] + ',' + tone[1] + ',' + tone[2] + ',' + (dark ? 0.5 : 0.4) + ')');
+        rim.addColorStop(1, 'rgba(255,255,255,' + (dark ? 0.22 : 0.6) + ')');
+        ctx.strokeStyle = rim;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        // inner shadow along the bottom edge
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(cx - w / 2 + 1.5, cy - h / 2 + 1.5, w - 3, h - 3, r * 0.9);
+        else ctx.rect(cx - w / 2 + 1.5, cy - h / 2 + 1.5, w - 3, h - 3);
+        const inner = ctx.createLinearGradient(0, cy + h * 0.1, 0, cy + h / 2);
+        inner.addColorStop(0, 'rgba(255,255,255,0)');
+        inner.addColorStop(1, dark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.55)');
+        ctx.strokeStyle = inner;
+        ctx.lineWidth = 2;
         ctx.stroke();
 
         // a specular sliver along the top edge
@@ -1598,6 +1618,15 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.12 + depth * 0.16 : 0.18 + depth * 0.14) + ')';
       ctx.lineWidth = wid;
       ctx.stroke();
+
+      // tips get a leaf, so the structure reads as growth rather than a line tree
+      if (depth <= 2) {
+        ctx.beginPath();
+        ctx.ellipse(nx, ny, len * 0.2, len * 0.09, a, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.2 + depth * 0.14 : 0.26 + depth * 0.12) + ')';
+        ctx.fill();
+      }
+
       branch(ctx, nx, ny, a - 0.44, len * 0.72, depth - 1, cols, dark, t, px, py, wid * 0.66);
       branch(ctx, nx, ny, a + 0.4, len * 0.68, depth - 1, cols, dark, t, px, py, wid * 0.66);
     }
@@ -1626,7 +1655,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       ctx.fillStyle = dark ? '#06080c' : '#f4f6fa';
       ctx.fillRect(0, 0, W, H);
       ctx.filter = 'none';
-      ctx.font = '9px monospace';
+      ctx.font = Math.round(9 * (W / 384)) + 'px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
@@ -1637,8 +1666,8 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       const t = silkT * 6;
       const px = silkPointer.active ? silkPointer.x / W : -9;
       const py = silkPointer.active ? silkPointer.y / H : -9;
-      const stepX = 12;
-      const stepY = 12;
+      const stepX = 12 * (W / 384);
+      const stepY = 12 * (W / 384);
       const cx0 = W / 2;
       const cy0 = H / 2;
 
@@ -1655,94 +1684,98 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           const k = Math.max(0, Math.min(1, (f + 1) / 2));
           const ch = ASCII_RAMP[Math.min(ASCII_RAMP.length - 1, Math.floor(k * ASCII_RAMP.length))];
           if (ch === ' ') continue;
-          ctx.fillStyle = 'rgba(' + cols[0] + ',' + cols[1] + ',' + cols[2] + ',' + (dark ? 0.16 + k * 0.92 : 0.18 + k * 0.86) + ')';
+          const cc = paletteOf(state.palette).rgb[k > 0.72 ? 1 : 0];
+          ctx.fillStyle = 'rgba(' + Math.round((cc[0] + cols[0]) / 2) + ',' + Math.round((cc[1] + cols[1]) / 2) + ',' + Math.round((cc[2] + cols[2]) / 2) + ',' + (dark ? 0.16 + k * 0.92 : 0.18 + k * 0.86) + ')';
           ctx.fillText(ch, x, y);
         }
       }
     }
 
-    /* ---- glitch: torn bands and channel split ------------------------- */
+    /* ---- relief: a carved surface lit by god rays --------------------- */
 
-    let glitchBurst = 0;
-    let glitchLast = 0;
+    const GROOVES = (() => {
+      const list = [];
+      let seed = 60613;
+      const rnd = () => {
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        return seed / 0x7fffffff;
+      };
+      for (let i = 0; i < 13; i += 1) {
+        list.push({
+          r: 0.16 + i * 0.075,
+          y: 0.5 + (rnd() - 0.5) * 0.16,
+          w: 0.5 + rnd() * 0.9,
+          ph: rnd() * 6.28,
+          tone: i % 3,
+        });
+      }
+      return list;
+    })();
 
-    function drawGlitch(ctx, W, H, dark) {
-      const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 8;
-
-      const g0 = ctx.createLinearGradient(0, 0, W, H);
-      g0.addColorStop(0, dark ? '#0a0c14' : '#e9edf5');
-      g0.addColorStop(1, dark ? '#121828' : '#dfe6f2');
-      ctx.fillStyle = g0;
+    function drawRelief(ctx, W, H, dark) {
+      ctx.fillStyle = dark ? '#07070a' : '#eceef3';
       ctx.fillRect(0, 0, W, H);
 
-      // a slow colour wash so the idle state is not empty
-      ctx.filter = 'blur(20px)';
-      for (let i = 0; i < 3; i += 1) {
-        const c = cols[i];
-        const bx = W * (0.3 + Math.sin(t * 0.3 + i * 2) * 0.22);
-        const by = H * (0.4 + Math.cos(t * 0.24 + i) * 0.24);
-        const g = ctx.createRadialGradient(bx, by, 0, bx, by, W * 0.26);
-        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.4 : 0.3) + ')');
-        g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+      const cols = paletteOf(state.palette).rgb;
+      const t = silkT * 5;
+      // the light source is the pointer; without one it sits top-right
+      const lx = silkPointer.active ? silkPointer.x : W * 0.78;
+      const ly = silkPointer.active ? silkPointer.y : -H * 0.12;
+
+      // god rays fanning out of the light
+      ctx.filter = 'blur(11px)';
+      for (let i = 0; i < 7; i += 1) {
+        const ang = -1.9 + i * 0.19 + Math.sin(t * 0.4 + i) * 0.02;
+        const len = H * 1.9;
+        ctx.save();
+        ctx.translate(lx, ly);
+        ctx.rotate(ang);
+        const w = W * (0.045 + (i % 3) * 0.02);
+        const g = ctx.createLinearGradient(0, 0, 0, len);
+        g.addColorStop(0, dark ? 'rgba(255,255,255,0.46)' : 'rgba(255,255,255,0.7)');
+        g.addColorStop(0.35, dark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.28)');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
         ctx.fillStyle = g;
-        ctx.fillRect(0, 0, W, H);
+        ctx.fillRect(-w / 2, 0, w, len);
+        ctx.restore();
       }
 
-      // the pointer sets the glitch energy; it decays on its own
-      if (silkPointer.active) {
-        const nowMs = now0();
-        const dx = silkPointer.x - (glitchLast || silkPointer.x);
-        const dy = silkPointer.y - (glitchLast || silkPointer.y);
-        glitchBurst = Math.min(1, glitchBurst + (Math.abs(dx) + Math.abs(dy)) * 0.02);
-        glitchLast = silkPointer.y;
-      }
-      glitchBurst *= 0.94;
-      const idle = Math.sin(t * 0.35) > 0.972 ? 0.45 : 0;
-      const energy = Math.max(glitchBurst, idle);
-
-      // torn bands: each slice drifts on its own phase and jumps while glitching
-      ctx.filter = 'blur(0.4px)';
-      const bands = 15;
-      for (let i = 0; i < bands; i += 1) {
-        const h = H / bands * (i % 3 === 0 ? 1.6 : 0.8);
-        const y = (i / bands) * H;
-        const c = cols[i % 3];
-        const drift = Math.sin(t * 0.6 + i * 1.3) * 5;
-        const off = drift + (energy > 0.02 ? Math.sin(t * 37 + i * 5.7) * 18 * energy : 0);
-        ctx.globalAlpha = dark ? 0.1 + (i % 5) * 0.028 : 0.08 + (i % 5) * 0.022;
-        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',1)';
-        ctx.fillRect(off, y, W, h - 1);
-        ctx.globalAlpha = 1;
-      }
-
-      // dark dropouts, the part that reads as "broken tape"
-      ctx.globalAlpha = 1;
-      for (let i = 0; i < 5; i += 1) {
-        const y = ((i * 4.3 + t * 1.6) % 1) * H;
-        const w = W * (0.12 + ((i * 37) % 20) / 100);
-        const x = ((i * 53 + t * 9) % 1) * (W - w);
-        ctx.fillStyle = dark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.5)';
-        ctx.fillRect(x, y, w, 3);
-      }
-
-      // channel split on the torn edges
-      if (energy > 0.05) {
-        ctx.globalCompositeOperation = 'screen';
-        for (let i = 0; i < 4; i += 1) {
-          const y = ((i * 2.7 + t * 3) % bands) * (H / bands);
-          const off = Math.sin(t * 41 + i) * 20 * energy;
-          ctx.fillStyle = 'rgba(255,60,90,0.5)';
-          ctx.fillRect(off, y, W, 2);
-          ctx.fillStyle = 'rgba(60,220,255,0.45)';
-          ctx.fillRect(-off, y + 2, W, 2);
+      // the carved body: nested grooves with a lit edge and a dark trough
+      ctx.filter = 'blur(0.8px)';
+      for (let i = 0; i < GROOVES.length; i += 1) {
+        const gv = GROOVES[i];
+        const c = cols[gv.tone];
+        const cx = W * 0.5 + Math.sin(t * 0.3 + gv.ph) * 6;
+        const cy = H * gv.y;
+        const rx = W * gv.r;
+        const ry = H * gv.r * gv.w;
+        const bend = Math.sin(t * 0.5 + gv.ph) * 0.06;
+        // the pointer dents the surface
+        let push = 0;
+        if (silkPointer.active) {
+          const d = Math.sqrt(Math.pow(silkPointer.x - cx, 2) + Math.pow(silkPointer.y - cy, 2));
+          push = Math.max(0, 1 - d / (W * 0.5)) * 7;
         }
-        ctx.globalCompositeOperation = 'source-over';
-      }
 
-      // scanlines
-      ctx.fillStyle = dark ? 'rgba(0,0,0,0.22)' : 'rgba(20,30,50,0.05)';
-      for (let y = 0; y < H; y += 3) ctx.fillRect(0, y, W, 1);
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + push, rx, ry, bend, Math.PI * 0.08, Math.PI * 0.92);
+        const g = ctx.createLinearGradient(cx - rx, cy, cx + rx, cy);
+        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+        g.addColorStop(0.28, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.8 : 0.6) + ')');
+        g.addColorStop(0.5, dark ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.95)');
+        g.addColorStop(0.72, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.55 : 0.45) + ')');
+        g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+        ctx.strokeStyle = g;
+        ctx.lineWidth = 3 + (i % 3);
+        ctx.stroke();
+
+        // shadow just under the lit edge
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + push + 3, rx, ry, bend, Math.PI * 0.08, Math.PI * 0.92);
+        ctx.strokeStyle = dark ? 'rgba(0,0,0,0.45)' : 'rgba(90,100,120,0.18)';
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+      }
     }
 
     /* ---- minimal: one line, one dot ----------------------------------- */
@@ -1750,7 +1783,10 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
     let dotX = 0.5;
 
     function drawMinimal(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#08090c' : '#f6f7f9';
+      const ground = ctx.createLinearGradient(0, 0, 0, H);
+      ground.addColorStop(0, dark ? '#0a0b0f' : '#fbfcfe');
+      ground.addColorStop(1, dark ? '#05060a' : '#eef1f6');
+      ctx.fillStyle = ground;
       ctx.fillRect(0, 0, W, H);
       ctx.filter = 'blur(0.3px)';
 
@@ -1759,7 +1795,18 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       const baseY = H * 0.52;
       const px = silkPointer.active ? silkPointer.x : -9999;
 
-      // one line, bent slightly toward the pointer
+      // a fainter second line gives the composition depth without clutter
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 8) {
+        const y = baseY + H * 0.12 + Math.sin(x * 0.004 - t * 0.7) * H * 0.015;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = dark ? 'rgba(255,255,255,0.14)' : 'rgba(20,24,32,0.12)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // the main line bends toward the pointer
       ctx.beginPath();
       for (let x = 0; x <= W; x += 8) {
         let y = baseY + Math.sin(x * 0.006 + t) * H * 0.02;
@@ -1777,11 +1824,14 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       // the dot drifts, a click drops it where you clicked
       dotX += (0.5 + Math.sin(t * 0.5) * 0.3 - dotX) * 0.02;
       const dxp = dotX * W;
-      const dyp = baseY + Math.sin(dxp * 0.006 + t) * H * 0.02;
-      ctx.beginPath();
-      ctx.arc(dxp, dyp - 14, 4.2, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.95 : 0.9) + ')';
-      ctx.fill();
+      for (let k = 3; k >= 0; k -= 1) {
+        const tx = dxp - k * 5;
+        const ty = baseY + Math.sin(tx * 0.006 + t) * H * 0.02;
+        ctx.beginPath();
+        ctx.arc(tx, ty - 14, 4.2 - k * 0.7, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.95 : 0.9) * (1 - k * 0.26) + ')';
+        ctx.fill();
+      }
     }
 
     /* ---- silk: horizontal satin bands --------------------------------- */
@@ -1862,6 +1912,10 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 
     function syncSilk() {
       const canvasMode = state.bgmode !== 'aurora';
+      // sharp geometry needs a finer bitmap; fluid fields are happy at 384
+      const sharp = state.bgmode === 'construct' || state.bgmode === 'ascii' || state.bgmode === 'minimal' || state.bgmode === 'relief';
+      const wantW = sharp ? 1024 : 384;
+      if (silk && silk.width !== wantW) { silk.width = wantW; silk.height = Math.round(wantW * 0.5625); }
       const on = !!state.enabled && !!state.aurora && canvasMode && silkCtx;
       if (on) {
         if (!silkRaf && typeof requestAnimationFrame === 'function') {

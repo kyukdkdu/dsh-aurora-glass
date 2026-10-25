@@ -3,18 +3,15 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-1.11.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.12.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <p align="center">
   <img src="docs/preview-dark.png" alt="极光" width="780">
   <img src="docs/preview-silk.png" alt="丝绸" width="780">
   <img src="docs/preview-ink.png" alt="墨流" width="780">
-  <img src="docs/preview-construct.png" alt="构成" width="780">
   <img src="docs/preview-glass.png" alt="玻璃" width="780">
   <img src="docs/preview-organic.png" alt="有机" width="780">
-  <img src="docs/preview-ascii.png" alt="ASCII" width="780">
-  <img src="docs/preview-glitch.png" alt="故障" width="780">
-  <img src="docs/preview-minimal.png" alt="极简" width="780">
+  <img src="docs/preview-relief.png" alt="光雕" width="780">
   <img src="docs/preview-light.png" alt="浅色主题" width="780">
   <img src="docs/preview-panel.png" alt="设置面板" width="300">
 </p>
@@ -70,19 +67,16 @@
 - **随场景变色**：会话标题算出一个稳定的色相偏移，再叠加按时段的正弦偏移——切会话、过时间，主色都会慢慢变
 - **输入脉动**：焦点在输入框时背景亮一档
 
-### 背景：八种，各有各的几何和交互
+### 背景：六种，各有各的几何和交互
 
 | 背景 | 语言 | 交互 |
 | --- | --- | --- |
 | **极光** | 四团径向渐变沿闭环漂移（纯 CSS） | 指针视差 + 打字脉动 + 切会话涌动 |
 | **丝绸** | 七条横向缎带，磨边 + 一道白色高光 | 指针把整张布推开，点击荡开涟漪 |
 | **墨流** | 三瓣一串的墨团缓慢下沉 | 指针挤开墨团，点击荡开涟漪，打字加速 |
-| **构成** | 构成主义：圆、斜杠、方块 + 贯穿黑杠 | 整组缓慢旋转，鼠标让每块按深度错位 |
-| **玻璃** | 玻璃态：五块磨砂玻璃浮在色斑上 | 鼠标靠近把最近那块推开 |
-| **有机** | 人工自然主义：三丛枝状结构生长 | 鼠标经过把枝叶拨开 |
-| **ASCII** | 干涉波场用 ` .:-=+*#%@` 画出来 | 鼠标是一枚透镜，靠近会扭曲字阵 |
-| **故障** | 色带 + 扫描线 + 通道分离 + 掉帧暗块 | 快速划动触发撕裂，静置也会偶尔抖 |
-| **极简** | 一根线 + 一个点 | 线在鼠标附近弯一下，点哪里点就落到哪里 |
+| **光雕** | 体积光从右上打下来，照在层叠的雕刻沟槽上 | 鼠标就是光源，光束和凹槽高光跟着走 |
+| **玻璃** | 五块磨砂玻璃浮在色斑上 | 鼠标靠近把最近那块推开 |
+| **有机** | 三丛枝状结构从底部生长 | 鼠标经过把枝叶拨开 |
 
 所有背景共用同一套色板和 `--ag-hue`，所以换色板、换会话，背景都会跟着变。浅色模式用的是同一组颜色的**加深版**，不是靠透明度糊出来的粉彩。
 
