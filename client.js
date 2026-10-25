@@ -47,9 +47,7 @@ window.__ModuleLoader__.load({
       { id: 'inkpurple', label: '墨紫', brand: { light: '#4c2a73', dark: '#adcf37' }, rgb: [[20, 20, 20], [76, 42, 115], [173, 207, 55]] },
       { id: 'graphite', label: '石墨青', brand: { light: '#0f8f8d', dark: '#26cdcb' }, rgb: [[31, 35, 38], [27, 42, 82], [38, 205, 203]] },
       { id: 'silverred', label: '银红', brand: { light: '#c51e2a', dark: '#ff8a92' }, rgb: [[181, 184, 187], [24, 22, 23], [197, 30, 42]] },
-      { id: 'concrete', label: '混凝土', brand: { light: '#9d3928', dark: '#d98a76' }, rgb: [[206, 203, 193], [157, 57, 40], [52, 54, 53]] },
       { id: 'forest', label: '森林金', brand: { light: '#8a6820', dark: '#b18739' }, rgb: [[10, 26, 18], [46, 107, 71], [177, 135, 57]] },
-      { id: 'darkgold', label: '暗金', brand: { light: '#966f30', dark: '#d6b070' }, rgb: [[150, 111, 48], [101, 31, 43], [158, 146, 132]] },
       { id: 'navy', label: '海军橙', brand: { light: '#e85327', dark: '#ff8a5c' }, rgb: [[231, 225, 211], [18, 35, 58], [232, 83, 39]] },
       { id: 'paper', label: '纸本钴', brand: { light: '#1c4a9c', dark: '#6b9ae8' }, rgb: [[239, 232, 214], [28, 74, 156], [218, 46, 43]] },
     ];
@@ -93,6 +91,8 @@ window.__ModuleLoader__.load({
         'bg.aurora': '极光',
         'bg.silk': '丝绸',
         'bg.ink': '墨流',
+        'bg.petal': '花瓣',
+        'bg.bands': '色带',
         'bg.concept': '概念艺术',
         'bg.dream': '梦核',
         'preset.default': '标准',
@@ -125,6 +125,8 @@ window.__ModuleLoader__.load({
         'bg.aurora': 'Aurora',
         'bg.silk': 'Silk',
         'bg.ink': 'Ink',
+        'bg.petal': 'Petal',
+        'bg.bands': 'Bands',
         'bg.concept': 'Concept',
         'bg.dream': 'Dream',
         'preset.default': 'Standard',
@@ -170,6 +172,8 @@ window.__ModuleLoader__.load({
         'bg.aurora': '四团光晕在四角缓慢漂移、旋转，最轻，纯 CSS。',
         'bg.silk': '七条缎带横向流动，边缘磨砂、带一道高光，像被风吹起的绸子。鼠标推开它，点一下荡开涟漪。',
         'bg.ink': '墨团缓慢下沉、扩散、互相晕开，鼠标经过会把墨挤开，点一下荡开涟漪。',
+        'bg.petal': '三层半透明褶皱花瓣缓慢绽放，鼠标就是花心，花瓣会朝你倾一点。',
+        'bg.bands': '像素化的横向色带缓慢起伏，鼠标像一枚透镜把色带顶起来。',
         'bg.concept': '三层山脊 + 雾气 + 一束天光，鼠标就是光源，光束和雾会跟着走。',
         'bg.dream': '粉紫渐变、发光球体、悬浮的空画框，光球会慢慢向你靠拢。',
         glass: '表面有多透。100% 几乎全靠背景撑，0% 等于回到原生外观。',
@@ -188,6 +192,8 @@ window.__ModuleLoader__.load({
         'bg.aurora': 'Four soft glows drifting and rotating at the corners — the lightest, pure CSS.',
         'bg.silk': 'Seven satin bands flowing sideways; the pointer pushes the sheet, a click ripples it.',
         'bg.ink': 'Ink clouds sinking and bleeding into each other; the pointer shoves them, a click ripples.',
+        'bg.petal': 'Three layers of translucent ruffled petals opening slowly; the pointer is the flower centre and the petals lean toward it.',
+        'bg.bands': 'Pixel-quantised horizontal colour bands; the pointer acts as a lens that lifts them.',
         'bg.concept': 'Concept art: three ridges, drifting fog and a shaft of light; the pointer is the light source.',
         'bg.dream': 'Dreamcore: pastel gradient, glowing orbs and empty floating frames; orbs drift toward the pointer.',
         glass: 'How transparent the surfaces are. 100% leans on the background, 0% is the stock look.',
@@ -1001,7 +1007,7 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
         }, t('seg.motion.' + lv)),
       );
 
-      const bgChips = ['aurora', 'silk', 'ink', 'concept', 'dream'].map((mode) =>
+      const bgChips = ['aurora', 'silk', 'ink', 'petal', 'bands', 'concept', 'dream'].map((mode) =>
         el('button', {
           class: 'ag-chip ag-chip-sm',
           type: 'button',
@@ -1307,6 +1313,8 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
       const mode = state.bgmode;
       if (mode === 'silk') drawWaves(ctx, W, H, dark);
       else if (mode === 'ink') drawPlumes(ctx, W, H, dark);
+      else if (mode === 'petal') drawPetal(ctx, W, H, dark);
+      else if (mode === 'bands') drawBands(ctx, W, H, dark);
       else if (mode === 'concept') drawConcept(ctx, W, H, dark);
       else if (mode === 'dream') drawDream(ctx, W, H, dark);
 
@@ -1683,6 +1691,136 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
         ctx.fill();
         ctx.strokeStyle = dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.9)';
         ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
+    /* ---- petal: translucent ruffled petals, reference 10 ------------- */
+
+    function petalPath(ctx, len, wid, ruff, phase) {
+      const N = 18;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      for (let i = 0; i <= N; i += 1) {
+        const t = i / N;
+        const w = Math.pow(Math.sin(Math.PI * t), 0.72) * wid * (1 + ruff * Math.sin(t * 11 + phase));
+        ctx.lineTo(len * t, -w);
+      }
+      for (let i = N; i >= 0; i -= 1) {
+        const t = i / N;
+        const w = Math.pow(Math.sin(Math.PI * t), 0.72) * wid * (1 + ruff * Math.sin(t * 11 + phase + 1.7));
+        ctx.lineTo(len * t, w);
+      }
+      ctx.closePath();
+    }
+
+    function drawPetal(ctx, W, H, dark) {
+      const bg = ctx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, W * 0.8);
+      bg.addColorStop(0, dark ? '#1a1420' : '#f6eef4');
+      bg.addColorStop(1, dark ? '#08060c' : '#e6dbe8');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+
+      const cols = paletteOf(state.palette).rgb;
+      const t = silkT * 4;
+      const cx = silkPointer.active ? silkPointer.x : W * 0.5;
+      const cy = silkPointer.active ? silkPointer.y : H * 0.52;
+      const lean = silkPointer.active ? (silkPointer.x / W - 0.5) * 0.5 : 0;
+
+      ctx.filter = 'blur(0.6px)';
+      // petals read best when the body is the lightest colour of the card and the
+      // tip picks up the accent — otherwise a dark card turns the flower to mud
+      const order = [0, 1, 2].sort(
+        (a, b) => cols[a][0] + cols[a][1] + cols[a][2] - (cols[b][0] + cols[b][1] + cols[b][2]),
+      );
+      const base = cols[order[1]];
+      const accent = cols[order[2]];
+      const layers = [
+        { n: 9, len: 0.46, wid: 0.15, tone: 0, rot: 0.0, alpha: 0.5 },
+        { n: 7, len: 0.34, wid: 0.115, tone: 1, rot: 0.42, alpha: 0.55 },
+        { n: 5, len: 0.23, wid: 0.085, tone: 2, rot: 0.9, alpha: 0.6 },
+      ];
+
+      for (let L = 0; L < layers.length; L += 1) {
+        const lay = layers[L];
+        const c = L === 2 ? accent : base;
+        for (let i = 0; i < lay.n; i += 1) {
+          const a = (i / lay.n) * Math.PI * 2 + lay.rot + t * (0.12 + L * 0.05);
+          const breathe = 1 + 0.05 * Math.sin(t * 1.4 + i + L);
+          const len = lay.len * W * breathe;
+          const wid = lay.wid * W * breathe;
+
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(a + lean * (L + 1) * 0.2);
+          petalPath(ctx, len, wid, 0.12, t + i * 0.8 + L);
+          const g = ctx.createLinearGradient(0, 0, len, 0);
+          const c2 = L === 0 ? accent : base;
+          g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.55 : 0.5) + ')');
+          g.addColorStop(0.55, 'rgba(' + c2[0] + ',' + c2[1] + ',' + c2[2] + ',' + (dark ? 0.4 : 0.36) + ')');
+          g.addColorStop(1, dark ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.92)');
+          ctx.fillStyle = g;
+          ctx.fill();
+          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.85)';
+          ctx.lineWidth = 0.9;
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // the throat of the flower
+      const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.09);
+      core.addColorStop(0, dark ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)');
+      core.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = core;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    /* ---- bands: pixel-quantised colour stripes, reference 11 --------- */
+
+    function drawBands(ctx, W, H, dark) {
+      ctx.fillStyle = dark ? '#242b31' : '#e9edf2';
+      ctx.fillRect(0, 0, W, H);
+      ctx.filter = 'none';
+
+      const cols = paletteOf(state.palette).rgb;
+      const t = silkT * 2.6;
+      const STEP = Math.max(8, W / 26);
+      const px = silkPointer.active ? silkPointer.x : -9999;
+      const py = silkPointer.active ? silkPointer.y : -9999;
+
+      const bands = 6;
+      for (let b = 0; b < bands; b += 1) {
+        const c = cols[b % 3];
+        const baseY = H * (0.12 + b * 0.145);
+        const thick = H * (0.1 + 0.02 * Math.sin(b));
+        const ph = b * 1.3;
+
+        const top = (x) => {
+          let y = baseY + Math.sin(x * 0.006 + t + ph) * H * 0.06 + Math.sin(x * 0.017 - t * 0.6 + ph) * H * 0.02;
+          if (px > -9999) {
+            const dx = x - px;
+            const k = Math.exp(-(dx * dx) / 4200);
+            y += k * (py - y) * 0.22;
+          }
+          // quantise to the pixel grid — this is what makes it read as pixel art
+          return Math.round(y / STEP) * STEP;
+        };
+
+        ctx.beginPath();
+        ctx.moveTo(0, top(0));
+        for (let x = STEP; x <= W; x += STEP) ctx.lineTo(x, top(x));
+        for (let x = W; x >= 0; x -= STEP) ctx.lineTo(x, top(x) + Math.round(thick / STEP) * STEP);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.62 : 0.5) + ')';
+        ctx.fill();
+
+        // a single bright row on the crest
+        ctx.beginPath();
+        ctx.moveTo(0, top(0));
+        for (let x = STEP; x <= W; x += STEP) ctx.lineTo(x, top(x));
+        ctx.strokeStyle = dark ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.8)';
+        ctx.lineWidth = Math.max(2, STEP * 0.22);
         ctx.stroke();
       }
     }

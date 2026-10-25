@@ -3,14 +3,16 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-1.15.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.16.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <p align="center">
   <img src="docs/preview-dark.png" alt="极光 · 墨紫" width="780">
   <img src="docs/preview-silk.png" alt="丝绸 · 石墨青" width="780">
   <img src="docs/preview-ink.png" alt="墨流 · 海军橙" width="780">
+  <img src="docs/preview-petal.png" alt="花瓣 · 银红" width="780">
+  <img src="docs/preview-bands.png" alt="色带 · 石墨青" width="780">
   <img src="docs/preview-concept.png" alt="概念艺术 · 纸本钴" width="780">
-  <img src="docs/preview-dream.png" alt="梦核 · 暗金" width="780">
+  <img src="docs/preview-dream.png" alt="梦核 · 森林金" width="780">
   <img src="docs/preview-light.png" alt="浅色主题" width="780">
   <img src="docs/preview-panel.png" alt="设置面板" width="300">
 </p>
@@ -67,17 +69,19 @@
 - **随场景变色**：会话标题算出一个稳定的色相偏移，再叠加按时段的正弦偏移——切会话、过时间，主色都会慢慢变
 - **输入脉动**：焦点在输入框时背景亮一档
 
-### 背景：五种，各有各的几何和交互
+### 背景：七种，各有各的几何和交互
 
 | 背景 | 语言 | 交互 |
 | --- | --- | --- |
 | **极光** | 四团径向渐变沿闭环漂移（纯 CSS） | 指针视差 + 打字脉动 + 切会话涌动 |
 | **丝绸** | 七条横向缎带，磨边 + 一道白色高光 | 指针把整张布推开，点击荡开涟漪 |
 | **墨流** | 三瓣一串的墨团缓慢下沉 | 指针挤开墨团，点击荡开涟漪，打字加速 |
+| **花瓣** | 三层半透明褶皱花瓣缓慢绽放 | **鼠标就是花心**，花瓣朝你倾；点一下再开一层 |
+| **色带** | 像素量化的横向色带 + 亮脊 | 鼠标像一枚**透镜**，把色带顶起来 |
 | **概念艺术** | 三层山脊 + 漂移的雾 + 一束天光 | **鼠标就是光源**，光束和雾跟着走 |
 | **梦核** | 粉紫渐变、发光球体、悬浮的空画框 | 光球会慢慢向你靠拢，画框按景深视差 |
 
-### 色板：八组三色卡
+### 色板：六组三色卡
 
 取自参考视频里的配色卡，每组三个色（深 / 中 / 亮），深色和浅色模式各取一组：
 
@@ -86,9 +90,7 @@
 | 墨紫 | `#141414` `#4C2A73` `#ADCF37` |
 | 石墨青 | `#1F2326` `#1B2A52` `#26CDCB` |
 | 银红 | `#B5B8BB` `#181617` `#C51E2A` |
-| 混凝土 | `#CECBC1` `#9D3928` `#343635` |
 | 森林金 | `#0A1A12` `#2E6B47` `#B18739` |
-| 暗金 | `#966F30` `#651F2B` `#9E9284` |
 | 海军橙 | `#E7E1D3` `#12233A` `#E85327` |
 | 纸本钴 | `#EFE8D6` `#1C4A9C` `#DA2E2B` |
 
