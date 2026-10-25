@@ -42,13 +42,16 @@ window.__ModuleLoader__.load({
      * palettes & presets
      * ------------------------------------------------------------------ */
 
+    // Eight three-colour cards, taken from the reference palette video.
     const PALETTES = [
-      { id: 'aurora', label: 'Aurora', brand: { light: '#4763ff', dark: '#8fb0ff' }, rgb: [[96, 126, 255], [168, 85, 247], [236, 72, 153]] },
-      { id: 'bloom', label: 'Bloom', brand: { light: '#e0348b', dark: '#ff9ccb' }, rgb: [[255, 64, 129], [255, 138, 76], [186, 85, 255]] },
-      { id: 'neon', label: 'Neon', brand: { light: '#0891b2', dark: '#67e8f9' }, rgb: [[34, 230, 255], [64, 120, 255], [160, 255, 120]] },
-      { id: 'pastel', label: 'Pastel', brand: { light: '#8b5cf6', dark: '#c4b5fd' }, rgb: [[196, 170, 255], [150, 235, 205], [255, 205, 180]] },
-      { id: 'dusk', label: 'Dusk', brand: { light: '#c2410c', dark: '#fdba74' }, rgb: [[255, 140, 80], [140, 70, 190], [60, 180, 180]] },
-      { id: 'mono', label: 'Mono', brand: { light: '#4b5563', dark: '#cbd5e1' }, rgb: [[148, 163, 184], [203, 213, 225], [99, 102, 241]] },
+      { id: 'inkpurple', label: '墨紫', brand: { light: '#4c2a73', dark: '#adcf37' }, rgb: [[20, 20, 20], [76, 42, 115], [173, 207, 55]] },
+      { id: 'graphite', label: '石墨青', brand: { light: '#0f8f8d', dark: '#26cdcb' }, rgb: [[31, 35, 38], [27, 42, 82], [38, 205, 203]] },
+      { id: 'silverred', label: '银红', brand: { light: '#c51e2a', dark: '#ff8a92' }, rgb: [[181, 184, 187], [24, 22, 23], [197, 30, 42]] },
+      { id: 'concrete', label: '混凝土', brand: { light: '#9d3928', dark: '#d98a76' }, rgb: [[206, 203, 193], [157, 57, 40], [52, 54, 53]] },
+      { id: 'forest', label: '森林金', brand: { light: '#8a6820', dark: '#b18739' }, rgb: [[10, 26, 18], [46, 107, 71], [177, 135, 57]] },
+      { id: 'darkgold', label: '暗金', brand: { light: '#966f30', dark: '#d6b070' }, rgb: [[150, 111, 48], [101, 31, 43], [158, 146, 132]] },
+      { id: 'navy', label: '海军橙', brand: { light: '#e85327', dark: '#ff8a5c' }, rgb: [[231, 225, 211], [18, 35, 58], [232, 83, 39]] },
+      { id: 'paper', label: '纸本钴', brand: { light: '#1c4a9c', dark: '#6b9ae8' }, rgb: [[239, 232, 214], [28, 74, 156], [218, 46, 43]] },
     ];
 
     const PRESETS = [
@@ -61,7 +64,7 @@ window.__ModuleLoader__.load({
     const DEFAULT_SETTINGS = {
       enabled: true,
       preset: 'default',
-      palette: 'aurora',
+      palette: 'inkpurple',
       glass: 0.82,
       blur: 34,
       saturation: 1.15,
@@ -88,11 +91,8 @@ window.__ModuleLoader__.load({
         'sec.look': '动效',
         'bg.label': '背景',
         'bg.aurora': '极光',
-        'bg.bloom': '超绽放',
-        'bg.pixel': '像素',
-        'bg.future': '新未来',
-        'bg.surreal': '超现实',
-        'bg.bio': '生物形态',
+        'bg.silk': '丝绸',
+        'bg.ink': '墨流',
         'bg.concept': '概念艺术',
         'bg.dream': '梦核',
         'preset.default': '标准',
@@ -123,11 +123,8 @@ window.__ModuleLoader__.load({
         'sec.look': 'Motion',
         'bg.label': 'Backdrop',
         'bg.aurora': 'Aurora',
-        'bg.bloom': 'Bloom',
-        'bg.pixel': 'Pixel',
-        'bg.future': 'Future',
-        'bg.surreal': 'Surreal',
-        'bg.bio': 'Bio',
+        'bg.silk': 'Silk',
+        'bg.ink': 'Ink',
         'bg.concept': 'Concept',
         'bg.dream': 'Dream',
         'preset.default': 'Standard',
@@ -171,13 +168,10 @@ window.__ModuleLoader__.load({
         preset: '一键套一组参数。想快速换个感觉时用它，细调再去下面的滑杆。',
         palette: '极光的配色。深色和浅色各取一组，悬停色块可以直接预览。',
         'bg.aurora': '四团光晕在四角缓慢漂移、旋转，最轻，纯 CSS。',
-        'bg.bloom': '超绽放：十四片花瓣从中心向外绽放，鼠标就是花心，点一下整朵炸开。',
-        'bg.pixel': '像素美学：32×18 的粗像素格随波场明灭，鼠标是一支笔刷，靠近的格子会亮起来。',
-        'bg.future': '新未来主义：细密的横向光线 + 一条扫过全屏的扫描带，鼠标经过时光线会向你弯。',
-        'bg.surreal': '超现实主义：黄昏天空、低垂的太阳、漂浮的拱形，鼠标移动时三层景深各自错开。',
-        'bg.bio': '生物形态：六团软体缓慢游动、互相融合，鼠标像一根探针，会把它们推开。',
-        'bg.concept': '概念艺术：三层山脊 + 雾气 + 一束天光，鼠标就是光源，光束和雾会跟着走。',
-        'bg.dream': '梦核：粉紫渐变、发光球体、悬浮的空画框，光球会慢慢向你靠拢。',
+        'bg.silk': '七条缎带横向流动，边缘磨砂、带一道高光，像被风吹起的绸子。鼠标推开它，点一下荡开涟漪。',
+        'bg.ink': '墨团缓慢下沉、扩散、互相晕开，鼠标经过会把墨挤开，点一下荡开涟漪。',
+        'bg.concept': '三层山脊 + 雾气 + 一束天光，鼠标就是光源，光束和雾会跟着走。',
+        'bg.dream': '粉紫渐变、发光球体、悬浮的空画框，光球会慢慢向你靠拢。',
         glass: '表面有多透。100% 几乎全靠背景撑，0% 等于回到原生外观。',
         blur: '极光边缘的柔化程度，越大越朦胧。松手才生效，所以拖动不会卡。',
         saturation: '极光的鲜艳程度。往右更艳，往左偏灰。',
@@ -192,11 +186,8 @@ window.__ModuleLoader__.load({
         preset: 'Applies a whole set of values at once. Use it to change the mood quickly.',
         palette: 'The aurora colours. Dark and light each pick their own; hover a swatch to preview.',
         'bg.aurora': 'Four soft glows drifting and rotating at the corners — the lightest, pure CSS.',
-        'bg.bloom': 'Superbloom: fourteen petals open from the centre; the pointer is the core, a click makes it burst.',
-        'bg.pixel': 'Pixel: a 32x18 grid pulsing with a wave field; the pointer is a brush that lights up nearby cells.',
-        'bg.future': 'Neo-futurism: fine horizontal light lines and a scanner band; lines bend toward the pointer.',
-        'bg.surreal': 'Surrealism: dusk sky, a low sun and floating arches; three parallax depths follow the pointer.',
-        'bg.bio': 'Biomorphic: six soft bodies drifting and merging; the pointer acts like a probe that pushes them apart.',
+        'bg.silk': 'Seven satin bands flowing sideways; the pointer pushes the sheet, a click ripples it.',
+        'bg.ink': 'Ink clouds sinking and bleeding into each other; the pointer shoves them, a click ripples.',
         'bg.concept': 'Concept art: three ridges, drifting fog and a shaft of light; the pointer is the light source.',
         'bg.dream': 'Dreamcore: pastel gradient, glowing orbs and empty floating frames; orbs drift toward the pointer.',
         glass: 'How transparent the surfaces are. 100% leans on the background, 0% is the stock look.',
@@ -502,18 +493,23 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 }
 
 /* ---- global hover feedback ------------------------------------------ *
- * One rule for every control in the app, so nothing feels dead under the
- * cursor. brightness() only runs on state change, never per frame. */
-button,[role="button"],[role="menuitem"],[role="tab"],[role="option"],[role="switch"],a{
-  transition:filter .16s ease;
+ * One rule for every control in the app, not just this plugin's panel, so
+ * nothing feels dead under the cursor. brightness() only runs on a state
+ * change, never per frame. !important because the host ships its own
+ * hover rules that would otherwise win. */
+button,[role="button"],[role="menuitem"],[role="tab"],[role="option"],
+[role="switch"],[role="checkbox"],[role="radio"],summary,a{
+  transition:filter .16s ease !important;
 }
 button:hover,[role="button"]:hover,[role="menuitem"]:hover,
-[role="tab"]:hover,[role="option"]:hover,[role="switch"]:hover,a:hover{
-  filter:brightness(1.13) saturate(1.05);
+[role="tab"]:hover,[role="option"]:hover,[role="switch"]:hover,
+[role="checkbox"]:hover,[role="radio"]:hover,summary:hover,a:hover{
+  filter:brightness(1.18) saturate(1.08) !important;
 }
 button:active,[role="button"]:active,[role="menuitem"]:active,
-[role="tab"]:active,[role="option"]:active,[role="switch"]:active,a:active{
-  filter:brightness(.93);
+[role="tab"]:active,[role="option"]:active,[role="switch"]:active,
+[role="checkbox"]:active,[role="radio"]:active,summary:active,a:active{
+  filter:brightness(.92) !important;
 }
 `;
     }
@@ -1005,7 +1001,7 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
         }, t('seg.motion.' + lv)),
       );
 
-      const bgChips = ['aurora', 'bloom', 'pixel', 'future', 'surreal', 'bio', 'concept', 'dream'].map((mode) =>
+      const bgChips = ['aurora', 'silk', 'ink', 'concept', 'dream'].map((mode) =>
         el('button', {
           class: 'ag-chip ag-chip-sm',
           type: 'button',
@@ -1309,11 +1305,8 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
       if (silkRipples.length) silkRipples = silkRipples.filter((r) => now - r.t0 < 2200);
 
       const mode = state.bgmode;
-      if (mode === 'bloom') drawBloom(ctx, W, H, dark);
-      else if (mode === 'pixel') drawPixel(ctx, W, H, dark);
-      else if (mode === 'future') drawFuture(ctx, W, H, dark);
-      else if (mode === 'surreal') drawSurreal(ctx, W, H, dark);
-      else if (mode === 'bio') drawBio(ctx, W, H, dark);
+      if (mode === 'silk') drawWaves(ctx, W, H, dark);
+      else if (mode === 'ink') drawPlumes(ctx, W, H, dark);
       else if (mode === 'concept') drawConcept(ctx, W, H, dark);
       else if (mode === 'dream') drawDream(ctx, W, H, dark);
 
@@ -1336,234 +1329,241 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
       }
     }
 
-    /* ---- bloom: superbloom, petals bursting from a moving core -------- */
+    /* ---- silk: horizontal satin bands --------------------------------- */
 
-    let bloomBurst = 0;
+    /* ---- ink: plumes sinking and bleeding ----------------------------- */
 
-    function drawBloom(ctx, W, H, dark) {
-      const g0 = ctx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, W * 0.72);
-      g0.addColorStop(0, dark ? '#1b0f24' : '#fff3f9');
-      g0.addColorStop(1, dark ? '#08060d' : '#f2edfb');
-      ctx.fillStyle = g0;
-      ctx.fillRect(0, 0, W, H);
-
-      const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 9;
-      const cx = silkPointer.active ? silkPointer.x : W * 0.5;
-      const cy = silkPointer.active ? silkPointer.y : H * 0.5;
-      bloomBurst *= 0.93;
-
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.filter = 'blur(2px)';
-      for (let i = 0; i < 16; i += 1) {
-        const a = (i / 16) * Math.PI * 2 + t * 0.22;
-        const len = (0.14 + 0.07 * Math.sin(t * 1.2 + i)) * W * (1 + bloomBurst * 0.6);
-        const wid = 5 + 4 * Math.sin(t * 0.85 + i * 1.7);
-        const c = cols[i % 3];
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(a);
-        const g = ctx.createLinearGradient(0, 0, len, 0);
-        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.5 : 0.42) + ')');
-        g.addColorStop(0.6, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.18 : 0.14) + ')');
-        g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.ellipse(len * 0.5, 0, len * 0.5, wid, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-      const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * (0.1 + bloomBurst * 0.1));
-      core.addColorStop(0, 'rgba(255,255,255,' + (dark ? 0.5 : 0.75) + ')');
-      core.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = core;
-      ctx.fillRect(0, 0, W, H);
-      ctx.globalCompositeOperation = 'source-over';
-    }
-
-    /* ---- pixel: chunky grid with a brush that follows the pointer ----- */
-
-    function drawPixel(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#0a0a12' : '#f2f4f8';
-      ctx.fillRect(0, 0, W, H);
-      ctx.filter = 'none';
-
-      const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 7;
-      const CX = 32;
-      const CY = 18;
-      const cw = W / CX;
-      const ch = H / CY;
-      const px = silkPointer.active ? silkPointer.x : -999;
-      const py = silkPointer.active ? silkPointer.y : -999;
-
-      for (let y = 0; y < CY; y += 1) {
-        for (let x = 0; x < CX; x += 1) {
-          const v = Math.sin(x * 1.55 + t * 1.4) * 0.5 + Math.cos(y * 1.35 - t * 1.1) * 0.5;
-          const k = (v + 1) / 2;
-          const d = Math.sqrt(Math.pow(x * cw + cw / 2 - px, 2) + Math.pow(y * ch + ch / 2 - py, 2));
-          const near = d < 34 ? 1 - d / 34 : 0;
-          if (k < 0.52 && near < 0.12) continue;
-          const c = cols[Math.min(2, Math.floor(k * 3))];
-          const a = Math.min(1, 0.03 + k * 0.2 + near * 0.4);
-          ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
-          ctx.fillRect(x * cw + 0.5, y * ch + 0.5, cw - 1, ch - 1);
-        }
-      }
-    }
-
-    /* ---- future: neo-futurist lines and a scanner --------------------- */
-
-    function drawFuture(ctx, W, H, dark) {
-      const g0 = ctx.createLinearGradient(0, 0, 0, H);
-      g0.addColorStop(0, dark ? '#070a14' : '#eef2fa');
-      g0.addColorStop(1, dark ? '#03050b' : '#e2e8f4');
-      ctx.fillStyle = g0;
-      ctx.fillRect(0, 0, W, H);
-
-      const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 5;
-      const px = silkPointer.active ? silkPointer.x : -9999;
-      const py = silkPointer.active ? silkPointer.y : H * 0.5;
-
-      ctx.filter = 'blur(0.6px)';
-      for (let i = 0; i < 16; i += 1) {
-        const y0 = H * (0.08 + i * 0.058);
-        const c = cols[i % 3];
-        ctx.beginPath();
-        for (let x = 0; x <= W; x += 12) {
-          let y = y0 + Math.sin(x * 0.01 + t + i * 0.6) * 2.5;
-          if (px > -9999) {
-            const dx = x - px;
-            y += Math.exp(-(dx * dx) / 3000) * (py - y) * 0.1;
-          }
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.1 + (i % 4) * 0.06 : 0.14 + (i % 4) * 0.06) + ')';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-
-      // the scanner: a bright band sweeping down, plus its reflection
-      const sy = ((t * 26) % (H + 60)) - 30;
-      const gs = ctx.createLinearGradient(0, sy - 26, 0, sy + 26);
-      gs.addColorStop(0, 'rgba(255,255,255,0)');
-      gs.addColorStop(0.5, dark ? 'rgba(180,220,255,0.22)' : 'rgba(90,140,220,0.18)');
-      gs.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = gs;
-      ctx.fillRect(0, sy - 26, W, 52);
-
-      // a horizon arc that brightens near the pointer
-      ctx.beginPath();
-      ctx.ellipse(W * 0.5, H * 1.15, W * 0.55, H * 0.55, 0, Math.PI, Math.PI * 2);
-      ctx.strokeStyle = dark ? 'rgba(255,255,255,0.16)' : 'rgba(30,50,90,0.16)';
-      ctx.lineWidth = 1.4;
-      ctx.stroke();
-    }
-
-    /* ---- surreal: floating forms over a dusk gradient ----------------- */
-
-    function drawSurreal(ctx, W, H, dark) {
-      const sky = ctx.createLinearGradient(0, 0, 0, H);
-      sky.addColorStop(0, dark ? '#241536' : '#f6d9c8');
-      sky.addColorStop(0.55, dark ? '#3a1f3d' : '#e8b7a8');
-      sky.addColorStop(1, dark ? '#0b0a14' : '#c9a3a8');
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, W, H);
-
-      const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 2.4;
-      const px = silkPointer.active ? silkPointer.x / W - 0.5 : 0;
-      const py = silkPointer.active ? silkPointer.y / H - 0.5 : 0;
-
-      // a low sun disc
-      const sx = W * 0.5 + px * 14;
-      const sy = H * 0.62 + py * 8;
-      ctx.filter = 'blur(3px)';
-      const sun = ctx.createRadialGradient(sx, sy, 0, sx, sy, W * 0.16);
-      sun.addColorStop(0, 'rgba(255,225,190,' + (dark ? 0.5 : 0.9) + ')');
-      sun.addColorStop(1, 'rgba(255,200,170,0)');
-      ctx.fillStyle = sun;
-      ctx.fillRect(0, 0, W, H);
-
-      // floating arches, each on its own parallax depth
-      ctx.filter = 'blur(0.8px)';
-      for (let i = 0; i < 3; i += 1) {
-        const depth = 0.4 + i * 0.5;
-        const cx = W * (0.28 + i * 0.24) + px * 34 * depth + Math.sin(t * 0.5 + i) * 4;
-        const cy = H * (0.44 + (i % 2) * 0.1) + py * 20 * depth + Math.cos(t * 0.4 + i) * 3;
-        const rw = W * (0.05 + i * 0.012);
-        const rh = H * (0.16 + i * 0.04);
-        const c = cols[i % 3];
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, rw, rh, 0.2, 0, Math.PI * 2);
-        ctx.fillStyle = dark ? 'rgba(12,10,20,0.75)' : 'rgba(60,40,60,0.28)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.5 : 0.6) + ')';
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
-      }
-
-      // ground haze
-      const gr = ctx.createLinearGradient(0, H * 0.72, 0, H);
-      gr.addColorStop(0, 'rgba(0,0,0,0)');
-      gr.addColorStop(1, dark ? 'rgba(4,4,10,0.85)' : 'rgba(90,60,80,0.35)');
-      ctx.fillStyle = gr;
-      ctx.fillRect(0, H * 0.72, W, H * 0.28);
-    }
-
-    /* ---- bio: biomorphic blobs that merge and split ------------------- */
-
-    const BIO = (() => {
+    const PLUMES = (() => {
       const list = [];
-      let seed = 31337;
+      let seed = 20261025;
       const rnd = () => {
         seed = (seed * 1103515245 + 12345) & 0x7fffffff;
         return seed / 0x7fffffff;
       };
-      for (let i = 0; i < 6; i += 1) {
-        list.push({ x: rnd(), y: rnd(), r: 0.14 + rnd() * 0.14, ph: rnd() * 6.28, tone: i % 3 });
+      for (let i = 0; i < 16; i += 1) {
+        list.push({
+          x: rnd(),
+          y: rnd(),
+          r: 0.1 + rnd() * 0.22,
+          vx: (rnd() - 0.5) * 0.05,
+          vy: (rnd() - 0.5) * 0.05,
+          ph: rnd() * 6.28,
+          tone: i % 3,
+          wob: 0.4 + rnd() * 0.8,
+        });
       }
       return list;
     })();
 
-    function drawBio(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#05090c' : '#eef4f4';
+    function drawPlumes(ctx, W, H, dark) {
+      ctx.fillStyle = dark ? '#04060c' : '#eef2f9';
       ctx.fillRect(0, 0, W, H);
+      ctx.filter = 'blur(3.2px)';
 
       const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 5;
+      const t = silkT * 26;
       const px = silkPointer.active ? silkPointer.x : -9999;
       const py = silkPointer.active ? silkPointer.y : -9999;
 
-      ctx.filter = 'blur(9px)';
-      for (let i = 0; i < BIO.length; i += 1) {
-        const b = BIO[i];
-        let cx = (b.x + Math.sin(t * 0.35 + b.ph) * 0.14) * W;
-        let cy = (b.y + Math.cos(t * 0.28 + b.ph * 1.6) * 0.12) * H;
-        const r = b.r * (0.85 + 0.15 * Math.sin(t * 0.6 + b.ph)) * W;
+      for (let i = 0; i < PLUMES.length; i += 1) {
+        const p = PLUMES[i];
+        // slow swirl + a downward drift: ink sinks
+        let x = (p.x + Math.sin(t * 0.11 * p.wob + p.ph) * 0.16 + p.vx * t * 0.4) % 1.2;
+        let y = (p.y + Math.cos(t * 0.09 * p.wob + p.ph * 1.7) * 0.14 + p.vy * t * 0.35) % 1.2;
+        if (x < 0) x += 1.2;
+        if (y < 0) y += 1.2;
 
+        let cx = x * W;
+        let cy = y * H;
+        const rad = p.r * (0.7 + 0.3 * Math.sin(t * 0.13 + p.ph)) * H * 0.72;
+        const c = cols[p.tone];
+
+        // pointer pushes the cloud aside
         if (px > -999) {
           const dx = cx - px;
           const dy = cy - py;
-          const d = Math.sqrt(dx * dx + dy * dy) || 1;
-          if (d < r * 1.6) {
-            const k = (1 - d / (r * 1.6)) * 26;
-            cx += (dx / d) * k;
-            cy += (dy / d) * k;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < 9000) {
+            const push = (1 - d2 / 9000) * 26;
+            const d = Math.sqrt(d2) || 1;
+            cx += (dx / d) * push;
+            cy += (dy / d) * push;
           }
         }
 
+        // a plume is three lobes strung along its drift direction, so it reads
+        // as ink with tendrils rather than one round blob
+        const ang = p.ph + t * 0.05 * p.wob;
+        const dirX = Math.cos(ang) * -0.5;
+        const dirY = Math.sin(ang);
+        for (let k = 0; k < 3; k += 1) {
+          const spread = rad * (0.15 + k * 0.55);
+          const bx = cx + dirX * spread;
+          const by = cy + dirY * spread;
+          const br = rad * (1 - k * 0.26);
+          if (br <= 0.5) continue;
+          const alpha = (dark ? 0.62 : 0.52) * (1 - k * 0.24);
+          const g = ctx.createRadialGradient(bx, by, 0, bx, by, br);
+          g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')');
+          g.addColorStop(0.5, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha * 0.42 + ')');
+          g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(bx, by, br, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    /* ---- constructivism: bold flat geometry --------------------------- */
+
+    const BARS = (() => {
+      const list = [];
+      let seed = 918273;
+      const rnd = () => {
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        return seed / 0x7fffffff;
+      };
+      for (let i = 0; i < 7; i += 1) {
+        list.push({
+          kind: i % 3,
+          x: 0.12 + rnd() * 0.76,
+          y: 0.14 + rnd() * 0.7,
+          s: 0.1 + rnd() * 0.26,
+          rot: rnd() * Math.PI,
+          tone: i % 3,
+          depth: 0.3 + rnd() * 0.9,
+        });
+      }
+      return list;
+    })();
+
+    function drawConstruct(ctx, W, H, dark) {
+      ctx.fillStyle = dark ? '#0c0a09' : '#f1eee7';
+      ctx.fillRect(0, 0, W, H);
+      ctx.filter = 'none';
+
+      const cols = paletteOf(state.palette).rgb;
+      const t = silkT * 6;
+      const px = silkPointer.active ? silkPointer.x / W - 0.5 : 0;
+      const py = silkPointer.active ? silkPointer.y / H - 0.5 : 0;
+
+      ctx.save();
+      ctx.translate(W * 0.5 + px * 26, H * 0.5 + py * 18);
+      ctx.rotate(Math.sin(t * 0.12) * 0.06);
+      ctx.translate(-W * 0.5, -H * 0.5);
+
+      for (let i = 0; i < BARS.length; i += 1) {
+        const b = BARS[i];
         const c = cols[b.tone];
-        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.55 : 0.42) + ')');
-        g.addColorStop(0.55, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.22 : 0.16) + ')');
-        g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
-        ctx.fillStyle = g;
+        const cx = b.x * W + px * 34 * b.depth + Math.sin(t * 0.4 + i) * 3;
+        const cy = b.y * H + py * 22 * b.depth + Math.cos(t * 0.33 + i) * 3;
+        const s = b.s * Math.min(W, H);
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(b.rot + t * 0.05 * (i % 2 ? 1 : -1));
+        // Screen-print logic: no gaussian shadow (it just reads as blur after the
+        // canvas is upscaled) — a solid fill plus a crisp keyline instead.
+        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.72 : 0.62) + ')';
+        if (b.kind === 0) {
+          ctx.beginPath();
+          ctx.arc(0, 0, s * 0.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.7)';
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        } else if (b.kind === 1) {
+          ctx.fillRect(-s * 0.9, -s * 0.11, s * 1.8, s * 0.22);
+          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.65)';
+          ctx.lineWidth = 0.7;
+          ctx.strokeRect(-s * 0.9, -s * 0.11, s * 1.8, s * 0.22);
+        } else {
+          ctx.fillRect(-s * 0.42, -s * 0.42, s * 0.84, s * 0.84);
+          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.65)';
+          ctx.lineWidth = 0.7;
+          ctx.strokeRect(-s * 0.42, -s * 0.42, s * 0.84, s * 0.84);
+        }
+        ctx.restore();
+      }
+
+      // one hard black bar anchors the composition, like a Rodchenko plate
+      ctx.fillStyle = dark ? 'rgba(255,255,255,0.9)' : 'rgba(16,14,12,0.9)';
+      ctx.save();
+      ctx.translate(W * (0.5 + px * 0.1), H * (0.5 + py * 0.1));
+      ctx.rotate(-0.6 + Math.sin(t * 0.1) * 0.05);
+      ctx.fillRect(-W * 0.7, -1.6, W * 1.4, 3.2);
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    function drawWaves(ctx, W, H, dark) {
+      ctx.fillStyle = dark ? '#070a12' : '#eef2f9';
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.filter = 'blur(1.6px)';
+      const cols = paletteOf(state.palette).rgb;
+      const px = silkPointer.x;
+      const py = silkPointer.y;
+
+      for (let i = 0; i < 7; i += 1) {
+        const a = cols[i % 3];
+        const b = cols[(i + 1) % 3];
+        const amp = 8 + i * 3.4;
+        const baseY = H * (0.06 + i * 0.13);
+        const thick = H * (0.15 + 0.02 * i);
+        const ph = i * 1.7;
+        const sp = 1 + i * 0.12;
+
+        const wave = (x, off) => {
+          let y = baseY + off +
+            Math.sin(x * 0.012 + silkT * sp + ph) * amp +
+            Math.sin(x * 0.03 - silkT * 1.7 + ph * 1.4) * amp * 0.42;
+          if (silkPointer.active) {
+            const dx = x - px;
+            y += Math.exp(-(dx * dx) / 2400) * (py - y) * 0.16;
+          }
+          for (let k = 0; k < silkRipples.length; k += 1) {
+            const r = silkRipples[k];
+            const age = (now0() - r.t0) / 1000;
+            const front = age * 240;
+            const d = Math.abs(x - r.x);
+            const band = Math.exp(-Math.pow((d - front) / 80, 2));
+            if (band > 0.01) y += band * 22 * Math.max(0, 1 - age / 2.2) * (i % 2 ? 1 : -1);
+          }
+          return y;
+        };
+
         ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        for (let x = 0; x <= W; x += 6) {
+          const y = wave(x, 0);
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        for (let x = W; x >= 0; x -= 6) ctx.lineTo(x, wave(x, thick));
+        ctx.closePath();
+        const g = ctx.createLinearGradient(0, baseY - amp, 0, baseY + thick + amp);
+        const A = (al) => 'rgba(' + a[0] + ',' + a[1] + ',' + a[2] + ',' + al + ')';
+        const B = (al) => 'rgba(' + b[0] + ',' + b[1] + ',' + b[2] + ',' + al + ')';
+        g.addColorStop(0, A(dark ? 0.08 : 0.06));
+        g.addColorStop(0.16, A(dark ? 0.62 : 0.52));
+        g.addColorStop(0.3, dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.72)');
+        g.addColorStop(0.52, B(dark ? 0.46 : 0.38));
+        g.addColorStop(0.82, B(dark ? 0.14 : 0.1));
+        g.addColorStop(1, A(0.04));
+        ctx.fillStyle = g;
         ctx.fill();
+
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 6) {
+          const y = wave(x, 0);
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.65)';
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
       }
     }
 

@@ -3,17 +3,14 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-1.14.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.15.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <p align="center">
-  <img src="docs/preview-dark.png" alt="极光" width="780">
-  <img src="docs/preview-bloom.png" alt="超绽放" width="780">
-  <img src="docs/preview-pixel.png" alt="像素" width="780">
-  <img src="docs/preview-future.png" alt="新未来" width="780">
-  <img src="docs/preview-surreal.png" alt="超现实" width="780">
-  <img src="docs/preview-bio.png" alt="生物形态" width="780">
-  <img src="docs/preview-concept.png" alt="概念艺术" width="780">
-  <img src="docs/preview-dream.png" alt="梦核" width="780">
+  <img src="docs/preview-dark.png" alt="极光 · 墨紫" width="780">
+  <img src="docs/preview-silk.png" alt="丝绸 · 石墨青" width="780">
+  <img src="docs/preview-ink.png" alt="墨流 · 海军橙" width="780">
+  <img src="docs/preview-concept.png" alt="概念艺术 · 纸本钴" width="780">
+  <img src="docs/preview-dream.png" alt="梦核 · 暗金" width="780">
   <img src="docs/preview-light.png" alt="浅色主题" width="780">
   <img src="docs/preview-panel.png" alt="设置面板" width="300">
 </p>
@@ -55,7 +52,7 @@
 | --- | --- |
 | 标题栏 | 版本号、**玻璃主题总开关**、关闭 |
 | 预设 | 标准 / 通透 / 浓郁 / 原版（四段式，一键套参数） |
-| 色板 · 背景 | Aurora / Bloom / Neon / Pastel / Dusk / Mono（悬停即可预览）+ 八种背景 |
+| 色板 · 背景 | 墨紫 / 石墨青 / 银红 / 混凝土 / 森林金 / 暗金 / 海军橙 / 纸本钴（悬停即可预览）+ 五种背景 |
 | 质感 | 玻璃强度、柔化、色彩三个滑杆 |
 | 动效 | 速度（关 / 柔和 / 丰富）、极光背景、噪点质感、随场景变色 |
 
@@ -70,18 +67,30 @@
 - **随场景变色**：会话标题算出一个稳定的色相偏移，再叠加按时段的正弦偏移——切会话、过时间，主色都会慢慢变
 - **输入脉动**：焦点在输入框时背景亮一档
 
-### 背景：八种设计语言，各有各的几何和交互
+### 背景：五种，各有各的几何和交互
 
 | 背景 | 语言 | 交互 |
 | --- | --- | --- |
 | **极光** | 四团径向渐变沿闭环漂移（纯 CSS） | 指针视差 + 打字脉动 + 切会话涌动 |
-| **超绽放** | 十六片花瓣从中心绽放，叠加发光 | **鼠标就是花心**，花瓣跟着你转；点一下整朵炸开 |
-| **像素** | 48×27 的粗像素格随波场明灭 | 鼠标是一支笔刷，靠近的格子会亮起来 |
-| **新未来** | 细密横向光线 + 扫过全屏的扫描带 | 光线会朝鼠标弯过去，扫描带持续下移 |
-| **超现实** | 黄昏天空、低垂的太阳、漂浮的拱形 | 三层景深各自跟随鼠标错开 |
-| **生物形态** | 六团软体缓慢游动、互相融合 | 鼠标像一根探针，把软体推开 |
+| **丝绸** | 七条横向缎带，磨边 + 一道白色高光 | 指针把整张布推开，点击荡开涟漪 |
+| **墨流** | 三瓣一串的墨团缓慢下沉 | 指针挤开墨团，点击荡开涟漪，打字加速 |
 | **概念艺术** | 三层山脊 + 漂移的雾 + 一束天光 | **鼠标就是光源**，光束和雾跟着走 |
 | **梦核** | 粉紫渐变、发光球体、悬浮的空画框 | 光球会慢慢向你靠拢，画框按景深视差 |
+
+### 色板：八组三色卡
+
+取自参考视频里的配色卡，每组三个色（深 / 中 / 亮），深色和浅色模式各取一组：
+
+| 色板 | 三色 |
+| --- | --- |
+| 墨紫 | `#141414` `#4C2A73` `#ADCF37` |
+| 石墨青 | `#1F2326` `#1B2A52` `#26CDCB` |
+| 银红 | `#B5B8BB` `#181617` `#C51E2A` |
+| 混凝土 | `#CECBC1` `#9D3928` `#343635` |
+| 森林金 | `#0A1A12` `#2E6B47` `#B18739` |
+| 暗金 | `#966F30` `#651F2B` `#9E9284` |
+| 海军橙 | `#E7E1D3` `#12233A` `#E85327` |
+| 纸本钴 | `#EFE8D6` `#1C4A9C` `#DA2E2B` |
 
 所有背景共用同一套色板和 `--ag-hue`，所以换色板、换会话，背景都会跟着变。浅色模式用的是同一组颜色的**加深版**，不是靠透明度糊出来的粉彩。
 
