@@ -89,6 +89,9 @@ window.__ModuleLoader__.load({
         'bg.aurora': '极光',
         'bg.silk': '丝绸',
         'bg.metal': '金属',
+        'bg.ink': '墨流',
+        'bg.bloom': '绽放',
+        'bg.chrome': '铬带',
         'preset.default': '默认',
         'preset.mist': '轻雾',
         'preset.depth': '深空',
@@ -119,6 +122,9 @@ window.__ModuleLoader__.load({
         'bg.aurora': 'Aurora',
         'bg.silk': 'Silk',
         'bg.metal': 'Metal',
+        'bg.ink': 'Ink',
+        'bg.bloom': 'Bloom',
+        'bg.chrome': 'Chrome',
         'preset.default': 'Default',
         'preset.mist': 'Mist',
         'preset.depth': 'Deep',
@@ -159,7 +165,12 @@ window.__ModuleLoader__.load({
       zh: {
         preset: '一键套一组参数。想快速换个感觉时用它，细调再去下面的滑杆。',
         palette: '极光的配色。深色和浅色各取一组，悬停色块可以直接预览。',
-        bg: '背景用柔和光晕、流动丝绸，还是液态金属。后两个是低分辨率画布，很省；点一下背景会荡开一圈。',
+        'bg.aurora': '四团光晕在四角缓慢漂移、旋转，最轻，纯 CSS。',
+        'bg.silk': '七条缎带横向流动，边缘磨砂、带一道高光，像被风吹起的绸子。',
+        'bg.metal': '同样是横向波带，但换成黑银和一道硬高光，像液态金属。',
+        'bg.ink': '墨团缓慢下沉、扩散、互相晕开，深色下最沉。',
+        'bg.bloom': '彩色墨滴从下往上绽开，浅色下像牛奶倒进水里。',
+        'bg.chrome': '金属环围绕中心缓慢旋转、交错，像镀铬缎带打的结。',
         glass: '表面有多透。100% 几乎全靠背景撑，0% 等于回到原生外观。',
         blur: '极光边缘的柔化程度，越大越朦胧。松手才生效，所以拖动不会卡。',
         saturation: '极光的鲜艳程度。往右更艳，往左偏灰。',
@@ -173,7 +184,12 @@ window.__ModuleLoader__.load({
       en: {
         preset: 'Applies a whole set of values at once. Use it to change the mood quickly.',
         palette: 'The aurora colours. Dark and light each pick their own; hover a swatch to preview.',
-        bg: 'Soft light blobs, flowing silk, or liquid metal. The last two are low-res canvases; click the backdrop for a ripple.',
+        'bg.aurora': 'Four soft glows drifting and rotating at the corners — the lightest, pure CSS.',
+        'bg.silk': 'Seven satin bands flowing sideways, soft edges with a highlight, like silk in a breeze.',
+        'bg.metal': 'The same bands, but black-silver with a hard specular — liquid metal.',
+        'bg.ink': 'Ink clouds sinking, spreading and bleeding into each other. Heaviest in dark mode.',
+        'bg.bloom': 'Coloured ink blooming upward — milk dropped into water, in light mode.',
+        'bg.chrome': 'Metal loops rotating and crossing around the centre, like chrome ribbons knotted.',
         glass: 'How transparent the surfaces are. 100% leans on the background, 0% is the stock look.',
         blur: 'Softness of the aurora edge. Applied on release, so dragging stays smooth.',
         saturation: 'Colour intensity. Right is richer, left is greyer.',
@@ -623,6 +639,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
   background:linear-gradient(180deg, color-mix(in srgb, var(--dsw-alias-brand-primary,#4763ff) 92%, #fff), var(--dsw-alias-brand-primary,#4763ff));
   box-shadow:0 4px 14px rgba(71,99,255,.35), inset 0 1px 0 rgba(255,255,255,.28);
 }
+.ag-chip-sm{ padding:5px 10px; font-size:11.5px; }
 
 .ag-swatches{ display:flex; gap:10px; align-items:center; }
 .ag-swatch{
@@ -780,7 +797,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       });
       html.classList.toggle('ag-m0', !on || !state.aurora || state.motion === 'off');
       html.classList.toggle('ag-m2', on && state.aurora && state.motion === 'full');
-      html.classList.toggle('ag-silk', on && state.aurora && (state.bgmode === 'silk' || state.bgmode === 'metal'));
+      html.classList.toggle('ag-silk', on && state.aurora && state.bgmode !== 'aurora');
       if (bg) bg.style.display = on && state.aurora ? '' : 'none';
       syncSilk();
       updateHue();
@@ -958,12 +975,12 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         }, t('seg.motion.' + lv)),
       );
 
-      const bgButtons = ['aurora', 'silk', 'metal'].map((mode) =>
+      const bgChips = ['aurora', 'silk', 'metal', 'ink', 'bloom', 'chrome'].map((mode) =>
         el('button', {
-          class: 'ag-seg-btn',
+          class: 'ag-chip ag-chip-sm',
           type: 'button',
           'data-bgmode': mode,
-          'data-tip': tip('bg'),
+          'data-tip': tip('bg.' + mode),
           onClick: () => set({ bgmode: mode }),
         }, t('bg.' + mode)),
       );
@@ -997,12 +1014,18 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           slider('saturation', t('ctl.saturation'), 0, 2, 0.05, (v) => Math.round(v * 100) + '%'),
         ]),
         el('div', { class: 'ag-sec' }, [
+          el('div', { class: 'ag-label', text: t('bg.label') }),
+          el('div', { class: 'ag-chips' }, bgChips),
+        ]),
+        el('div', { class: 'ag-sec' }, [
+          el('div', { class: 'ag-label', text: t('sec.surface') }),
+          slider('glass', t('ctl.glass'), 0, 1, 0.02, (v) => Math.round(v * 100) + '%'),
+          slider('blur', t('ctl.blur'), 0, 60, 2, (v) => Math.round(v) + 'px'),
+          slider('saturation', t('ctl.saturation'), 0, 2, 0.05, (v) => Math.round(v * 100) + '%'),
+        ]),
+        el('div', { class: 'ag-sec' }, [
           el('div', { class: 'ag-label', text: t('sec.look') }),
           el('div', { class: 'ag-row', style: 'margin-top:0' }, [
-            el('span', { text: t('bg.label') }),
-            el('div', { class: 'ag-seg', style: 'width:156px' }, bgButtons),
-          ]),
-          el('div', { class: 'ag-row' }, [
             el('span', { text: t('ctl.motion') }),
             el('div', { class: 'ag-seg', style: 'width:156px' }, segButtons),
           ]),
@@ -1031,7 +1054,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       refs.presetChips = presetChips;
       refs.swatches = swatches;
       refs.segButtons = segButtons;
-      refs.bgButtons = bgButtons;
+      refs.bgChips = bgChips;
       return panel;
     }
 
@@ -1046,7 +1069,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       (refs.segButtons || []).forEach((node) => {
         node.classList.toggle('on', node.getAttribute('data-motion') === state.motion);
       });
-      (refs.bgButtons || []).forEach((node) => {
+      (refs.bgChips || []).forEach((node) => {
         node.classList.toggle('on', node.getAttribute('data-bgmode') === state.bgmode);
       });
       ['aurora', 'grain', 'tint', 'enabled'].forEach((key) => {
@@ -1080,7 +1103,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       pointerY = e.clientY / h - 0.5;
 
       // the canvas backdrop reacts to the cursor: the sheet is pushed away
-      if (silk && (state.bgmode === 'silk' || state.bgmode === 'metal')) {
+      if (silk && state.bgmode !== 'aurora') {
         const rect = silk.getBoundingClientRect ? silk.getBoundingClientRect() : null;
         if (rect && rect.width > 0 && rect.height > 0) {
           silkPointer.x = ((e.clientX - rect.left) / rect.width) * (silk.width || 384);
@@ -1100,7 +1123,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
     }
 
     function addRipple(clientX, clientY) {
-      if (!silk || !(state.bgmode === 'silk' || state.bgmode === 'metal')) return;
+      if (!silk || state.bgmode === 'aurora') return;
       const rect = silk.getBoundingClientRect ? silk.getBoundingClientRect() : null;
       if (!rect || !rect.width) return;
       silkRipples.push({
@@ -1212,10 +1235,17 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       }
     }
 
-    /* ---------------------------- silk backdrop ---------------------------- */
+    /* ------------------------- canvas backdrops ------------------------- *
+     * Every reference video gets its own geometry, not a recoloured copy:
+     *   silk   — horizontal satin bands that drift
+     *   metal  — the same bands with a hard specular (liquid metal)
+     *   ink    — plumes that sink and bloom (dark)
+     *   bloom  — plumes that rise and spread (light, coloured)
+     *   chrome — metallic loops rotating around the centre
+     * ------------------------------------------------------------------- */
 
-    function silkDraw(now) {
-      silkRaf = requestAnimationFrame(silkDraw);
+    function sceneDraw(now) {
+      silkRaf = requestAnimationFrame(sceneDraw);
       if (!silkCtx || !silk) return;
       let hidden = false;
       try {
@@ -1228,7 +1258,6 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       const dt = silkLast ? Math.min(80, now - silkLast) : 16;
       silkLast = now;
 
-      // speed: typing pushes it, a session switch surges it, then it settles
       let typing = false;
       try {
         typing = document.documentElement.classList.contains('ag-typing');
@@ -1250,19 +1279,163 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       } catch {
         dark = false;
       }
-      const metal = state.bgmode === 'metal';
 
-      ctx.clearRect(0, 0, W, H);
+      if (silkRipples.length) silkRipples = silkRipples.filter((r) => now - r.t0 < 2200);
+
+      const mode = state.bgmode;
+      if (mode === 'ink' || mode === 'bloom') drawPlumes(ctx, W, H, dark, mode === 'bloom');
+      else if (mode === 'chrome') drawChrome(ctx, W, H, dark);
+      else drawWaves(ctx, W, H, dark, mode === 'metal');
+
+      drawRippleRings(ctx, dark, now);
+      ctx.filter = 'none';
+    }
+
+    function drawRippleRings(ctx, dark, now) {
+      for (let k = 0; k < silkRipples.length; k += 1) {
+        const r = silkRipples[k];
+        const age = (now - r.t0) / 1000;
+        const rad = age * 240;
+        const fade = Math.max(0, 1 - age / 2.2);
+        if (fade <= 0) continue;
+        ctx.beginPath();
+        ctx.ellipse(r.x, r.y, rad, rad * 0.45, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = dark ? 'rgba(255,255,255,' + 0.28 * fade + ')' : 'rgba(255,255,255,' + 0.7 * fade + ')';
+        ctx.lineWidth = 2.4 * fade + 0.4;
+        ctx.stroke();
+      }
+    }
+
+    /* ---- ink / bloom: plumes made of soft blobs ---------------------- */
+
+    const PLUMES = (() => {
+      const list = [];
+      let seed = 20261025;
+      const rnd = () => {
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        return seed / 0x7fffffff;
+      };
+      for (let i = 0; i < 16; i += 1) {
+        list.push({
+          x: rnd(),
+          y: rnd(),
+          r: 0.1 + rnd() * 0.22,
+          vx: (rnd() - 0.5) * 0.05,
+          vy: (rnd() - 0.5) * 0.05,
+          ph: rnd() * 6.28,
+          tone: i % 3,
+          wob: 0.4 + rnd() * 0.8,
+        });
+      }
+      return list;
+    })();
+
+    function drawPlumes(ctx, W, H, dark, rising) {
+      ctx.fillStyle = dark ? '#04060c' : '#eef2f9';
+      ctx.fillRect(0, 0, W, H);
+      ctx.filter = 'blur(3.2px)';
+
+      const cols = paletteOf(state.palette).rgb;
+      const t = silkT * 26;
+      const px = silkPointer.active ? silkPointer.x : -9999;
+      const py = silkPointer.active ? silkPointer.y : -9999;
+
+      for (let i = 0; i < PLUMES.length; i += 1) {
+        const p = PLUMES[i];
+        // slow swirl + a vertical drift: bloom rises, ink sinks
+        let x = (p.x + Math.sin(t * 0.11 * p.wob + p.ph) * 0.16 + p.vx * t * 0.4) % 1.2;
+        let y = (p.y + Math.cos(t * 0.09 * p.wob + p.ph * 1.7) * 0.14 + (rising ? -1 : 1) * p.vy * t * 0.35) % 1.2;
+        if (x < 0) x += 1.2;
+        if (y < 0) y += 1.2;
+
+        let cx = x * W;
+        let cy = y * H;
+        const rad = p.r * (0.7 + 0.3 * Math.sin(t * 0.13 + p.ph)) * H * 0.72;
+        const c = cols[p.tone];
+
+        // pointer pushes the cloud aside
+        if (px > -999) {
+          const dx = cx - px;
+          const dy = cy - py;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < 9000) {
+            const push = (1 - d2 / 9000) * 26;
+            const d = Math.sqrt(d2) || 1;
+            cx += (dx / d) * push;
+            cy += (dy / d) * push;
+          }
+        }
+
+        // a plume is three lobes strung along its drift direction, so it reads
+        // as ink with tendrils rather than one round blob
+        const ang = p.ph + t * 0.05 * p.wob;
+        const dirX = Math.cos(ang) * (rising ? 0.5 : -0.5);
+        const dirY = Math.sin(ang) * (rising ? -1 : 1);
+        for (let k = 0; k < 3; k += 1) {
+          const spread = rad * (0.15 + k * 0.55);
+          const bx = cx + dirX * spread;
+          const by = cy + dirY * spread;
+          const br = rad * (1 - k * 0.26);
+          if (br <= 0.5) continue;
+          const alpha = (dark ? 0.62 : 0.52) * (1 - k * 0.24);
+          const g = ctx.createRadialGradient(bx, by, 0, bx, by, br);
+          g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')');
+          g.addColorStop(0.5, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha * 0.42 + ')');
+          g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(bx, by, br, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    /* ---- chrome: metallic loops rotating around the centre ----------- */
+
+    function drawChrome(ctx, W, H, dark) {
+      ctx.fillStyle = dark ? '#05060a' : '#e8ecf3';
+      ctx.fillRect(0, 0, W, H);
+      ctx.filter = 'blur(0.7px)';
+
+      const cols = paletteOf(state.palette).rgb;
+      const cx = W * 0.5;
+      const cy = H * 0.5;
+      const t = silkT * 7;
+      const px = silkPointer.active ? (silkPointer.x - cx) / W : 0;
+      const py = silkPointer.active ? (silkPointer.y - cy) / H : 0;
+
+      for (let i = 0; i < 6; i += 1) {
+        const rx = W * (0.2 + i * 0.035);
+        const ry = H * (0.11 + i * 0.026);
+        const rot = t * (0.22 + i * 0.05) + i * 0.9 + px * 0.4;
+        const c = cols[i % 3];
+
+        ctx.save();
+        ctx.translate(cx + px * 26, cy + py * 26);
+        ctx.rotate(rot);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+        const g = ctx.createLinearGradient(-rx, -ry, rx, ry);
+        g.addColorStop(0, dark ? 'rgba(255,255,255,0.06)' : 'rgba(120,132,152,0.35)');
+        g.addColorStop(0.18, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.75 : 0.62) + ')');
+        g.addColorStop(0.34, dark ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,1)');
+        g.addColorStop(0.52, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.55 : 0.5) + ')');
+        g.addColorStop(0.72, dark ? 'rgba(10,12,20,0.85)' : 'rgba(150,160,178,0.5)');
+        g.addColorStop(1, dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.8)');
+        ctx.strokeStyle = g;
+        ctx.lineWidth = 7 + i * 1.2;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    /* ---- silk / metal: horizontal satin bands ------------------------ */
+
+    function drawWaves(ctx, W, H, dark, metal) {
       ctx.fillStyle = metal ? (dark ? '#04050a' : '#e6eaf1') : dark ? '#070a12' : '#eef2f9';
       ctx.fillRect(0, 0, W, H);
 
-      // live ripples expire on their own
-      if (silkRipples.length) {
-        silkRipples = silkRipples.filter((r) => now - r.t0 < 2200);
-      }
-
-      // Blur is applied at draw time on the small bitmap — cheap, and it is what
-      // turns flat bands into satin.
       ctx.filter = metal ? 'blur(0.9px)' : 'blur(1.6px)';
       const cols = paletteOf(state.palette).rgb;
       const px = silkPointer.x;
@@ -1281,15 +1454,13 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           let y = baseY + off +
             Math.sin(x * 0.012 + silkT * sp + ph) * amp +
             Math.sin(x * 0.03 - silkT * 1.7 + ph * 1.4) * amp * 0.42;
-          // pointer pushes the sheet away
           if (silkPointer.active) {
             const dx = x - px;
             y += Math.exp(-(dx * dx) / 2400) * (py - y) * 0.16;
           }
-          // click ripples
           for (let k = 0; k < silkRipples.length; k += 1) {
             const r = silkRipples[k];
-            const age = (now - r.t0) / 1000;
+            const age = (now0() - r.t0) / 1000;
             const front = age * 240;
             const d = Math.abs(x - r.x);
             const band = Math.exp(-Math.pow((d - front) / 80, 2));
@@ -1310,7 +1481,6 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         const A = (al) => 'rgba(' + a[0] + ',' + a[1] + ',' + a[2] + ',' + al + ')';
         const B = (al) => 'rgba(' + b[0] + ',' + b[1] + ',' + b[2] + ',' + al + ')';
         if (metal) {
-          // liquid-metal: dark troughs, a hard specular line, coloured body
           g.addColorStop(0, dark ? 'rgba(2,3,7,0.72)' : 'rgba(120,132,150,0.5)');
           g.addColorStop(0.18, A(dark ? 0.5 : 0.42));
           g.addColorStop(0.3, dark ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.98)');
@@ -1340,30 +1510,20 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         ctx.lineWidth = metal ? 1.8 : 1.4;
         ctx.stroke();
       }
-
-      // ripple rings, drawn on top so a click reads immediately
-      for (let k = 0; k < silkRipples.length; k += 1) {
-        const r = silkRipples[k];
-        const age = (now - r.t0) / 1000;
-        const rad = age * 240;
-        const fade = Math.max(0, 1 - age / 2.2);
-        if (fade <= 0) continue;
-        ctx.beginPath();
-        ctx.ellipse(r.x, r.y, rad, rad * 0.45, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = dark ? 'rgba(255,255,255,' + (0.28 * fade) + ')' : 'rgba(255,255,255,' + (0.7 * fade) + ')';
-        ctx.lineWidth = 2.4 * fade + 0.4;
-        ctx.stroke();
-      }
-      ctx.filter = 'none';
     }
 
+    function now0() {
+      return typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+    }
+
+
     function syncSilk() {
-      const canvasMode = state.bgmode === 'silk' || state.bgmode === 'metal';
+      const canvasMode = state.bgmode !== 'aurora';
       const on = !!state.enabled && !!state.aurora && canvasMode && silkCtx;
       if (on) {
         if (!silkRaf && typeof requestAnimationFrame === 'function') {
           silkLast = 0;
-          silkRaf = requestAnimationFrame(silkDraw);
+          silkRaf = requestAnimationFrame(sceneDraw);
         }
       } else if (silkRaf) {
         try {
