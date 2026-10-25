@@ -3,15 +3,16 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-1.9.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.10.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <p align="center">
   <img src="docs/preview-dark.png" alt="极光" width="780">
   <img src="docs/preview-silk.png" alt="丝绸" width="780">
-  <img src="docs/preview-metal.png" alt="液态金属" width="780">
-  <img src="docs/preview-chrome.png" alt="铬带" width="780">
   <img src="docs/preview-ink.png" alt="墨流" width="780">
-  <img src="docs/preview-bloom.png" alt="绽放" width="780">
+  <img src="docs/preview-prism.png" alt="棱镜" width="780">
+  <img src="docs/preview-facets.png" alt="折面" width="780">
+  <img src="docs/preview-matrix.png" alt="数字雨" width="780">
+  <img src="docs/preview-stroke.png" alt="笔迹" width="780">
   <img src="docs/preview-light.png" alt="浅色主题" width="780">
   <img src="docs/preview-panel.png" alt="设置面板" width="300">
 </p>
@@ -67,25 +68,17 @@
 - **随场景变色**：会话标题算出一个稳定的色相偏移，再叠加按时段的正弦偏移——切会话、过时间，主色都会慢慢变
 - **输入脉动**：焦点在输入框时背景亮一档
 
-### 背景：六种，各有各的算法
+### 背景：六种，各有各的几何和交互
 
-| 背景 | 做法 |
-| --- | --- |
-| **极光** | 四团径向渐变沿闭环漂移、旋转，纯 CSS `transform`，走合成器 |
-| **丝绸** | 七条横向缎带，`ctx.filter: blur(1.6px)` 磨边 + 一道白色高光 |
-| **金属** | 同样的波带，渐变换成黑银 + 硬高光，像液态金属 |
-| **墨流** | 三瓣一串的墨团缓慢下沉、扩散，深色下最沉 |
-| **绽放** | 同样的墨团向上绽开，浅色下像牛奶倒进水里 |
-| **铬带** | 六条金属椭圆环围绕中心旋转交错，镀铬反射 |
-
-画布背景有四个轻量交互（都在绘制循环里，不额外起动画）：
-
-| 交互 | 效果 |
-| --- | --- |
-| 鼠标划过 | 背景被光标推开（波带下陷 / 墨团被挤开 / 环心偏移） |
-| 点击背景 | 荡开一圈椭圆涟漪，2.2 秒自然消散（最多 3 圈） |
-| 打字 | 流速 ×1.75，跟着手速走 |
-| 切换会话 | 整片背景涌一下 |
+| 背景 | 几何 | 交互 |
+| --- | --- | --- |
+| **极光** | 四团径向渐变沿闭环漂移、旋转（纯 CSS） | 指针视差 + 打字脉动 + 切会话涌动 |
+| **丝绸** | 七条横向缎带，磨边 + 一道白色高光 | 指针把整张布推开，点击荡开涟漪 |
+| **墨流** | 三瓣一串的墨团缓慢下沉、扩散 | 指针挤开墨团，点击荡开涟漪，打字加速 |
+| **棱镜** | 七层玻璃搁板 + 彩虹边 | 鼠标就是光源：彩虹光晕跟着走，高光沿板面滑过 |
+| **折面** | 九块哑光折面从一点放射 | 鼠标一动整组倾斜，每块按自己的深度视差 |
+| **数字雨** | 二十二列字符下落 | 指针靠近会把那一列推开 |
+| **笔迹** | 一根手绘粉笔线 | 指针把线拉过去，点一下在线上打个结 |
 
 六种背景共用同一套色板和 `--ag-hue`，所以换色板、换会话，背景都会跟着变。浅色模式用的是同一组颜色的**加深版**，不是靠透明度糊出来的粉彩。
 

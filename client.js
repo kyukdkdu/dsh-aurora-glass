@@ -88,10 +88,11 @@ window.__ModuleLoader__.load({
         'bg.label': '背景',
         'bg.aurora': '极光',
         'bg.silk': '丝绸',
-        'bg.metal': '金属',
         'bg.ink': '墨流',
-        'bg.bloom': '绽放',
-        'bg.chrome': '铬带',
+        'bg.prism': '棱镜',
+        'bg.facets': '折面',
+        'bg.matrix': '数字雨',
+        'bg.stroke': '笔迹',
         'preset.default': '默认',
         'preset.mist': '轻雾',
         'preset.depth': '深空',
@@ -121,10 +122,11 @@ window.__ModuleLoader__.load({
         'bg.label': 'Backdrop',
         'bg.aurora': 'Aurora',
         'bg.silk': 'Silk',
-        'bg.metal': 'Metal',
         'bg.ink': 'Ink',
-        'bg.bloom': 'Bloom',
-        'bg.chrome': 'Chrome',
+        'bg.prism': 'Prism',
+        'bg.facets': 'Facets',
+        'bg.matrix': 'Matrix',
+        'bg.stroke': 'Stroke',
         'preset.default': 'Default',
         'preset.mist': 'Mist',
         'preset.depth': 'Deep',
@@ -167,10 +169,11 @@ window.__ModuleLoader__.load({
         palette: '极光的配色。深色和浅色各取一组，悬停色块可以直接预览。',
         'bg.aurora': '四团光晕在四角缓慢漂移、旋转，最轻，纯 CSS。',
         'bg.silk': '七条缎带横向流动，边缘磨砂、带一道高光，像被风吹起的绸子。',
-        'bg.metal': '同样是横向波带，但换成黑银和一道硬高光，像液态金属。',
         'bg.ink': '墨团缓慢下沉、扩散、互相晕开，深色下最沉。',
-        'bg.bloom': '彩色墨滴从下往上绽开，浅色下像牛奶倒进水里。',
-        'bg.chrome': '金属环围绕中心缓慢旋转、交错，像镀铬缎带打的结。',
+        'bg.prism': '七层玻璃搁板，彩虹光晕跟着鼠标走，高光沿板面滑过。',
+        'bg.facets': '九块哑光折面，鼠标一动整组跟着倾斜，每块的视差不一样。',
+        'bg.matrix': '二十二列字符往下落，鼠标靠近会把那一列推开。',
+        'bg.stroke': '一根手绘的粉笔线在飘，鼠标靠近会被拉过去，点一下打个结。',
         glass: '表面有多透。100% 几乎全靠背景撑，0% 等于回到原生外观。',
         blur: '极光边缘的柔化程度，越大越朦胧。松手才生效，所以拖动不会卡。',
         saturation: '极光的鲜艳程度。往右更艳，往左偏灰。',
@@ -186,10 +189,11 @@ window.__ModuleLoader__.load({
         palette: 'The aurora colours. Dark and light each pick their own; hover a swatch to preview.',
         'bg.aurora': 'Four soft glows drifting and rotating at the corners — the lightest, pure CSS.',
         'bg.silk': 'Seven satin bands flowing sideways, soft edges with a highlight, like silk in a breeze.',
-        'bg.metal': 'The same bands, but black-silver with a hard specular — liquid metal.',
         'bg.ink': 'Ink clouds sinking, spreading and bleeding into each other. Heaviest in dark mode.',
-        'bg.bloom': 'Coloured ink blooming upward — milk dropped into water, in light mode.',
-        'bg.chrome': 'Metal loops rotating and crossing around the centre, like chrome ribbons knotted.',
+        'bg.prism': 'Seven glass shelves; the rainbow flare follows the pointer and a specular slides along each shelf.',
+        'bg.facets': 'Nine matte folded planes that tilt with the pointer, each at its own parallax depth.',
+        'bg.matrix': 'Twenty-two columns of falling glyphs; the pointer pushes the nearest column aside.',
+        'bg.stroke': 'One hand-drawn chalk line drifting; the pointer pulls it over, a click ties a loop.',
         glass: 'How transparent the surfaces are. 100% leans on the background, 0% is the stock look.',
         blur: 'Softness of the aurora edge. Applied on release, so dragging stays smooth.',
         saturation: 'Colour intensity. Right is richer, left is greyer.',
@@ -975,7 +979,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         }, t('seg.motion.' + lv)),
       );
 
-      const bgChips = ['aurora', 'silk', 'metal', 'ink', 'bloom', 'chrome'].map((mode) =>
+      const bgChips = ['aurora', 'silk', 'ink', 'prism', 'facets', 'matrix', 'stroke'].map((mode) =>
         el('button', {
           class: 'ag-chip ag-chip-sm',
           type: 'button',
@@ -1236,12 +1240,13 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
     }
 
     /* ------------------------- canvas backdrops ------------------------- *
-     * Every reference video gets its own geometry, not a recoloured copy:
-     *   silk   — horizontal satin bands that drift
-     *   metal  — the same bands with a hard specular (liquid metal)
-     *   ink    — plumes that sink and bloom (dark)
-     *   bloom  — plumes that rise and spread (light, coloured)
-     *   chrome — metallic loops rotating around the centre
+     * Every reference video gets its own geometry and its own interaction:
+     *   silk   — horizontal satin bands; the pointer pushes the sheet away
+     *   ink    — plumes sinking and blooming; the pointer shoves the clouds
+     *   prism  — glass shelves; the pointer IS the light source
+     *   facets — folded matte planes; the pointer tilts the assembly
+     *   matrix — falling glyph columns; the pointer parts the nearest column
+     *   stroke — one chalk line; the pointer pulls it, a click ties a loop
      * ------------------------------------------------------------------- */
 
     function sceneDraw(now) {
@@ -1283,9 +1288,12 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       if (silkRipples.length) silkRipples = silkRipples.filter((r) => now - r.t0 < 2200);
 
       const mode = state.bgmode;
-      if (mode === 'ink' || mode === 'bloom') drawPlumes(ctx, W, H, dark, mode === 'bloom');
-      else if (mode === 'chrome') drawChrome(ctx, W, H, dark);
-      else drawWaves(ctx, W, H, dark, mode === 'metal');
+      if (mode === 'ink') drawPlumes(ctx, W, H, dark);
+      else if (mode === 'prism') drawPrism(ctx, W, H, dark);
+      else if (mode === 'facets') drawFacets(ctx, W, H, dark);
+      else if (mode === 'matrix') drawMatrix(ctx, W, H, dark);
+      else if (mode === 'stroke') drawStroke(ctx, W, H, dark);
+      else drawWaves(ctx, W, H, dark);
 
       drawRippleRings(ctx, dark, now);
       ctx.filter = 'none';
@@ -1306,7 +1314,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       }
     }
 
-    /* ---- ink / bloom: plumes made of soft blobs ---------------------- */
+    /* ---- ink: plumes made of soft blobs ------------------------------- */
 
     const PLUMES = (() => {
       const list = [];
@@ -1330,7 +1338,7 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       return list;
     })();
 
-    function drawPlumes(ctx, W, H, dark, rising) {
+    function drawPlumes(ctx, W, H, dark) {
       ctx.fillStyle = dark ? '#04060c' : '#eef2f9';
       ctx.fillRect(0, 0, W, H);
       ctx.filter = 'blur(3.2px)';
@@ -1342,9 +1350,9 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
 
       for (let i = 0; i < PLUMES.length; i += 1) {
         const p = PLUMES[i];
-        // slow swirl + a vertical drift: bloom rises, ink sinks
+        // slow swirl + a downward drift: ink sinks
         let x = (p.x + Math.sin(t * 0.11 * p.wob + p.ph) * 0.16 + p.vx * t * 0.4) % 1.2;
-        let y = (p.y + Math.cos(t * 0.09 * p.wob + p.ph * 1.7) * 0.14 + (rising ? -1 : 1) * p.vy * t * 0.35) % 1.2;
+        let y = (p.y + Math.cos(t * 0.09 * p.wob + p.ph * 1.7) * 0.14 + p.vy * t * 0.35) % 1.2;
         if (x < 0) x += 1.2;
         if (y < 0) y += 1.2;
 
@@ -1369,8 +1377,8 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         // a plume is three lobes strung along its drift direction, so it reads
         // as ink with tendrils rather than one round blob
         const ang = p.ph + t * 0.05 * p.wob;
-        const dirX = Math.cos(ang) * (rising ? 0.5 : -0.5);
-        const dirY = Math.sin(ang) * (rising ? -1 : 1);
+        const dirX = Math.cos(ang) * -0.5;
+        const dirY = Math.sin(ang);
         for (let k = 0; k < 3; k += 1) {
           const spread = rad * (0.15 + k * 0.55);
           const bx = cx + dirX * spread;
@@ -1390,53 +1398,290 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
       }
     }
 
-    /* ---- chrome: metallic loops rotating around the centre ----------- */
+    /* ---- prism: stacked glass shelves with rainbow flare -------------- */
 
-    function drawChrome(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#05060a' : '#e8ecf3';
+    function drawPrism(ctx, W, H, dark) {
+      ctx.fillStyle = dark ? '#080a11' : '#eef1f7';
       ctx.fillRect(0, 0, W, H);
-      ctx.filter = 'blur(0.7px)';
 
+      // the light source follows the pointer; everything else reacts to it
+      const lx = silkPointer.active ? silkPointer.x / W : 0.72;
+      const ly = silkPointer.active ? silkPointer.y / H : 0.18;
       const cols = paletteOf(state.palette).rgb;
-      const cx = W * 0.5;
-      const cy = H * 0.5;
-      const t = silkT * 7;
-      const px = silkPointer.active ? (silkPointer.x - cx) / W : 0;
-      const py = silkPointer.active ? (silkPointer.y - cy) / H : 0;
+      const t = silkT * 9;
 
-      for (let i = 0; i < 6; i += 1) {
-        const rx = W * (0.2 + i * 0.035);
-        const ry = H * (0.11 + i * 0.026);
-        const rot = t * (0.22 + i * 0.05) + i * 0.9 + px * 0.4;
-        const c = cols[i % 3];
+      // rainbow flare behind the shelves
+      ctx.filter = 'blur(14px)';
+      for (let i = 0; i < 3; i += 1) {
+        const c = cols[i];
+        const fx = W * (0.18 + lx * 0.64 + Math.sin(t * 0.4 + i) * 0.06);
+        const fy = H * (0.05 + ly * 0.5 + Math.cos(t * 0.33 + i * 2) * 0.06);
+        const r = W * (0.24 + i * 0.05);
+        const g = ctx.createRadialGradient(fx, fy, 0, fx, fy, r);
+        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.34 : 0.26) + ')');
+        g.addColorStop(0.55, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.12 : 0.1) + ')');
+        g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+      }
 
-        ctx.save();
-        ctx.translate(cx + px * 26, cy + py * 26);
-        ctx.rotate(rot);
+      // rainbow fringe: what makes a prism read as a prism
+      ctx.filter = 'blur(9px)';
+      const hue = [[255, 96, 96], [255, 176, 88], [120, 230, 140], [96, 176, 255], [190, 120, 255]];
+      for (let i = 0; i < hue.length; i += 1) {
+        const h = hue[i];
+        const y = H * (0.1 + i * 0.045) + Math.sin(t * 0.5 + i * 0.7) * 4;
+        const g = ctx.createLinearGradient(W * 0.05, y, W * 0.95, y + 26);
+        g.addColorStop(0, 'rgba(' + h[0] + ',' + h[1] + ',' + h[2] + ',0)');
+        g.addColorStop(0.45, 'rgba(' + h[0] + ',' + h[1] + ',' + h[2] + ',' + (dark ? 0.16 : 0.22) + ')');
+        g.addColorStop(1, 'rgba(' + h[0] + ',' + h[1] + ',' + h[2] + ',0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, y, W, 26);
+      }
+
+      // glass shelves: a body, a bright top edge, a soft shadow underneath
+      ctx.filter = 'blur(0.6px)';
+      const shelves = 7;
+      for (let i = 0; i < shelves; i += 1) {
+        const y = H * (0.12 + i * 0.12) + Math.sin(t * 0.5 + i * 0.8) * 2.2;
+        const h = H * 0.075;
+        const inset = W * (0.02 + ((i * 37) % 11) / 120);
+        const skew = (lx - 0.5) * 10;
+
+        const g = ctx.createLinearGradient(0, y, 0, y + h);
+        g.addColorStop(0, dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.95)');
+        g.addColorStop(0.35, dark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.55)');
+        g.addColorStop(1, dark ? 'rgba(255,255,255,0.015)' : 'rgba(255,255,255,0.12)');
+        ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
-        const g = ctx.createLinearGradient(-rx, -ry, rx, ry);
-        g.addColorStop(0, dark ? 'rgba(255,255,255,0.06)' : 'rgba(120,132,152,0.35)');
-        g.addColorStop(0.18, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.75 : 0.62) + ')');
-        g.addColorStop(0.34, dark ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,1)');
-        g.addColorStop(0.52, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.55 : 0.5) + ')');
-        g.addColorStop(0.72, dark ? 'rgba(10,12,20,0.85)' : 'rgba(150,160,178,0.5)');
-        g.addColorStop(1, dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.8)');
-        ctx.strokeStyle = g;
-        ctx.lineWidth = 7 + i * 1.2;
-        ctx.lineCap = 'round';
+        ctx.moveTo(inset + skew, y);
+        ctx.lineTo(W - inset + skew, y + 1.5);
+        ctx.lineTo(W - inset + skew, y + h);
+        ctx.lineTo(inset + skew, y + h);
+        ctx.closePath();
+        ctx.fill();
+
+        // top edge catches the light
+        ctx.beginPath();
+        ctx.moveTo(inset + skew, y);
+        ctx.lineTo(W - inset + skew, y + 1.5);
+        ctx.strokeStyle = dark ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.98)';
+        ctx.lineWidth = 1.1;
         ctx.stroke();
-        ctx.restore();
+
+        // a specular streak sliding along the shelf
+        const sx = ((t * 26 + i * 90) % (W + 160)) - 80;
+        const sg = ctx.createLinearGradient(sx - 70, 0, sx + 70, 0);
+        sg.addColorStop(0, 'rgba(255,255,255,0)');
+        sg.addColorStop(0.5, dark ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.95)');
+        sg.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = sg;
+        ctx.fillRect(sx - 70, y + 1, 140, 1.6);
+      }
+
+      // vertical glass dividers
+      ctx.filter = 'blur(0.5px)';
+      for (let i = 0; i < 3; i += 1) {
+        const x = W * (0.22 + i * 0.28) + (lx - 0.5) * 14;
+        const g = ctx.createLinearGradient(x - 1.5, 0, x + 1.5, 0);
+        g.addColorStop(0, 'rgba(255,255,255,0)');
+        g.addColorStop(0.5, dark ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.9)');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(x - 1.5, 0, 3, H);
       }
     }
 
-    /* ---- silk / metal: horizontal satin bands ------------------------ */
+    /* ---- facets: folded matte planes ---------------------------------- */
 
-    function drawWaves(ctx, W, H, dark, metal) {
-      ctx.fillStyle = metal ? (dark ? '#04050a' : '#e6eaf1') : dark ? '#070a12' : '#eef2f9';
+    const FACETS = (() => {
+      const list = [];
+      let seed = 77003;
+      const rnd = () => {
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        return seed / 0x7fffffff;
+      };
+      // a fan of angular planes radiating from an off-centre point
+      const cx = 0.62;
+      const cy = 0.34;
+      const n = 9;
+      for (let i = 0; i < n; i += 1) {
+        const a0 = (i / n) * Math.PI * 2 + rnd() * 0.12;
+        const a1 = ((i + 1) / n) * Math.PI * 2 - rnd() * 0.1;
+        const r = 1.35;
+        list.push({
+          p: [
+            [cx, cy],
+            [cx + Math.cos(a0) * r, cy + Math.sin(a0) * r],
+            [cx + Math.cos((a0 + a1) / 2) * r * 1.08, cy + Math.sin((a0 + a1) / 2) * r * 1.08],
+            [cx + Math.cos(a1) * r, cy + Math.sin(a1) * r],
+          ],
+          tone: i % 3,
+          shade: 0.35 + rnd() * 0.5,
+          depth: 0.4 + rnd() * 0.9,
+          ph: rnd() * 6.28,
+        });
+      }
+      return list;
+    })();
+
+    function drawFacets(ctx, W, H, dark) {
+      ctx.fillStyle = dark ? '#0a0b10' : '#e9ecf2';
       ctx.fillRect(0, 0, W, H);
 
-      ctx.filter = metal ? 'blur(0.9px)' : 'blur(1.6px)';
+      const cols = paletteOf(state.palette).rgb;
+      const t = silkT * 12;
+      const px = silkPointer.active ? silkPointer.x / W - 0.5 : 0;
+      const py = silkPointer.active ? silkPointer.y / H - 0.5 : 0;
+
+      for (let i = 0; i < FACETS.length; i += 1) {
+        const f = FACETS[i];
+        const c = cols[f.tone];
+        // each plane parallaxes by its own depth, so the whole assembly tilts
+        const ox = px * 22 * f.depth + Math.sin(t * 0.3 + f.ph) * 2;
+        const oy = py * 16 * f.depth + Math.cos(t * 0.26 + f.ph) * 2;
+
+        ctx.beginPath();
+        for (let k = 0; k < f.p.length; k += 1) {
+          const x = f.p[k][0] * W + ox;
+          const y = f.p[k][1] * H + oy;
+          if (k === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+
+        // matte shading: lit from the pointer direction
+        const g = ctx.createLinearGradient(ox, oy, ox + W * 0.8, oy + H * 0.8);
+        const lit = 0.5 + (px + py) * 0.5;
+        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.34 + f.shade * 0.3 : 0.3 + f.shade * 0.34) + ')');
+        g.addColorStop(0.6, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.1 : 0.12) + ')');
+        g.addColorStop(1, dark ? 'rgba(4,5,9,0.55)' : 'rgba(255,255,255,0.45)');
+        ctx.fillStyle = g;
+        ctx.fill();
+
+        // crisp fold edge
+        ctx.strokeStyle = dark
+          ? 'rgba(255,255,255,' + (0.05 + lit * 0.1) + ')'
+          : 'rgba(255,255,255,' + (0.5 + lit * 0.35) + ')';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
+    }
+
+    /* ---- matrix: falling glyph columns -------------------------------- */
+
+    const GLYPHS = '01ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉ0123456789';
+    const COLUMNS = (() => {
+      const list = [];
+      let seed = 4211;
+      const rnd = () => {
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        return seed / 0x7fffffff;
+      };
+      for (let i = 0; i < 22; i += 1) {
+        list.push({ x: (i + 0.5) / 22, y: rnd(), speed: 0.4 + rnd() * 0.9, len: 6 + Math.floor(rnd() * 7) });
+      }
+      return list;
+    })();
+
+    function drawMatrix(ctx, W, H, dark) {
+      ctx.fillStyle = dark ? '#05070a' : '#f2f5fa';
+      ctx.fillRect(0, 0, W, H);
+      ctx.filter = 'blur(0.4px)';
+      ctx.font = '9px monospace';
+      ctx.textAlign = 'center';
+
+      const c = paletteOf(state.palette).rgb[0];
+      const t = silkT;
+      const px = silkPointer.active ? silkPointer.x / W : -9;
+
+      for (let i = 0; i < COLUMNS.length; i += 1) {
+        const col = COLUMNS[i];
+        let x = col.x * W;
+        // the pointer pushes the nearest column aside
+        const d = Math.abs(col.x - px);
+        if (d < 0.06) x += (col.x > px ? 1 : -1) * (1 - d / 0.06) * 8;
+
+        const head = ((col.y + t * col.speed * 0.35) % 1.25) * H;
+        for (let k = 0; k < col.len; k += 1) {
+          const y = head - k * 10;
+          if (y < -10 || y > H + 10) continue;
+          const fade = 1 - k / col.len;
+          if (k === 0) ctx.fillStyle = dark ? 'rgba(255,255,255,0.92)' : 'rgba(20,28,48,0.9)';
+          else ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.72 * fade : 0.6 * fade) + ')';
+          const g = GLYPHS[(i * 7 + k * 3 + Math.floor(t * 2 + i)) % GLYPHS.length];
+          ctx.fillText(g, x, y);
+        }
+      }
+    }
+
+    /* ---- stroke: one hand-drawn line that follows the pointer ---------- */
+
+    function drawStroke(ctx, W, H, dark) {
+      ctx.fillStyle = dark ? '#05060a' : '#f4f6fa';
+      ctx.fillRect(0, 0, W, H);
+      ctx.filter = 'blur(0.5px)';
+
+      const c = paletteOf(state.palette).rgb[0];
+      const t = silkT;
+      const px = silkPointer.active ? silkPointer.x : W * 0.5;
+      const py = silkPointer.active ? silkPointer.y : H * 0.5;
+
+      const pts = [];
+      for (let x = -10; x <= W + 10; x += 5) {
+        let y = H * 0.5 +
+          Math.sin(x * 0.011 + t * 1.1) * H * 0.16 +
+          Math.sin(x * 0.027 - t * 0.8) * H * 0.07;
+        // the line is pulled toward the cursor
+        const dx = x - px;
+        const dy = y - py;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < 12000) y -= (1 - d2 / 12000) * (py - y) * 0.55;
+        // clicks leave a loop that unwinds
+        for (let k = 0; k < silkRipples.length; k += 1) {
+          const r = silkRipples[k];
+          const age = (now0() - r.t0) / 1000;
+          const band = Math.exp(-Math.pow((x - r.x - Math.sin(age * 3) * 20) / 42, 2));
+          if (band > 0.01) y += band * Math.sin(age * 5) * 30 * Math.max(0, 1 - age / 2.2);
+        }
+        pts.push([x, y]);
+      }
+
+      // soft glow under the stroke
+      ctx.beginPath();
+      for (let k = 0; k < pts.length; k += 1) {
+        if (k === 0) ctx.moveTo(pts[k][0], pts[k][1]);
+        else ctx.lineTo(pts[k][0], pts[k][1]);
+      }
+      ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.18 : 0.16) + ')';
+      ctx.lineWidth = 8;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // the chalk line itself
+      ctx.strokeStyle = dark ? 'rgba(255,255,255,0.95)' : 'rgba(24,32,52,0.92)';
+      ctx.lineWidth = 3.2;
+      ctx.stroke();
+
+      // a second, thinner pass with a tiny offset reads as hand-drawn
+      ctx.beginPath();
+      for (let k = 0; k < pts.length; k += 1) {
+        const wob = Math.sin(k * 0.9 + t * 6) * 1.2;
+        if (k === 0) ctx.moveTo(pts[k][0], pts[k][1] + wob);
+        else ctx.lineTo(pts[k][0], pts[k][1] + wob);
+      }
+      ctx.strokeStyle = dark ? 'rgba(255,255,255,0.42)' : 'rgba(24,32,52,0.34)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+    }
+
+    /* ---- silk: horizontal satin bands --------------------------------- */
+
+    function drawWaves(ctx, W, H, dark) {
+      ctx.fillStyle = dark ? '#070a12' : '#eef2f9';
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.filter = 'blur(1.6px)';
       const cols = paletteOf(state.palette).rgb;
       const px = silkPointer.x;
       const py = silkPointer.y;
@@ -1480,21 +1725,12 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
         const g = ctx.createLinearGradient(0, baseY - amp, 0, baseY + thick + amp);
         const A = (al) => 'rgba(' + a[0] + ',' + a[1] + ',' + a[2] + ',' + al + ')';
         const B = (al) => 'rgba(' + b[0] + ',' + b[1] + ',' + b[2] + ',' + al + ')';
-        if (metal) {
-          g.addColorStop(0, dark ? 'rgba(2,3,7,0.72)' : 'rgba(120,132,150,0.5)');
-          g.addColorStop(0.18, A(dark ? 0.5 : 0.42));
-          g.addColorStop(0.3, dark ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.98)');
-          g.addColorStop(0.4, B(dark ? 0.44 : 0.4));
-          g.addColorStop(0.66, dark ? 'rgba(3,4,9,0.66)' : 'rgba(140,150,168,0.4)');
-          g.addColorStop(1, dark ? 'rgba(2,3,7,0.5)' : 'rgba(150,160,178,0.3)');
-        } else {
-          g.addColorStop(0, A(dark ? 0.08 : 0.06));
-          g.addColorStop(0.16, A(dark ? 0.62 : 0.52));
-          g.addColorStop(0.3, dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.72)');
-          g.addColorStop(0.52, B(dark ? 0.46 : 0.38));
-          g.addColorStop(0.82, B(dark ? 0.14 : 0.1));
-          g.addColorStop(1, A(0.04));
-        }
+        g.addColorStop(0, A(dark ? 0.08 : 0.06));
+        g.addColorStop(0.16, A(dark ? 0.62 : 0.52));
+        g.addColorStop(0.3, dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.72)');
+        g.addColorStop(0.52, B(dark ? 0.46 : 0.38));
+        g.addColorStop(0.82, B(dark ? 0.14 : 0.1));
+        g.addColorStop(1, A(0.04));
         ctx.fillStyle = g;
         ctx.fill();
 
@@ -1504,10 +1740,8 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
           if (x === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }
-        ctx.strokeStyle = metal
-          ? dark ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.95)'
-          : dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.65)';
-        ctx.lineWidth = metal ? 1.8 : 1.4;
+        ctx.strokeStyle = dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.65)';
+        ctx.lineWidth = 1.4;
         ctx.stroke();
       }
     }
