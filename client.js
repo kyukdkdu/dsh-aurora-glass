@@ -338,10 +338,7 @@ body{
 /* ---- aurora -------------------------------------------------------- */
 #${BG_ID}{
   position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden;
-  contain:paint;
-  animation:ag-breathe 22s ease-in-out infinite alternate;
 }
-@keyframes ag-breathe{ from{ opacity:.94 } to{ opacity:1 } }
 #${BG_ID} i{
   position:absolute; display:block; border-radius:50%;
   filter:blur(calc(var(--ag-blur) * 1.8px)) saturate(var(--ag-sat)) hue-rotate(var(--ag-hue));
@@ -393,16 +390,13 @@ body[data-ds-dark-theme] #${BG_ID} .ag-scrim{
     rgb(4 6 12 / calc(.06 + .04 * var(--ag-g)));
 }
 html.ag-typing #${BG_ID} .ag-scrim{ opacity:.55 }
-#${BG_ID} .ag-grain{
-  position:absolute; inset:0; display:block; pointer-events:none;
-  background-image:${NOISE}; background-size:160px 160px;
-  opacity:calc(.42 * var(--ag-grain)); mix-blend-mode:soft-light;
-}
 
 /* ---- silk backdrop -------------------------------------------------- */
 #${SILK_ID}{
-  position:absolute; inset:0; display:none; width:100%; height:100%;
-  object-fit:cover; pointer-events:none;
+  /* overshoot by 1px: at fractional window sizes a 100% canvas can leave a
+     hairline of page background at the edge, which reads as a dark seam */
+  position:absolute; left:-1px; top:-1px; display:none;
+  width:calc(100% + 2px); height:calc(100% + 2px); pointer-events:none;
   image-rendering:auto;
   transform:translateZ(0);
 }
@@ -1406,6 +1400,13 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
         hidden = false;
       }
       if (hidden) return;
+      // while a slider is being dragged the style recalc owns the main thread;
+      // redrawing the backdrop on top of that is what makes the drag stutter
+      try {
+        if (document.documentElement.classList.contains('ag-tuning')) return;
+      } catch {
+        /* ignore */
+      }
       // when nobody has touched anything for a while, drop to ~10fps: the drift
       // is slow enough that it still looks continuous, and it saves a lot of GPU
       const idle = now - lastInput > 9000;
@@ -1671,8 +1672,7 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
         el('i'),
         el('i'),
         el('span', { class: 'ag-scrim' }),
-        el('span', { class: 'ag-grain' }),
-      ]);
+        ]);
       document.body.appendChild(bg);
 
       const btn = el('button', {

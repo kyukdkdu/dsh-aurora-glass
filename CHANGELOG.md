@@ -3,6 +3,19 @@
 本文件记录 dsh-aurora-glass 的重要变更，采用简易维护格式（Keep a Changelog 风格）。
 All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a Changelog style).
 
+## [3.4.0] - 2026-10-26
+
+### Fixed
+
+- **窗口边缘的暗边**（第三次修）。前两次都没打中，这次把背景层上的三个合成层隐患一起拆掉：
+  1. `animation: ag-breathe`（透明度关键帧）——它把整个背景层变成了合成表面，边缘在每次重绘时被重新采样；
+  2. `contain: paint` —— 把那个合成表面裁成一个硬边盒子；
+  3. 噪点层的 `mix-blend-mode: soft-light` —— 全屏混合，且因为开关已删而**常驻**。
+  三个都不再存在。另外画布改为**外扩 1px**（`calc(100% + 2px)`），
+  避免非整数窗口尺寸下边缘漏出 1px 页面底色——那本身就会读成一条暗缝。
+- **滑杆残余卡顿**：拖动期间**暂停背景重绘**。样式重算已经占满主线程，
+  再叠一层 30fps 的画布绘制就是抖动来源。
+
 ## [3.3.0] - 2026-10-26
 
 ### Fixed
