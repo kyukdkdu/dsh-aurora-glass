@@ -42,43 +42,43 @@ window.__ModuleLoader__.load({
      * palettes & presets
      * ------------------------------------------------------------------ */
 
-    // Five single-hue palettes, after the reference stills: a deep ground,
-    // a pale ground, and three tones of the same hue in between.
+    // Five single-hue palettes. The tones are deliberately saturated — a
+    // desaturated ramp is what made the first attempt look dirty.
     const PALETTES = [
       {
         id: 'deep',
         label: '深青',
-        base: [[236, 246, 247], [7, 22, 25]],
-        rgb: [[42, 96, 104], [78, 156, 166], [150, 226, 232]],
-        brand: { light: '#1f6d76', dark: '#7fd6de' },
+        base: [[232, 250, 251], [3, 20, 24]],
+        rgb: [[8, 86, 100], [36, 190, 210], [186, 250, 253]],
+        brand: { light: '#0f7f8e', dark: '#4fd8e6' },
       },
       {
         id: 'pale',
         label: '浅青',
-        base: [[233, 247, 248], [10, 28, 32]],
-        rgb: [[150, 214, 219], [198, 236, 239], [244, 252, 253]],
-        brand: { light: '#3fa9b4', dark: '#a8e6ec' },
+        base: [[236, 252, 253], [8, 26, 30]],
+        rgb: [[104, 202, 214], [176, 240, 246], [252, 255, 255]],
+        brand: { light: '#2ba7b6', dark: '#9de9f2' },
       },
       {
         id: 'indigo',
         label: '墨蓝',
-        base: [[236, 241, 248], [10, 16, 30]],
-        rgb: [[44, 62, 110], [82, 110, 170], [160, 196, 236]],
-        brand: { light: '#2b4a86', dark: '#8fb6e8' },
+        base: [[234, 242, 252], [6, 12, 28]],
+        rgb: [[18, 52, 128], [62, 132, 232], [176, 216, 255]],
+        brand: { light: '#1f4fa8', dark: '#7fb4f2' },
       },
       {
         id: 'sage',
         label: '雾绿',
-        base: [[240, 245, 240], [14, 24, 20]],
-        rgb: [[52, 96, 78], [96, 150, 126], [176, 220, 200]],
-        brand: { light: '#35664f', dark: '#9ed3b8' },
+        base: [[238, 250, 242], [8, 24, 18]],
+        rgb: [[14, 92, 68], [56, 190, 142], [182, 248, 214]],
+        brand: { light: '#12795a', dark: '#6fe3b2' },
       },
       {
         id: 'clay',
         label: '砂褐',
-        base: [[246, 242, 235], [24, 18, 15]],
-        rgb: [[112, 78, 56], [168, 128, 96], [226, 198, 170]],
-        brand: { light: '#7a5540', dark: '#dcb894' },
+        base: [[252, 246, 236], [26, 14, 8]],
+        rgb: [[112, 52, 22], [212, 122, 62], [250, 214, 168]],
+        brand: { light: '#9c4f22', dark: '#e8a468' },
       },
     ];
 
@@ -1184,8 +1184,6 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
             el('span', { text: t('ctl.motion') }),
             el('div', { class: 'ag-seg', style: 'width:156px' }, segButtons),
           ]),
-          sw('grain', t('sw.grain')),
-          sw('tint', t('sw.tint')),
         ]),
         el('button', {
           class: 'ag-reset',
@@ -1464,12 +1462,14 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
     }
 
     /* ==================================================================== *
-     * Fluid backdrops, after the reference stills: one hue, deep to pale,
-     * made of nothing but large soft gradients. No lines, no shapes, no
-     * pointer light — the motion is slow enough to be felt, not watched.
+     * Fluid backdrops.
      *
-     * Cost: every blob is a radial gradient fill; there is no ctx.filter in
-     * this file at all, which is what keeps 20+ of them affordable at 30fps.
+     * Built from a few dozen soft gradients that drift on separate Lissajous
+     * paths — but unlike a plain blob pile, half of them are DARK. The dark
+     * ones carve channels through the bright ones, and that interference is
+     * what reads as a fluid rather than a blur.
+     *
+     * Cost: N gradient fills per frame, no ctx.filter anywhere.
      * ==================================================================== */
 
     const moodOf = () => paletteOf(state.palette);
@@ -1482,11 +1482,11 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
       return m;
     }
 
-    // a soft blob: colour at the core, nothing at the rim
     function blob(ctx, x, y, r, c, a, squash) {
+      if (r <= 0.5) return;
       const g = ctx.createRadialGradient(x, y, 0, x, y, r);
       g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')');
-      g.addColorStop(0.42, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * 0.55) + ')');
+      g.addColorStop(0.45, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * 0.62) + ')');
       g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
       ctx.save();
       if (squash && squash !== 1) {
@@ -1501,106 +1501,88 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
       ctx.restore();
     }
 
-    /* ---- smoke: the reference look, twenty slow billows -------------- */
-
-    const SMOKE = (() => {
+    /* a drifting cell: position, radius, phase, speeds, and whether it is
+       a bright body or a dark channel */
+    function makeCells(n, seed0) {
       const list = [];
-      let seed = 20261026;
+      let seed = seed0;
       const rnd = () => {
         seed = (seed * 1103515245 + 12345) & 0x7fffffff;
         return seed / 0x7fffffff;
       };
-      for (let i = 0; i < 22; i += 1) {
+      for (let i = 0; i < n; i += 1) {
+        const darkCell = i % 3 === 0;
         list.push({
           x: rnd(),
           y: rnd(),
-          r: 0.2 + rnd() * 0.34,
+          r: (darkCell ? 0.1 : 0.16) + rnd() * (darkCell ? 0.16 : 0.24),
           ph: rnd() * 6.28,
-          sp: 0.12 + rnd() * 0.2,
-          tone: rnd() < 0.45 ? 2 : rnd() < 0.6 ? 1 : 0,
-          a: 0.1 + rnd() * 0.16,
-          sq: 0.7 + rnd() * 0.7,
+          ax: 0.05 + rnd() * 0.1,
+          ay: 0.04 + rnd() * 0.09,
+          sx: 0.25 + rnd() * 0.35,
+          sy: 0.2 + rnd() * 0.3,
+          tone: i % 3,
+          a: (darkCell ? 0.34 : 0.24) + rnd() * 0.2,
+          sq: 0.6 + rnd() * 0.8,
+          darkCell,
         });
       }
       return list;
-    })();
+    }
+
+    const SMOKE_CELLS = makeCells(26, 424242);
+    const FLOW_CELLS = makeCells(20, 919191);
+    const MIST_CELLS = makeCells(18, 515151);
+    const SWIRL_CELLS = makeCells(24, 737373);
+
+    function paintCells(ctx, W, H, dark, cells, t, o) {
+      const m = moodOf();
+      const bright = m.rgb[2];
+      const mid = m.rgb[1];
+      const deep = m.rgb[0];
+      const ink = dark ? m.base[1] : m.base[0];
+
+      for (let i = 0; i < cells.length; i += 1) {
+        const c = cells[i];
+        let x = (c.x + Math.sin(t * c.sx + c.ph) * c.ax) * W;
+        let y = (c.y + Math.cos(t * c.sy + c.ph * 1.7) * c.ay) * H;
+
+        if (o.spin) {
+          const dx = x - W * 0.5;
+          const dy = y - H * 0.5;
+          const a = o.spin * t * 0.06;
+          x = W * 0.5 + dx * Math.cos(a) - dy * Math.sin(a) * 0.7;
+          y = H * 0.5 + dx * Math.sin(a) * 0.7 + dy * Math.cos(a);
+        }
+        if (o.stretchY) y = H * 0.5 + (y - H * 0.5) * o.stretchY;
+
+        const r = c.r * W * (0.88 + 0.12 * Math.sin(t * 0.7 + c.ph)) * o.scale;
+        const col = c.darkCell ? ink : (c.tone === 2 ? bright : mid);
+        blob(ctx, x, y, r, col, c.a * (dark ? 1 : 0.95), c.sq);
+      }
+
+      // a single hot core keeps the whole thing from looking flat
+      blob(ctx, W * 0.58, H * 0.36, W * 0.22, dark ? bright : deep, dark ? 0.2 : 0.16, 1);
+    }
 
     function drawSmoke(ctx, W, H, dark) {
-      const m = ground(ctx, W, H, dark);
-      const t = silkT * 0.55;
-      const pulse = 1 + silkBurst * 0.18;
-
-      for (let i = 0; i < SMOKE.length; i += 1) {
-        const b = SMOKE[i];
-        const x = (b.x + Math.sin(t * b.sp + b.ph) * 0.16) * W;
-        const y = (b.y + Math.cos(t * b.sp * 0.8 + b.ph * 1.6) * 0.14) * H;
-        const r = b.r * W * (0.9 + 0.1 * Math.sin(t * 0.5 + b.ph)) * pulse;
-        // light ground needs the darker tones, dark ground the lighter ones
-        const tone = dark ? (b.tone === 0 ? 1 : b.tone) : 0;
-        blob(ctx, x, y, r, m.rgb[tone], b.a * (dark ? 1.9 : 3.4), b.sq);
-      }
-
-      // a single pale core, like the brightest part of the reference stills
-      blob(ctx, W * 0.62, H * 0.34, W * 0.32, m.rgb[dark ? 2 : 0], dark ? 0.22 : 0.16, 1);
+      ground(ctx, W, H, dark);
+      paintCells(ctx, W, H, dark, SMOKE_CELLS, silkT * 0.9, { scale: 1, stretchY: 0, spin: 0 });
     }
-
-    /* ---- flow: vertical currents rising through the frame ------------ */
 
     function drawFlow(ctx, W, H, dark) {
-      const m = ground(ctx, W, H, dark);
-      const t = silkT * 0.5;
-      const n = 7;
-      for (let i = 0; i < n; i += 1) {
-        const base = (i + 0.5) / n;
-        const x = (base + Math.sin(t * 0.3 + i * 1.7) * 0.05) * W;
-        const y = ((t * 0.06 + i * 0.13) % 1.4 - 0.2) * H;
-        const r = W * (0.16 + (i % 3) * 0.05);
-        const c = m.rgb[dark ? 1 + (i % 2) : i % 2];
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.scale(0.55, 2.6);
-        ctx.translate(-x, -y);
-        blob(ctx, x, y, r, c, (dark ? 0.24 : 0.2) + (i % 2) * 0.05, 1);
-        ctx.restore();
-      }
+      ground(ctx, W, H, dark);
+      paintCells(ctx, W, H, dark, FLOW_CELLS, silkT * 1.15, { scale: 1.05, stretchY: 1.9, spin: 0 });
     }
-
-    /* ---- mist: horizontal strata, drifting at different speeds ------- */
 
     function drawMist(ctx, W, H, dark) {
-      const m = ground(ctx, W, H, dark);
-      const t = silkT * 0.4;
-      const n = 5;
-      for (let i = 0; i < n; i += 1) {
-        const y = H * (0.16 + i * 0.18);
-        const h = H * (0.2 + (i % 2) * 0.08);
-        const drift = ((t * (0.02 + i * 0.006) + i * 0.3) % 1.6) - 0.3;
-        const c = m.rgb[dark ? 1 + (i % 2) : i % 2];
-        const g = ctx.createLinearGradient(0, y - h * 0.5, 0, y + h * 0.5);
-        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
-        g.addColorStop(0.5, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.26 : 0.22) + ')');
-        g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
-        ctx.fillStyle = g;
-        ctx.fillRect(-W * 0.3 + drift * W, y - h * 0.5, W * 1.6, h);
-      }
+      ground(ctx, W, H, dark);
+      paintCells(ctx, W, H, dark, MIST_CELLS, silkT * 0.55, { scale: 1.15, stretchY: 0.55, spin: 0 });
     }
 
-    /* ---- swirl: billows orbiting a slow centre ----------------------- */
-
     function drawSwirl(ctx, W, H, dark) {
-      const m = ground(ctx, W, H, dark);
-      const t = silkT * 0.32;
-      const cx = W * 0.52;
-      const cy = H * 0.52;
-      const n = 16;
-      for (let i = 0; i < n; i += 1) {
-        const a = (i / n) * Math.PI * 2 + t * 0.5;
-        const ring = W * (0.1 + (i % 4) * 0.09);
-        const x = cx + Math.cos(a) * ring;
-        const y = cy + Math.sin(a) * ring * 0.7;
-        const r = W * (0.14 + (i % 3) * 0.05);
-        blob(ctx, x, y, r, m.rgb[dark ? 1 + (i % 2) : i % 2], (dark ? 0.2 : 0.17) + (i % 2) * 0.05, 0.9);
-      }
+      ground(ctx, W, H, dark);
+      paintCells(ctx, W, H, dark, SWIRL_CELLS, silkT * 0.75, { scale: 1, stretchY: 0, spin: 1 });
     }
 
     function now0() {
