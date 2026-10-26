@@ -3,14 +3,14 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-2.0.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-2.1.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <p align="center">
-  <img src="docs/preview-dark.png" alt="纸光 · 亚麻（深色）" width="780">
-  <img src="docs/preview-light.png" alt="纸光 · 亚麻（浅色）" width="780">
-  <img src="docs/preview-material.png" alt="材质 · 石雾" width="780">
-  <img src="docs/preview-window.png" alt="窗光 · 奶油" width="780">
-  <img src="docs/preview-geometry.png" alt="几何 · 香槟" width="780">
+  <img src="docs/preview-light.png" alt="色块 · 象牙朱红（浅色）" width="780">
+  <img src="docs/preview-dark.png" alt="色块 · 象牙朱红（深色）" width="780">
+  <img src="docs/preview-grid.png" alt="网格 · 炭黑琥珀" width="780">
+  <img src="docs/preview-wash.png" alt="柔光 · 纸白钴蓝" width="780">
+  <img src="docs/preview-fibre.png" alt="纤维 · 米灰橄榄" width="780">
 </p>
 
 不替换任何组件，只改 CSS token 层 —— 侧栏、对话区、输入框、代码块、弹窗会一起变；
@@ -65,30 +65,39 @@
 - **随场景变色**：会话标题算出一个稳定的色相偏移，再叠加按时段的正弦偏移——切会话、过时间，主色都会慢慢变
 - **输入脉动**：焦点在输入框时背景亮一档
 
-### 色调：四套 mood，每套换的是「整间屋子」
+### 设计语言：瑞士编辑排版
 
-色板不再只是"三个强调色"，而是**一套完整的表面体系**：底色、卡片色、三个层次色调、品牌色。
-换 mood 时，侧栏、对话区、卡片、滑杆、面板会一起换，而不是只有背景变。
+不是"给界面加装饰"，而是把**版式**本身当成设计：一块实心色域、一根不到头的横线、一个巨大的编号、
+严格对齐的网格。颜色只有三种角色——**纸、墨、一个强调色**。
 
-| mood | 底色（浅 / 深） | 三个色调 | 气质 |
+| 色板 | 纸（浅 / 深） | 墨 | 强调色 |
 | --- | --- | --- | --- |
-| **亚麻** | `#F6F2EC` / `#171412` | 亚麻灰、胡桃木、陶土 | 暖白，最像"有阳光的房间" |
-| **石雾** | `#F2F4F6` / `#121417` | 浅石、青灰、雾蓝 | 冷灰，最像建筑杂志 |
-| **奶油** | `#FAF6EE` / `#1A1612` | 奶油、驼色、焦糖 | 柔和，温度高 |
-| **香槟** | `#F4F2EE` / `#100F0E` | 象牙、香槟、深褐 | 暗色最沉稳，接近夜里的灯 |
+| **象牙朱红** | `#F4F1EA` / `#111110` | `#1A1917` | `#D33A2C` |
+| **纸白钴蓝** | `#F5F6F7` / `#0E1013` | `#181A1E` | `#1B4FA0` |
+| **米灰橄榄** | `#F1F0EB` / `#14150F` | `#1C1E16` | `#5A6B3B` |
+| **炭黑琥珀** | `#EDEAE4` / `#0B0B0C` | `#141415` | `#C08A2E` |
 
-卡片色不是纯白，而是**从最亮的色调调出来的**——这是让"暖色调"不至于变成"冷界面 + 暖背景"的关键。
+**正文颜色也跟着换了**：不再是平台的蓝灰，而是每套色板自己的墨色（`--dsw-alias-label-*` 一起覆盖）。
+这一步比换背景更能改变"气质"——蓝灰配暖白永远显得廉价。
 
-### 背景：四种，都在做减法
+设置面板的每一节都带编号（`01 预设`、`02 色板`……），这是面板里唯一的"版式动作"。
 
-| 背景 | 内容 | 交互 |
-| --- | --- | --- |
-| **纸光** | 一整张被光照着的纸：两团极柔的光、一根折痕线 | 光会朝鼠标偏一点 |
-| **材质** | 两块磨砂玻璃浮在底色上，边缘一圈细亮边 | 一道高光跟着鼠标横向扫过 |
-| **窗光** | 暖光从窗外斜照，窗框投下几道软光带 | 鼠标左右移动，光的角度跟着变 |
-| **几何** | 一个色块、一个圆、一条横线，其余全是留白 | 只会挪动几个像素 |
+### 背景：四种版式，都只有版式元素
 
-动效三档：**静止 / 呼吸 / 流动**。默认"呼吸"，肉眼几乎察觉不到在动。
+| 背景 | 内容 |
+| --- | --- |
+| **色块** | 一块实心色域压在右侧、一根不到头的横线、一个巨大的编号 `01` |
+| **柔光** | 一团很柔的光 + 一根基线，没有图形 |
+| **纤维** | 几十道极淡的短笔画模拟纸纤维 + 一根竖向页边线 |
+| **网格** | 细网格 + 每四格一条粗线 + 一个压在交点上的强调色块 |
+
+### 交互：三档，从"只在控件上"到"背景跟随"
+
+| 档位 | 行为 |
+| --- | --- |
+| **静止** | 背景完全不动，所有反馈都在控件上（悬停提亮、按下回弹、滑杆填充） |
+| **呼吸** | 背景里那团光的方向跟着鼠标，其它不动 |
+| **流动** | 光跟随 + 背景整体错开几像素（视差） |
 
 所有背景共用同一套色板和 `--ag-hue`，所以换色板、换会话，背景都会跟着变。浅色模式用的是同一组颜色的**加深版**，不是靠透明度糊出来的粉彩。
 

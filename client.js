@@ -42,36 +42,35 @@ window.__ModuleLoader__.load({
      * palettes & presets
      * ------------------------------------------------------------------ */
 
-    // Four moods. Each one owns a base surface (light / dark) and three tones,
-    // so switching mood re-tints the whole room instead of swapping an accent.
+    // Four Swiss palettes: a ground, an ink, and exactly one accent.
     const PALETTES = [
       {
-        id: 'linen',
-        label: '亚麻',
-        base: [[246, 242, 236], [23, 20, 18]],
-        rgb: [[198, 182, 160], [168, 146, 122], [186, 108, 74]],
-        brand: { light: '#8a5a3b', dark: '#d9b08c' },
+        id: 'ivory',
+        label: '象牙朱红',
+        base: [[244, 241, 234], [17, 17, 16]],
+        rgb: [[232, 228, 218], [26, 25, 23], [211, 58, 44]],
+        brand: { light: '#b4342a', dark: '#e8655a' },
       },
       {
-        id: 'stone',
-        label: '石雾',
-        base: [[242, 244, 246], [18, 20, 23]],
-        rgb: [[206, 212, 218], [150, 162, 174], [92, 112, 134]],
-        brand: { light: '#4a5a6e', dark: '#a8bccf' },
+        id: 'paper',
+        label: '纸白钴蓝',
+        base: [[245, 246, 247], [14, 16, 19]],
+        rgb: [[236, 238, 240], [24, 26, 30], [27, 79, 160]],
+        brand: { light: '#1b4fa0', dark: '#6e9be0' },
       },
       {
-        id: 'cream',
-        label: '奶油',
-        base: [[250, 246, 238], [26, 22, 18]],
-        rgb: [[236, 222, 198], [206, 168, 124], [160, 104, 60]],
-        brand: { light: '#8a5a2b', dark: '#e0b98a' },
+        id: 'oat',
+        label: '米灰橄榄',
+        base: [[241, 240, 235], [20, 21, 15]],
+        rgb: [[228, 226, 216], [28, 30, 22], [90, 107, 59]],
+        brand: { light: '#4e5e33', dark: '#9cb06b' },
       },
       {
-        id: 'champagne',
-        label: '香槟',
-        base: [[244, 242, 238], [16, 15, 14]],
-        rgb: [[214, 204, 186], [168, 150, 116], [120, 104, 78]],
-        brand: { light: '#6b5a3e', dark: '#d8c39a' },
+        id: 'charcoal',
+        label: '炭黑琥珀',
+        base: [[237, 234, 228], [11, 11, 12]],
+        rgb: [[222, 218, 208], [20, 20, 21], [192, 138, 46]],
+        brand: { light: '#96690f', dark: '#d8a94a' },
       },
     ];
 
@@ -85,7 +84,7 @@ window.__ModuleLoader__.load({
     const DEFAULT_SETTINGS = {
       enabled: true,
       preset: 'default',
-      palette: 'linen',
+      palette: 'ivory',
       glass: 0.82,
       blur: 34,
       saturation: 1.15,
@@ -93,7 +92,7 @@ window.__ModuleLoader__.load({
       grain: true,
       aurora: true,
       tint: true,
-      bgmode: 'paper',
+      bgmode: 'block',
       posX: null,
       posY: null,
     };
@@ -111,10 +110,10 @@ window.__ModuleLoader__.load({
         'sec.surface': '质感',
         'sec.look': '动效',
         'bg.label': '背景',
-        'bg.paper': '纸光',
-        'bg.material': '材质',
-        'bg.window': '窗光',
-        'bg.geometry': '几何',
+        'bg.block': '色块',
+        'bg.wash': '柔光',
+        'bg.fibre': '纤维',
+        'bg.grid': '网格',
         'preset.default': '标准',
         'preset.clear': '通透',
         'preset.rich': '浓郁',
@@ -142,10 +141,10 @@ window.__ModuleLoader__.load({
         'sec.surface': 'Texture',
         'sec.look': 'Motion',
         'bg.label': 'Backdrop',
-        'bg.paper': 'Paper',
-        'bg.material': 'Material',
-        'bg.window': 'Window',
-        'bg.geometry': 'Geometry',
+        'bg.block': 'Block',
+        'bg.wash': 'Wash',
+        'bg.fibre': 'Fibre',
+        'bg.grid': 'Grid',
         'preset.default': 'Standard',
         'preset.clear': 'Clear',
         'preset.rich': 'Rich',
@@ -186,10 +185,10 @@ window.__ModuleLoader__.load({
       zh: {
         preset: '一键套一组参数。想快速换个感觉时用它，细调再去下面的滑杆。',
         palette: '极光的配色。深色和浅色各取一组，悬停色块可以直接预览。',
-        'bg.paper': '一整张被光照着的纸：两团极柔的光、一根折痕线，几乎没有图形。鼠标移动时光会跟着偏一点。',
-        'bg.material': '两块磨砂玻璃浮在底色上，一道高光跟着鼠标横向扫过，玻璃边缘有一圈细亮边。',
-        'bg.window': '暖光从窗外斜照进来，窗框投下几道软影；鼠标左右移动，光的角度会跟着变。',
-        'bg.geometry': '一个色块、一个圆、一条横线，其余全是留白。鼠标只会让它们挪动几个像素。',
+        'bg.block': '瑞士排版：一块实心色域压在右侧、一根不到头的横线、一个巨大的编号。鼠标只会让它挪动几像素。',
+        'bg.wash': '只有一团很柔的光和一根基线，没有图形。光会朝鼠标偏一点。',
+        'bg.fibre': '纸的纤维感：几十道极淡的短笔画 + 一根竖线。静止，但有东西可看。',
+        'bg.grid': '像坐标纸：细网格 + 每四格一条粗线 + 一个压在交点上的色块。',
         glass: '表面有多透。100% 几乎全靠背景撑，0% 等于回到原生外观。',
         blur: '极光边缘的柔化程度，越大越朦胧。松手才生效，所以拖动不会卡。',
         saturation: '极光的鲜艳程度。往右更艳，往左偏灰。',
@@ -203,10 +202,10 @@ window.__ModuleLoader__.load({
       en: {
         preset: 'Applies a whole set of values at once. Use it to change the mood quickly.',
         palette: 'The aurora colours. Dark and light each pick their own; hover a swatch to preview.',
-        'bg.paper': 'One lit sheet: two very soft pools of light and a single crease, almost no geometry. The light leans toward the pointer.',
-        'bg.material': 'Two frosted panes over the base colour; a highlight travels across them with the pointer.',
-        'bg.window': 'Warm light through a window frame, casting soft bars. Moving the pointer sideways shifts the angle.',
-        'bg.geometry': 'One block, one circle, one line, and a lot of air. The pointer only nudges them a few pixels.',
+        'bg.block': 'Swiss layout: a solid field down the right edge, a rule that stops short, one oversized numeral. The pointer only nudges it a few pixels.',
+        'bg.wash': 'One very soft light and a baseline, no shapes. The light leans toward the pointer.',
+        'bg.fibre': 'Paper fibre: dozens of faint short strokes plus a vertical margin rule.',
+        'bg.grid': 'Like graph paper: a fine grid, a heavier rule every four cells, and one accent block on an intersection.',
         glass: 'How transparent the surfaces are. 100% leans on the background, 0% is the stock look.',
         blur: 'Softness of the aurora edge. Applied on release, so dragging stays smooth.',
         saturation: 'Colour intensity. Right is richer, left is greyer.',
@@ -444,6 +443,14 @@ body{
      keeps a warm mood from looking like a cold UI with a warm background */
   --ag-card-l: ${pal.rgb[0].map((v) => Math.round(v + (255 - v) * 0.55)).join(' ')};
   --ag-card-d: ${pal.rgb[0].map((v) => Math.round(v + (255 - v) * 0.45)).join(' ')};
+  /* editorial ink: warm near-black instead of the platform's blue-grey */
+  --ag-ink-l: ${pal.rgb[1].join(' ')};
+  --ag-ink-d: ${pal.rgb[0].map((v) => Math.round(v + (255 - v) * 0.86)).join(' ')};
+  --dsw-alias-brand-primary: ${pal.brand.light} !important;
+  --dsw-alias-label-primary: rgb(var(--ag-ink-l)) !important;
+  --dsw-alias-label-secondary: rgb(var(--ag-ink-l) / .72) !important;
+  --dsw-alias-label-tertiary: rgb(var(--ag-ink-l) / .5) !important;
+  --dsw-alias-label-quaternary: rgb(var(--ag-ink-l) / .36) !important;
   --dsw-alias-bg-base: rgb(var(--ag-base-l) / calc(.02 + .05 * var(--ag-g))) !important;
   --dsw-alias-bg-layer-1: rgb(var(--ag-card-l) / calc(.6 + .24 * var(--ag-g))) !important;
   --dsw-alias-bg-layer-2: rgb(var(--ag-card-l) / calc(.72 + .18 * var(--ag-g))) !important;
@@ -463,6 +470,11 @@ body{
 
 /* ---- alias tokens, dark -------------------------------------------- */
 body[data-ds-dark-theme]{
+  --dsw-alias-brand-primary: ${pal.brand.dark} !important;
+  --dsw-alias-label-primary: rgb(var(--ag-ink-d)) !important;
+  --dsw-alias-label-secondary: rgb(var(--ag-ink-d) / .7) !important;
+  --dsw-alias-label-tertiary: rgb(var(--ag-ink-d) / .46) !important;
+  --dsw-alias-label-quaternary: rgb(var(--ag-ink-d) / .32) !important;
   --dsw-alias-bg-base: rgb(var(--ag-base-d) / calc(.02 + .05 * var(--ag-g))) !important;
   --dsw-alias-bg-layer-1: rgb(var(--ag-card-d) / calc(.09 + .06 * var(--ag-g))) !important;
   --dsw-alias-bg-layer-2: rgb(var(--ag-card-d) / calc(.12 + .07 * var(--ag-g))) !important;
@@ -667,9 +679,16 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
 .ag-x:hover{ background:rgba(255,255,255,.2); color:#f6f8ff; }
 .ag-x:active{ transform:scale(.9); }
 
-.ag-sec{ margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.07); }
+.ag-sec{ margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.07); counter-increment:ag-sec; }
 .ag-sec:first-of-type{ border-top:none; padding-top:10px; }
-.ag-label{ font-size:10.5px; color:#a3aec6; letter-spacing:.7px; margin-bottom:8px; font-weight:600; }
+#dsh-ag-panel{ counter-reset:ag-sec; }
+.ag-label{ font-size:10.5px; color:#a3aec6; letter-spacing:1.2px; margin-bottom:8px; font-weight:600; text-transform:uppercase; }
+/* the section index is the one editorial gesture in the panel */
+.ag-label::before{
+  content:counter(ag-sec,decimal-leading-zero);
+  font-variant-numeric:tabular-nums; font-weight:700;
+  opacity:.42; margin-right:8px; letter-spacing:0;
+}
 .ag-chips{ display:flex; flex-wrap:wrap; gap:6px; }
 .ag-chip{
   font:inherit; font-size:12px; font-weight:500; padding:5.5px 12px; border-radius:99px;
@@ -1114,7 +1133,7 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
         }, t('seg.motion.' + lv)),
       );
 
-      const bgChips = ['paper', 'material', 'window', 'geometry'].map((mode) =>
+      const bgChips = ['block', 'wash', 'fibre', 'grid'].map((mode) =>
         el('button', {
           class: 'ag-chip ag-chip-sm',
           type: 'button',
@@ -1420,10 +1439,10 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
 
 
       const mode = state.bgmode;
-      if (mode === 'material') drawMaterial(ctx, W, H, dark);
-      else if (mode === 'window') drawWindow(ctx, W, H, dark);
-      else if (mode === 'geometry') drawGeometry(ctx, W, H, dark);
-      else drawPaper(ctx, W, H, dark);
+      if (mode === 'wash') drawWash(ctx, W, H, dark);
+      else if (mode === 'fibre') drawFibre(ctx, W, H, dark);
+      else if (mode === 'grid') drawGrid(ctx, W, H, dark);
+      else drawBlock(ctx, W, H, dark);
 
       // ripple rings belong to the fluid backdrops only — drawing them over the
       // others produced a field of rings that looked like a rendering fault
@@ -1435,199 +1454,177 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
     }
 
     /* ==================================================================== *
-     * Four quiet backdrops. Each one is deliberately restrained: a surface,
-     * one light, and at most one shape. All of them are driven by the mood
-     * palette, so switching mood changes the whole room, not just an accent.
+     * Swiss editorial backdrops.
+     * The language is typographic: a flat ground, a strict grid, hairline
+     * rules and one oversized numeral. Nothing here is decorative for its
+     * own sake — every mark is a layout mark.
      * ==================================================================== */
 
     const moodOf = () => paletteOf(state.palette);
 
-    /* ---- paper: a lit sheet, almost nothing on it --------------------- */
+    // motion 0 = still (controls only), 1 = light responds, 2 = light + parallax
+    function pointerAmt() {
+      return state.motion === 'off' ? 0 : state.motion === 'full' ? 1 : 0.55;
+    }
 
-    function drawPaper(ctx, W, H, dark) {
+    function ground(ctx, W, H, dark) {
       const m = moodOf();
-      const base = dark ? m.base[1] : m.base[0];
-      ctx.fillStyle = 'rgb(' + base[0] + ',' + base[1] + ',' + base[2] + ')';
+      const b = dark ? m.base[1] : m.base[0];
+      ctx.fillStyle = 'rgb(' + b[0] + ',' + b[1] + ',' + b[2] + ')';
       ctx.fillRect(0, 0, W, H);
+      return m;
+    }
 
-      const t = silkT * 1.2;
-      const px = silkPointer.active ? silkPointer.x / W - 0.5 : 0;
-      const py = silkPointer.active ? silkPointer.y / H - 0.5 : 0;
-      const c = m.rgb[0];
+    function inkOf(m, dark, alpha) {
+      const c = dark ? m.rgb[0] : m.rgb[1];
+      return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')';
+    }
 
-      // one large, very soft pool of light — the whole composition
-      ctx.filter = 'blur(26px)';
-      const cx = W * (0.42 + px * 0.06) + Math.sin(t * 0.2) * W * 0.02;
-      const cy = H * (0.38 + py * 0.05) + Math.cos(t * 0.17) * H * 0.02;
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.62);
-      g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.26 : 0.55) + ')');
-      g.addColorStop(0.55, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.1 : 0.2) + ')');
+    /* ---- block: flat ground, one form, one rule ----------------------- */
+
+    function drawBlock(ctx, W, H, dark) {
+      const m = ground(ctx, W, H, dark);
+      const amt = pointerAmt();
+      const px = silkPointer.active ? (silkPointer.x / W - 0.5) * amt : 0;
+      const py = silkPointer.active ? (silkPointer.y / H - 0.5) * amt : 0;
+
+      // the form: a solid field of ink down the right edge
+      ctx.fillStyle = inkOf(m, dark, dark ? 0.5 : 0.1);
+      ctx.fillRect(W * 0.68 + px * 4, 0, W * 0.32, H);
+
+      // the rule: a hairline that stops short — asymmetry is the point
+      ctx.beginPath();
+      ctx.moveTo(0, H * 0.66 + py * 3);
+      ctx.lineTo(W * 0.52, H * 0.66 + py * 3);
+      ctx.strokeStyle = inkOf(m, dark, dark ? 0.34 : 0.26);
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+
+      // the numeral: one oversized figure, set low and quiet
+      ctx.save();
+      ctx.font = '700 ' + Math.round(H * 0.5) + 'px "Helvetica Neue", Helvetica, Arial, sans-serif';
+      ctx.fillStyle = inkOf(m, dark, dark ? 0.1 : 0.07);
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('01', W * 0.04 + px * 8, H * 0.98 + py * 4);
+      ctx.restore();
+    }
+
+    /* ---- wash: a flat ground and one soft light ---------------------- */
+
+    function drawWash(ctx, W, H, dark) {
+      const m = ground(ctx, W, H, dark);
+      const amt = pointerAmt();
+      const t = silkT * 1.1;
+      const px = silkPointer.active ? silkPointer.x / W : 0.42;
+      const py = silkPointer.active ? silkPointer.y / H : 0.3;
+      const c = m.rgb[2];
+
+      ctx.filter = 'blur(30px)';
+      const cx = W * (0.42 + (px - 0.5) * 0.22 * amt) + Math.sin(t * 0.18) * W * 0.02;
+      const cy = H * (0.34 + (py - 0.5) * 0.18 * amt) + Math.cos(t * 0.15) * H * 0.02;
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.55);
+      g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.2 : 0.16) + ')');
       g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
 
-      // a second, cooler pool for depth
-      const c2 = m.rgb[2];
-      const g2 = ctx.createRadialGradient(W * 0.82, H * 0.86, 0, W * 0.82, H * 0.86, W * 0.5);
-      g2.addColorStop(0, 'rgba(' + c2[0] + ',' + c2[1] + ',' + c2[2] + ',' + (dark ? 0.14 : 0.16) + ')');
-      g2.addColorStop(1, 'rgba(' + c2[0] + ',' + c2[1] + ',' + c2[2] + ',0)');
-      ctx.fillStyle = g2;
-      ctx.fillRect(0, 0, W, H);
-
-      // a single hairline, off-centre, like a fold in the sheet
-      ctx.filter = 'blur(0.4px)';
-      ctx.beginPath();
-      ctx.moveTo(W * 0.06, H * 0.74);
-      ctx.bezierCurveTo(W * 0.34, H * 0.7, W * 0.62, H * 0.79, W * 0.96, H * 0.72);
-      ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.18 : 0.3) + ')';
-      ctx.lineWidth = 0.7;
-      ctx.stroke();
-    }
-
-    /* ---- material: one frosted pane catching a moving highlight ------- */
-
-    function drawMaterial(ctx, W, H, dark) {
-      const m = moodOf();
-      const base = dark ? m.base[1] : m.base[0];
-      ctx.fillStyle = 'rgb(' + base[0] + ',' + base[1] + ',' + base[2] + ')';
-      ctx.fillRect(0, 0, W, H);
-
-      const t = silkT * 1.6;
-      const sx = silkPointer.active ? silkPointer.x : W * 0.5;
-
-      // a soft tonal wash so the pane has something to sit on
-      ctx.filter = 'blur(22px)';
-      const wash = ctx.createLinearGradient(0, 0, W, H);
-      wash.addColorStop(0, 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.22 : 0.4) + ')');
-      wash.addColorStop(1, 'rgba(' + m.rgb[1].join(',') + ',' + (dark ? 0.12 : 0.18) + ')');
-      ctx.fillStyle = wash;
-      ctx.fillRect(0, 0, W, H);
-
-      // two panes: a big one and a narrow one, both with soft edges
-      const panes = [
-        { x: W * 0.14, y: H * 0.2, w: W * 0.52, h: H * 0.46, r: 10 },
-        { x: W * 0.6, y: H * 0.44, w: W * 0.26, h: H * 0.4, r: 8 },
-      ];
-      for (let i = 0; i < panes.length; i += 1) {
-        const p = panes[i];
-        const px = p.x + Math.sin(t * 0.3 + i) * 2;
-        const py = p.y + Math.cos(t * 0.24 + i) * 2;
-
-        ctx.filter = 'blur(0.6px)';
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(px, py, p.w, p.h, p.r);
-        else ctx.rect(px, py, p.w, p.h);
-        ctx.fillStyle = dark ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.34)';
-        ctx.fill();
-        ctx.strokeStyle = dark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)';
-        ctx.lineWidth = 0.8;
-        ctx.stroke();
-
-        // the highlight that travels with the cursor
-        ctx.save();
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(px, py, p.w, p.h, p.r);
-        else ctx.rect(px, py, p.w, p.h);
-        ctx.clip();
-        const hx = sx - p.w * 0.25;
-        const hl = ctx.createLinearGradient(hx, 0, hx + p.w * 0.5, 0);
-        hl.addColorStop(0, 'rgba(255,255,255,0)');
-        hl.addColorStop(0.5, 'rgba(255,255,255,' + (dark ? 0.07 : 0.42) + ')');
-        hl.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = hl;
-        ctx.fillRect(px, py, p.w, p.h);
-        ctx.restore();
-      }
-
-      // one matte bar at the bottom, the "material" anchor
-      ctx.filter = 'blur(1px)';
-      const bar = ctx.createLinearGradient(0, H * 0.9, 0, H);
-      bar.addColorStop(0, 'rgba(' + m.rgb[1].join(',') + ',' + (dark ? 0.18 : 0.14) + ')');
-      bar.addColorStop(1, 'rgba(' + m.rgb[1].join(',') + ',0)');
-      ctx.fillStyle = bar;
-      ctx.fillRect(0, H * 0.9, W, H * 0.1);
-    }
-
-    /* ---- window: warm light coming through a frame -------------------- */
-
-    function drawWindow(ctx, W, H, dark) {
-      const m = moodOf();
-      const base = dark ? m.base[1] : m.base[0];
-      ctx.fillStyle = 'rgb(' + base[0] + ',' + base[1] + ',' + base[2] + ')';
-      ctx.fillRect(0, 0, W, H);
-
-      const t = silkT * 0.8;
-      const px = silkPointer.active ? silkPointer.x / W : 0.5;
-
-      // the light itself: a warm wedge from the upper left
-      ctx.filter = 'blur(30px)';
-      const lg = ctx.createLinearGradient(0, 0, W * 0.9, H);
-      lg.addColorStop(0, 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.3 : 0.62) + ')');
-      lg.addColorStop(0.45, 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.1 : 0.22) + ')');
-      lg.addColorStop(1, 'rgba(' + m.rgb[0].join(',') + ',0)');
-      ctx.fillStyle = lg;
-      ctx.fillRect(0, 0, W, H);
-
-      // the frame: three bright bars of light with soft edges, angle drifts
-      // with the cursor — this is what actually reads as window light
-      ctx.filter = 'blur(3.5px)';
-      const ang = -0.32 + (px - 0.5) * 0.16 + Math.sin(t * 0.15) * 0.02;
-      ctx.save();
-      ctx.translate(W * 0.32, -H * 0.1);
-      ctx.rotate(ang);
-      for (let i = 0; i < 3; i += 1) {
-        const x = i * W * 0.24;
-        ctx.fillStyle = 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.34 : 0.62) + ')';
-        ctx.fillRect(x, 0, W * 0.16, H * 1.9);
-      }
-      ctx.fillStyle = 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.2 : 0.4) + ')';
-      ctx.fillRect(-W * 0.2, H * 0.42, W * 1.8, H * 0.12);
-      ctx.restore();
-
-      // floor light pool
-      ctx.filter = 'blur(26px)';
-      const pool = ctx.createRadialGradient(W * 0.68, H * 0.82, 0, W * 0.68, H * 0.82, W * 0.42);
-      pool.addColorStop(0, 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.16 : 0.4) + ')');
-      pool.addColorStop(1, 'rgba(' + m.rgb[0].join(',') + ',0)');
-      ctx.fillStyle = pool;
-      ctx.fillRect(0, 0, W, H);
-    }
-
-    /* ---- geometry: one block, one line, a lot of air ------------------ */
-
-    function drawGeometry(ctx, W, H, dark) {
-      const m = moodOf();
-      const base = dark ? m.base[1] : m.base[0];
-      ctx.fillStyle = 'rgb(' + base[0] + ',' + base[1] + ',' + base[2] + ')';
-      ctx.fillRect(0, 0, W, H);
+      // one hairline keeps it from being a blur with no structure
       ctx.filter = 'none';
-
-      const t = silkT * 0.9;
-      const px = silkPointer.active ? (silkPointer.x / W - 0.5) : 0;
-      const py = silkPointer.active ? (silkPointer.y / H - 0.5) : 0;
-
-      // the block: a tall rectangle, slightly off-canvas
-      const bx = W * 0.62 + px * 3;
-      const by = -H * 0.08 + py * 2;
-      ctx.fillStyle = 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.5 : 0.72) + ')';
-      ctx.fillRect(bx, by, W * 0.3, H * 1.2);
-
-      // the circle: overlaps the block, one accent
-      const cx = W * 0.3 + px * 4;
-      const cy = H * 0.62 + py * 3;
       ctx.beginPath();
-      ctx.arc(cx, cy, W * 0.15, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(' + m.rgb[2].join(',') + ',' + (dark ? 0.4 : 0.5) + ')';
-      ctx.fill();
-
-      // the line: a single horizontal hairline at eye height
-      const ly = H * 0.44 + Math.sin(t * 0.3) * 1.2;
-      ctx.beginPath();
-      ctx.moveTo(0, ly);
-      ctx.lineTo(W, ly);
-      ctx.strokeStyle = 'rgba(' + m.rgb[1].join(',') + ',' + (dark ? 0.28 : 0.4) + ')';
-      ctx.lineWidth = 0.6;
+      ctx.moveTo(W * 0.08, H * 0.78);
+      ctx.lineTo(W * 0.92, H * 0.78);
+      ctx.strokeStyle = inkOf(m, dark, dark ? 0.22 : 0.14);
+      ctx.lineWidth = 0.5;
       ctx.stroke();
+    }
+
+    /* ---- fibre: flat ground with paper grain ------------------------- */
+
+    const FIBRES = (() => {
+      const list = [];
+      let seed = 77123;
+      const rnd = () => {
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        return seed / 0x7fffffff;
+      };
+      for (let i = 0; i < 90; i += 1) {
+        list.push({ x: rnd(), y: rnd(), len: 0.02 + rnd() * 0.09, a: (rnd() - 0.5) * 0.5, w: 0.3 + rnd() * 0.5 });
+      }
+      return list;
+    })();
+
+    function drawFibre(ctx, W, H, dark) {
+      const m = ground(ctx, W, H, dark);
+      const amt = pointerAmt();
+      const px = silkPointer.active ? (silkPointer.x / W - 0.5) * amt : 0;
+
+      ctx.filter = 'none';
+      ctx.strokeStyle = inkOf(m, dark, dark ? 0.16 : 0.1);
+      for (let i = 0; i < FIBRES.length; i += 1) {
+        const f = FIBRES[i];
+        const x = f.x * W + px * 6;
+        const y = f.y * H;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + Math.cos(f.a) * f.len * W, y + Math.sin(f.a) * f.len * W);
+        ctx.lineWidth = f.w;
+        ctx.stroke();
+      }
+
+      // a single vertical rule, like a margin
+      ctx.beginPath();
+      ctx.moveTo(W * 0.5 + px * 3, 0);
+      ctx.lineTo(W * 0.5 + px * 3, H);
+      ctx.strokeStyle = inkOf(m, dark, dark ? 0.24 : 0.12);
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+
+    /* ---- grid: a strict layout grid ---------------------------------- */
+
+    function drawGrid(ctx, W, H, dark) {
+      const m = ground(ctx, W, H, dark);
+      const amt = pointerAmt();
+      const px = silkPointer.active ? (silkPointer.x / W - 0.5) * amt : 0;
+      const py = silkPointer.active ? (silkPointer.y / H - 0.5) * amt : 0;
+      const ox = px * 5;
+      const oy = py * 4;
+
+      ctx.filter = 'none';
+      const minor = Math.max(10, W / 32);
+      const major = minor * 4;
+
+      ctx.strokeStyle = inkOf(m, dark, dark ? 0.055 : 0.05);
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      for (let x = (ox % minor) - minor; x <= W; x += minor) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, H);
+      }
+      for (let y = (oy % minor) - minor; y <= H; y += minor) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+      }
+      ctx.stroke();
+
+      ctx.strokeStyle = inkOf(m, dark, dark ? 0.13 : 0.1);
+      ctx.lineWidth = 0.7;
+      ctx.beginPath();
+      for (let x = (ox % major) - major; x <= W; x += major) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, H);
+      }
+      for (let y = (oy % major) - major; y <= H; y += major) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+      }
+      ctx.stroke();
+
+      // one accent square sitting on an intersection
+      const ax = Math.round((W * 0.72 + ox) / major) * major;
+      const ay = Math.round((H * 0.28 + oy) / major) * major;
+      ctx.fillStyle = 'rgba(' + m.rgb[2].join(',') + ',' + (dark ? 0.5 : 0.42) + ')';
+      ctx.fillRect(ax - major, ay - major, major, major);
     }
 
     function now0() {
