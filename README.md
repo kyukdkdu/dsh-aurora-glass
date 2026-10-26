@@ -3,7 +3,7 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-1.19.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-1.19.1-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <p align="center">
   <img src="docs/preview-dark.png" alt="极光 · 墨紫" width="780">
@@ -76,8 +76,6 @@
 | **墨流** | 三瓣一串的墨团缓慢下沉 | 指针附近的墨会**变浓变大**（像在搅水），点击荡开涟漪，打字加速 |
 | **花瓣** | 三层半透明褶皱花瓣，**固定在右下角** | 只缓慢绽放，**不跟随鼠标** |
 | **浮光** | 粉紫渐变、发光球体、悬浮的空画框 | 光球会向你靠拢，**靠近时变亮**；画框按景深视差 |
-
-悬停背景 chip 会**实时预览**那套背景，移开还原——和色板悬停预览是同一套手感。
 
 ### 色板：六组三色卡
 

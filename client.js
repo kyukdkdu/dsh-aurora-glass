@@ -372,11 +372,8 @@ html.ag-typing #${BG_ID} .ag-scrim{ opacity:.55 }
 #${BG_ID} .ag-grain{
   position:absolute; inset:0; display:block; pointer-events:none;
   background-image:${NOISE}; background-size:160px 160px;
-  opacity:calc(.28 * var(--ag-grain));
+  opacity:calc(.42 * var(--ag-grain)); mix-blend-mode:soft-light;
 }
-/* No mix-blend-mode here on purpose: a blended full-screen layer over a moving
-   backdrop forces a recomposite every frame. Plain opacity keeps the texture
-   and lets the compositor skip that work. */
 
 /* ---- silk backdrop -------------------------------------------------- */
 #${SILK_ID}{
@@ -755,7 +752,6 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
     let silkLast = 0;
     let silkSpeed = 1;
     let silkBurst = 0;
-    let silkRipples = [];
     const silkPointer = { x: -999, y: -999, active: false };
     let silkRect = null;
 
@@ -857,32 +853,11 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
     }
 
     // Hovering a swatch repaints the palette once so you can feel it before
-    // committing; leaving the swatch restores the stored one.
+    // committing; leaving the swatch restores the stored one. This one is safe
+    // because it never touches state — only the stylesheet.
     function previewPalette(id) {
       try {
         ensureStyle(STYLE_ID, buildSheet(paletteOf(id || state.palette)));
-      } catch {
-        /* preview is cosmetic */
-      }
-    }
-
-    // Same idea for the backdrop chips: hovering swaps the live backdrop
-    // without touching storage, leaving puts the chosen one back.
-    let previewBgMode = null;
-
-    function previewBg(mode) {
-      try {
-        if (mode) {
-          if (previewBgMode === null) previewBgMode = state.bgmode;
-          state = { ...state, bgmode: mode };
-        } else {
-          if (previewBgMode === null) return;
-          state = { ...state, bgmode: previewBgMode };
-          previewBgMode = null;
-        }
-        silkRect = null;
-        paintNow();
-        syncUI();
       } catch {
         /* preview is cosmetic */
       }
@@ -1081,8 +1056,6 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
           type: 'button',
           'data-bgmode': mode,
           'data-tip': tip('bg.' + mode),
-          onPointerenter: () => previewBg(mode),
-          onPointerleave: () => previewBg(null),
           onClick: () => set({ bgmode: mode }),
         }, t('bg.' + mode)),
       );
@@ -1224,17 +1197,11 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
       });
     }
 
-    function addRipple(clientX, clientY) {
-      if (!silk || state.bgmode === 'aurora') return;
-      const rect = silkRect || refreshSilkRect();
-      if (!rect || !rect.width) return;
-      const cx = ((clientX - rect.left) / rect.width) * (silk.width || 384);
-      const cy = ((clientY - rect.top) / rect.height) * (silk.height || 216);
-
-      // each backdrop answers a click in its own way
-      if (state.bgmode === 'bloom') bloomBurst = 1;
-      silkRipples.push({ x: cx, y: cy, t0: now0() });
-      if (silkRipples.length > 3) silkRipples.shift();
+    function addRipple() {
+      /* Click feedback on the backdrop was removed on purpose: the rings kept
+         piling up over modes that had no business drawing them, and on a dark
+         background the overlapping arcs read as a rendering fault. The
+         backdrops now respond to the pointer only. */
     }
 
     function onFocusIn(e) {
@@ -1388,7 +1355,6 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
         dark = false;
       }
 
-      if (silkRipples.length) silkRipples = silkRipples.filter((r) => now - r.t0 < 2200);
 
       const mode = state.bgmode;
       if (mode === 'silk') drawWaves(ctx, W, H, dark);
@@ -1396,23 +1362,13 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
       else if (mode === 'petal') drawPetal(ctx, W, H, dark);
       else if (mode === 'dream') drawDream(ctx, W, H, dark);
 
-      drawRippleRings(ctx, dark, now);
+      // ripple rings belong to the fluid backdrops only — drawing them over the
+      // others produced a field of rings that looked like a rendering fault
       ctx.filter = 'none';
     }
 
-    function drawRippleRings(ctx, dark, now) {
-      for (let k = 0; k < silkRipples.length; k += 1) {
-        const r = silkRipples[k];
-        const age = (now - r.t0) / 1000;
-        const rad = age * 240;
-        const fade = Math.max(0, 1 - age / 2.2);
-        if (fade <= 0) continue;
-        ctx.beginPath();
-        ctx.ellipse(r.x, r.y, rad, rad * 0.45, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = dark ? 'rgba(255,255,255,' + 0.28 * fade + ')' : 'rgba(255,255,255,' + 0.7 * fade + ')';
-        ctx.lineWidth = 2.4 * fade + 0.4;
-        ctx.stroke();
-      }
+    function drawRippleRings() {
+      /* retired — see addRipple */
     }
 
     /* ---- silk: horizontal satin bands --------------------------------- */
@@ -1616,14 +1572,6 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
           if (silkPointer.active) {
             const dx = x - px;
             y += Math.exp(-(dx * dx) / 2400) * (py - y) * 0.16;
-          }
-          for (let k = 0; k < silkRipples.length; k += 1) {
-            const r = silkRipples[k];
-            const age = (now0() - r.t0) / 1000;
-            const front = age * 240;
-            const d = Math.abs(x - r.x);
-            const band = Math.exp(-Math.pow((d - front) / 80, 2));
-            if (band > 0.01) y += band * 22 * Math.max(0, 1 - age / 2.2) * (i % 2 ? 1 : -1);
           }
           return y;
         };
@@ -1926,7 +1874,6 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
       bg = null;
       silk = null;
       silkCtx = null;
-      silkRipples = [];
       silkBurst = 0;
       silkSpeed = 1;
       silkPointer.active = false;

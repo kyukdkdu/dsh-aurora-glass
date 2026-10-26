@@ -3,6 +3,19 @@
 本文件记录 dsh-aurora-glass 的重要变更，采用简易维护格式（Keep a Changelog 风格）。
 All notable changes to dsh-aurora-glass, in a simple maintenance format (Keep a Changelog style).
 
+## [1.19.1] - 2026-10-26
+
+### Fixed
+
+- **背景出现满屏同心波纹**（回滚 v1.19 的两处改动）：
+  1. 噪点层的 `mix-blend-mode: soft-light` 恢复了。去掉它之后，噪点从"混进去的质感"变成了
+     一层可见的灰纹，叠在深色背景上就是那片环状纹理。
+  2. **点击涟漪彻底移除**。它有两个问题：v1.14 起对所有背景都画（本该只属于丝绸/墨流），
+     而且丝绸的 `wave()` 里还留着一份"波前位移"逻辑，点一次就在缎带上留下一道不会再消失的隆起，
+     点得越多越乱。现在背景只响应指针，不再响应点击。
+- **切换背景/色板失效**：`previewBg` 在鼠标离开 chip 时会把背景**还原成悬停前的那个**，
+  于是"点一下切过去"被随后的 pointerleave 撤销了。悬停预览已整体删除（用户要求）。
+
 ## [1.19.0] - 2026-10-25
 
 ### Removed
