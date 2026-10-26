@@ -42,27 +42,50 @@ window.__ModuleLoader__.load({
      * palettes & presets
      * ------------------------------------------------------------------ */
 
-    // Eight three-colour cards, taken from the reference palette video.
+    // Four moods. Each one owns a base surface (light / dark) and three tones,
+    // so switching mood re-tints the whole room instead of swapping an accent.
     const PALETTES = [
-      { id: 'inkpurple', label: '墨紫', brand: { light: '#4c2a73', dark: '#adcf37' }, rgb: [[20, 20, 20], [76, 42, 115], [173, 207, 55]] },
-      { id: 'graphite', label: '石墨青', brand: { light: '#0f8f8d', dark: '#26cdcb' }, rgb: [[31, 35, 38], [27, 42, 82], [38, 205, 203]] },
-      { id: 'silverred', label: '银红', brand: { light: '#c51e2a', dark: '#ff8a92' }, rgb: [[181, 184, 187], [24, 22, 23], [197, 30, 42]] },
-      { id: 'forest', label: '森林金', brand: { light: '#8a6820', dark: '#b18739' }, rgb: [[10, 26, 18], [46, 107, 71], [177, 135, 57]] },
-      { id: 'navy', label: '海军橙', brand: { light: '#e85327', dark: '#ff8a5c' }, rgb: [[231, 225, 211], [18, 35, 58], [232, 83, 39]] },
-      { id: 'paper', label: '纸本钴', brand: { light: '#1c4a9c', dark: '#6b9ae8' }, rgb: [[239, 232, 214], [28, 74, 156], [218, 46, 43]] },
+      {
+        id: 'linen',
+        label: '亚麻',
+        base: [[246, 242, 236], [23, 20, 18]],
+        rgb: [[198, 182, 160], [168, 146, 122], [186, 108, 74]],
+        brand: { light: '#8a5a3b', dark: '#d9b08c' },
+      },
+      {
+        id: 'stone',
+        label: '石雾',
+        base: [[242, 244, 246], [18, 20, 23]],
+        rgb: [[206, 212, 218], [150, 162, 174], [92, 112, 134]],
+        brand: { light: '#4a5a6e', dark: '#a8bccf' },
+      },
+      {
+        id: 'cream',
+        label: '奶油',
+        base: [[250, 246, 238], [26, 22, 18]],
+        rgb: [[236, 222, 198], [206, 168, 124], [160, 104, 60]],
+        brand: { light: '#8a5a2b', dark: '#e0b98a' },
+      },
+      {
+        id: 'champagne',
+        label: '香槟',
+        base: [[244, 242, 238], [16, 15, 14]],
+        rgb: [[214, 204, 186], [168, 150, 116], [120, 104, 78]],
+        brand: { light: '#6b5a3e', dark: '#d8c39a' },
+      },
     ];
 
     const PRESETS = [
       { id: 'default', key: 'preset.default', set: { glass: 0.82, blur: 34, saturation: 1.15, motion: 'soft', aurora: true, grain: true, tint: true } },
       { id: 'clear', key: 'preset.clear', set: { glass: 1, blur: 46, saturation: 1.05, motion: 'soft', aurora: true, grain: false, tint: true } },
       { id: 'rich', key: 'preset.rich', set: { glass: 0.62, blur: 24, saturation: 1.3, motion: 'full', aurora: true, grain: true, tint: true } },
-      { id: 'stock', key: 'preset.stock', set: { glass: 0, blur: 0, saturation: 1, motion: 'off', aurora: false, grain: false, tint: false } },
+      { id: 'stock', key: 'preset.stock', set: { enabled: false, glass: 0, blur: 0, saturation: 1, motion: 'off', grain: false, tint: false } },
     ];
 
     const DEFAULT_SETTINGS = {
       enabled: true,
       preset: 'default',
-      palette: 'inkpurple',
+      palette: 'linen',
       glass: 0.82,
       blur: 34,
       saturation: 1.15,
@@ -70,7 +93,7 @@ window.__ModuleLoader__.load({
       grain: true,
       aurora: true,
       tint: true,
-      bgmode: 'aurora',
+      bgmode: 'paper',
       posX: null,
       posY: null,
     };
@@ -88,11 +111,10 @@ window.__ModuleLoader__.load({
         'sec.surface': '质感',
         'sec.look': '动效',
         'bg.label': '背景',
-        'bg.aurora': '极光',
-        'bg.silk': '丝绸',
-        'bg.ink': '墨流',
-        'bg.petal': '花瓣',
-        'bg.dream': '浮光',
+        'bg.paper': '纸光',
+        'bg.material': '材质',
+        'bg.window': '窗光',
+        'bg.geometry': '几何',
         'preset.default': '标准',
         'preset.clear': '通透',
         'preset.rich': '浓郁',
@@ -100,9 +122,9 @@ window.__ModuleLoader__.load({
         'ctl.glass': '玻璃强度',
         'ctl.blur': '柔化',
         'ctl.saturation': '色彩',
-        'seg.motion.off': '关闭',
-        'seg.motion.soft': '柔和',
-        'seg.motion.full': '丰富',
+        'seg.motion.off': '静止',
+        'seg.motion.soft': '呼吸',
+        'seg.motion.full': '流动',
         'ctl.motion': '动效',
         'sw.aurora': '极光背景',
         'sw.grain': '噪点质感',
@@ -120,11 +142,10 @@ window.__ModuleLoader__.load({
         'sec.surface': 'Texture',
         'sec.look': 'Motion',
         'bg.label': 'Backdrop',
-        'bg.aurora': 'Aurora',
-        'bg.silk': 'Silk',
-        'bg.ink': 'Ink',
-        'bg.petal': 'Petal',
-        'bg.dream': 'Motes',
+        'bg.paper': 'Paper',
+        'bg.material': 'Material',
+        'bg.window': 'Window',
+        'bg.geometry': 'Geometry',
         'preset.default': 'Standard',
         'preset.clear': 'Clear',
         'preset.rich': 'Rich',
@@ -132,9 +153,9 @@ window.__ModuleLoader__.load({
         'ctl.glass': 'Glass',
         'ctl.blur': 'Softness',
         'ctl.saturation': 'Color',
-        'seg.motion.off': 'Off',
-        'seg.motion.soft': 'Soft',
-        'seg.motion.full': 'Rich',
+        'seg.motion.off': 'Still',
+        'seg.motion.soft': 'Breath',
+        'seg.motion.full': 'Drift',
         'ctl.motion': 'Motion',
         'sw.aurora': 'Aurora glow',
         'sw.grain': 'Film grain',
@@ -165,11 +186,10 @@ window.__ModuleLoader__.load({
       zh: {
         preset: '一键套一组参数。想快速换个感觉时用它，细调再去下面的滑杆。',
         palette: '极光的配色。深色和浅色各取一组，悬停色块可以直接预览。',
-        'bg.aurora': '四团光晕在四角缓慢漂移、旋转，最轻，纯 CSS。',
-        'bg.silk': '七条缎带横向流动，边缘磨砂、带一道高光，像被风吹起的绸子。鼠标推开它，点一下荡开涟漪。',
-        'bg.ink': '墨团缓慢下沉、扩散、互相晕开，鼠标经过会把墨挤开，点一下荡开涟漪。',
-        'bg.petal': '三层半透明褶皱花瓣缓慢绽放，固定在右下角，不跟随鼠标。',
-        'bg.dream': '粉紫渐变、发光球体、悬浮的空画框；光球会向你靠拢，靠近时变亮。',
+        'bg.paper': '一整张被光照着的纸：两团极柔的光、一根折痕线，几乎没有图形。鼠标移动时光会跟着偏一点。',
+        'bg.material': '两块磨砂玻璃浮在底色上，一道高光跟着鼠标横向扫过，玻璃边缘有一圈细亮边。',
+        'bg.window': '暖光从窗外斜照进来，窗框投下几道软影；鼠标左右移动，光的角度会跟着变。',
+        'bg.geometry': '一个色块、一个圆、一条横线，其余全是留白。鼠标只会让它们挪动几个像素。',
         glass: '表面有多透。100% 几乎全靠背景撑，0% 等于回到原生外观。',
         blur: '极光边缘的柔化程度，越大越朦胧。松手才生效，所以拖动不会卡。',
         saturation: '极光的鲜艳程度。往右更艳，往左偏灰。',
@@ -183,11 +203,10 @@ window.__ModuleLoader__.load({
       en: {
         preset: 'Applies a whole set of values at once. Use it to change the mood quickly.',
         palette: 'The aurora colours. Dark and light each pick their own; hover a swatch to preview.',
-        'bg.aurora': 'Four soft glows drifting and rotating at the corners — the lightest, pure CSS.',
-        'bg.silk': 'Seven satin bands flowing sideways; the pointer pushes the sheet, a click ripples it.',
-        'bg.ink': 'Ink clouds sinking and bleeding into each other; the pointer shoves them, a click ripples.',
-        'bg.petal': 'Three layers of translucent ruffled petals opening slowly, anchored bottom-right and not following the pointer.',
-        'bg.dream': 'Pastel gradient, glowing orbs and empty floating frames; orbs drift toward the pointer and brighten.',
+        'bg.paper': 'One lit sheet: two very soft pools of light and a single crease, almost no geometry. The light leans toward the pointer.',
+        'bg.material': 'Two frosted panes over the base colour; a highlight travels across them with the pointer.',
+        'bg.window': 'Warm light through a window frame, casting soft bars. Moving the pointer sideways shifts the angle.',
+        'bg.geometry': 'One block, one circle, one line, and a lot of air. The pointer only nudges them a few pixels.',
         glass: 'How transparent the surfaces are. 100% leans on the background, 0% is the stock look.',
         blur: 'Softness of the aurora edge. Applied on release, so dragging stays smooth.',
         saturation: 'Colour intensity. Right is richer, left is greyer.',
@@ -417,39 +436,47 @@ html.ag-silk.ag-m0 #${SILK_ID}{ opacity:.9 }
    sidebar all paint it, and stacking it twice is exactly what made the panes
    look like separate slabs. One continuous sheet instead. */
 body{
-  --dsw-alias-bg-base: rgb(247 249 254 / calc(.02 + .05 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-1: rgb(255 255 255 / calc(.6 + .24 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-2: rgb(255 255 255 / calc(.72 + .18 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-3: rgb(255 255 255 / calc(.84 + .12 * var(--ag-g))) !important;
-  --dsw-alias-bg-overlay: rgb(250 251 254 / calc(.99 - .02 * var(--ag-g))) !important;
-  --dsw-alias-bg-module-platform: rgb(255 255 255 / calc(.58 + .28 * var(--ag-g))) !important;
-  --dsw-alias-bg-multi-select: rgb(255 255 255 / calc(.62 + .24 * var(--ag-g))) !important;
+  /* the mood owns the surface colour — that is what stops every palette from
+     sitting on the same blue-ish white */
+  --ag-base-l: ${pal.base[0].join(' ')};
+  --ag-base-d: ${pal.base[1].join(' ')};
+  /* cards are tinted from the lightest tone, not pure white — that is what
+     keeps a warm mood from looking like a cold UI with a warm background */
+  --ag-card-l: ${pal.rgb[0].map((v) => Math.round(v + (255 - v) * 0.55)).join(' ')};
+  --ag-card-d: ${pal.rgb[0].map((v) => Math.round(v + (255 - v) * 0.45)).join(' ')};
+  --dsw-alias-bg-base: rgb(var(--ag-base-l) / calc(.02 + .05 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-1: rgb(var(--ag-card-l) / calc(.6 + .24 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-2: rgb(var(--ag-card-l) / calc(.72 + .18 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-3: rgb(var(--ag-card-l) / calc(.84 + .12 * var(--ag-g))) !important;
+  --dsw-alias-bg-overlay: rgb(var(--ag-card-l) / calc(.99 - .02 * var(--ag-g))) !important;
+  --dsw-alias-bg-module-platform: rgb(var(--ag-card-l) / calc(.58 + .28 * var(--ag-g))) !important;
+  --dsw-alias-bg-multi-select: rgb(var(--ag-card-l) / calc(.62 + .24 * var(--ag-g))) !important;
   --dsw-alias-bg-mask-1: rgb(15 23 42 / .18) !important;
   --dsw-alias-bg-mask-2: rgb(15 23 42 / .12) !important;
   --dsw-alias-border-l1: rgb(15 23 42 / .15) !important;
   --dsw-alias-border-l2: rgb(15 23 42 / .12) !important;
   --dsw-alias-border-l3: rgb(15 23 42 / .17) !important;
   --dsw-alias-border-l4: rgb(15 23 42 / .21) !important;
-  --dsw-specific-sidebar-fill: rgb(247 249 254 / calc(.02 + .05 * var(--ag-g))) !important;
+  --dsw-specific-sidebar-fill: rgb(var(--ag-base-l) / calc(.02 + .05 * var(--ag-g))) !important;
   --dsw-alias-brand-primary: ${pal.brand.light} !important;
 }
 
 /* ---- alias tokens, dark -------------------------------------------- */
 body[data-ds-dark-theme]{
-  --dsw-alias-bg-base: rgb(11 13 22 / calc(.02 + .05 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-1: rgb(255 255 255 / calc(.09 + .06 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-2: rgb(255 255 255 / calc(.12 + .07 * var(--ag-g))) !important;
-  --dsw-alias-bg-layer-3: rgb(255 255 255 / calc(.15 + .08 * var(--ag-g))) !important;
-  --dsw-alias-bg-overlay: rgb(12 14 22 / calc(.995 - .01 * var(--ag-g))) !important;
-  --dsw-alias-bg-module-platform: rgb(255 255 255 / calc(.08 + .05 * var(--ag-g))) !important;
-  --dsw-alias-bg-multi-select: rgb(255 255 255 / calc(.11 + .05 * var(--ag-g))) !important;
+  --dsw-alias-bg-base: rgb(var(--ag-base-d) / calc(.02 + .05 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-1: rgb(var(--ag-card-d) / calc(.09 + .06 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-2: rgb(var(--ag-card-d) / calc(.12 + .07 * var(--ag-g))) !important;
+  --dsw-alias-bg-layer-3: rgb(var(--ag-card-d) / calc(.15 + .08 * var(--ag-g))) !important;
+  --dsw-alias-bg-overlay: rgb(var(--ag-card-d) / calc(.995 - .01 * var(--ag-g))) !important;
+  --dsw-alias-bg-module-platform: rgb(var(--ag-card-d) / calc(.08 + .05 * var(--ag-g))) !important;
+  --dsw-alias-bg-multi-select: rgb(var(--ag-card-d) / calc(.11 + .05 * var(--ag-g))) !important;
   --dsw-alias-bg-mask-1: rgb(2 4 10 / .34) !important;
   --dsw-alias-bg-mask-2: rgb(2 4 10 / .22) !important;
   --dsw-alias-border-l1: rgb(255 255 255 / calc(.13 + .06 * var(--ag-g))) !important;
   --dsw-alias-border-l2: rgb(255 255 255 / calc(.1 + .04 * var(--ag-g))) !important;
   --dsw-alias-border-l3: rgb(255 255 255 / calc(.16 + .06 * var(--ag-g))) !important;
   --dsw-alias-border-l4: rgb(255 255 255 / calc(.2 + .07 * var(--ag-g))) !important;
-  --dsw-specific-sidebar-fill: rgb(11 13 22 / calc(.02 + .05 * var(--ag-g))) !important;
+  --dsw-specific-sidebar-fill: rgb(var(--ag-base-d) / calc(.02 + .05 * var(--ag-g))) !important;
   --dsw-alias-brand-primary: ${pal.brand.dark} !important;
 }
 
@@ -459,15 +486,15 @@ body[data-ds-dark-theme]{
  * up as a hard-edged dark block inside a pane. Only real overlays here. */
 [role="dialog"],[role="alertdialog"],
 [class*="popover"],[class*="Popover"]{
-  --dsw-alias-bg-base: rgb(11 13 22 / .99) !important;
-  --dsw-alias-bg-overlay: rgb(12 14 22 / .995) !important;
+  --dsw-alias-bg-base: rgb(var(--ag-base-d) / .99) !important;
+  --dsw-alias-bg-overlay: rgb(var(--ag-card-d) / .995) !important;
 }
 body:not([data-ds-dark-theme]) [role="dialog"],
 body:not([data-ds-dark-theme]) [role="alertdialog"],
 body:not([data-ds-dark-theme]) [class*="popover"],
 body:not([data-ds-dark-theme]) [class*="Popover"]{
   --dsw-alias-bg-base: rgb(250 251 254 / .97) !important;
-  --dsw-alias-bg-overlay: rgb(250 251 254 / .98) !important;
+  --dsw-alias-bg-overlay: rgb(var(--ag-card-l) / .98) !important;
 }
 
 /* ---- composer: frosted glass card ----------------------------------- */
@@ -657,6 +684,8 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
   background:linear-gradient(180deg, color-mix(in srgb, var(--dsw-alias-brand-primary,#4763ff) 92%, #fff), var(--dsw-alias-brand-primary,#4763ff));
   box-shadow:0 4px 14px rgba(71,99,255,.35), inset 0 1px 0 rgba(255,255,255,.28);
 }
+/* in dark mode the mood's brand is a light tone, so the pill needs dark ink */
+body[data-ds-dark-theme] .ag-chip.on{ color:#17130f; box-shadow:0 4px 14px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.3); }
 .ag-chip-sm{ padding:5px 10px; font-size:11.5px; }
 
 .ag-swatches{ display:flex; gap:10px; align-items:center; }
@@ -725,6 +754,41 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
 .ag-reset:active{ transform:scale(.985); }
 
 .ag-foot{ margin-top:10px; font-size:10.5px; color:#8b95ab; text-align:center; letter-spacing:.3px; }
+
+/* ---- light mode: the panel follows the room, not a fixed dark chrome --- */
+body:not([data-ds-dark-theme]) #dsh-ag-panel{
+  border-color:rgba(60,48,36,.1);
+  background:linear-gradient(180deg, rgba(253,251,247,.995), rgba(245,241,235,.995));
+  box-shadow:0 26px 60px rgba(70,52,34,.16), 0 2px 8px rgba(70,52,34,.08), inset 0 1px 0 rgba(255,255,255,.9);
+}
+body:not([data-ds-dark-theme]) #dsh-ag-panel::before{ background:linear-gradient(90deg,transparent,rgba(120,100,80,.22),transparent); }
+body:not([data-ds-dark-theme]) .ag-title{ color:#2b2520; }
+body:not([data-ds-dark-theme]) .ag-badge{ background:rgba(60,48,36,.07); color:#6f6355; }
+body:not([data-ds-dark-theme]) .ag-x{ background:rgba(60,48,36,.06); color:#6f6355; }
+body:not([data-ds-dark-theme]) .ag-x:hover{ background:rgba(60,48,36,.12); color:#2b2520; }
+body:not([data-ds-dark-theme]) .ag-sec{ border-top-color:rgba(60,48,36,.08); }
+body:not([data-ds-dark-theme]) .ag-label{ color:#8d8072; }
+body:not([data-ds-dark-theme]) .ag-ctl-label{ color:#3a332c; }
+body:not([data-ds-dark-theme]) .ag-val{ color:#8d8072; }
+body:not([data-ds-dark-theme]) .ag-val-live{ color:#2b2520; }
+body:not([data-ds-dark-theme]) .ag-chip{ border-color:rgba(60,48,36,.12); background:rgba(60,48,36,.04); color:#4a4139; }
+body:not([data-ds-dark-theme]) .ag-chip:hover{ color:#2b2520; border-color:rgba(60,48,36,.26); background:rgba(60,48,36,.07); }
+body:not([data-ds-dark-theme]) .ag-chip.on{
+  color:#fff; border-color:transparent;
+  background:linear-gradient(180deg, color-mix(in srgb, var(--dsw-alias-brand-primary,#4763ff) 92%, #fff), var(--dsw-alias-brand-primary,#4763ff));
+}
+body:not([data-ds-dark-theme]) .ag-seg{ background:rgba(60,48,36,.06); }
+body:not([data-ds-dark-theme]) .ag-seg-btn{ color:#6f6355; }
+body:not([data-ds-dark-theme]) .ag-seg-btn:hover{ color:#2b2520; }
+body:not([data-ds-dark-theme]) .ag-seg-btn.on{ background:rgba(255,255,255,.9); color:#2b2520; box-shadow:0 1px 3px rgba(60,48,36,.14); }
+body:not([data-ds-dark-theme]) .ag-range{ background:rgba(60,48,36,.14); }
+body:not([data-ds-dark-theme]) .ag-reset{ border-color:rgba(60,48,36,.14); background:rgba(60,48,36,.04); color:#4a4139; }
+body:not([data-ds-dark-theme]) .ag-reset:hover{ color:#2b2520; background:rgba(60,48,36,.09); }
+body:not([data-ds-dark-theme]) .ag-foot{ color:#9b8f81; }
+body:not([data-ds-dark-theme]) #dsh-ag-tip{ border-color:rgba(60,48,36,.12); background:rgba(253,251,247,.98); color:#3a332c; }
+body:not([data-ds-dark-theme]) .ag-swatch{ border-color:rgba(60,48,36,.2); }
+body:not([data-ds-dark-theme]) .ag-swatch:hover{ border-color:rgba(60,48,36,.42); }
+body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); box-shadow:0 0 0 2.5px rgba(60,48,36,.14), 0 4px 12px rgba(60,48,36,.18); }
 
 /* hover copy — one floating element, positioned from the hovered control */
 #dsh-ag-tip{
@@ -1050,7 +1114,7 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
         }, t('seg.motion.' + lv)),
       );
 
-      const bgChips = ['aurora', 'silk', 'ink', 'petal', 'dream'].map((mode) =>
+      const bgChips = ['paper', 'material', 'window', 'geometry'].map((mode) =>
         el('button', {
           class: 'ag-chip ag-chip-sm',
           type: 'button',
@@ -1096,7 +1160,6 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
             el('span', { text: t('ctl.motion') }),
             el('div', { class: 'ag-seg', style: 'width:156px' }, segButtons),
           ]),
-          sw('aurora', t('sw.aurora')),
           sw('grain', t('sw.grain')),
           sw('tint', t('sw.tint')),
         ]),
@@ -1357,10 +1420,10 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
 
 
       const mode = state.bgmode;
-      if (mode === 'silk') drawWaves(ctx, W, H, dark);
-      else if (mode === 'ink') drawPlumes(ctx, W, H, dark);
-      else if (mode === 'petal') drawPetal(ctx, W, H, dark);
-      else if (mode === 'dream') drawDream(ctx, W, H, dark);
+      if (mode === 'material') drawMaterial(ctx, W, H, dark);
+      else if (mode === 'window') drawWindow(ctx, W, H, dark);
+      else if (mode === 'geometry') drawGeometry(ctx, W, H, dark);
+      else drawPaper(ctx, W, H, dark);
 
       // ripple rings belong to the fluid backdrops only — drawing them over the
       // others produced a field of rings that looked like a rendering fault
@@ -1371,402 +1434,200 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
       /* retired — see addRipple */
     }
 
-    /* ---- silk: horizontal satin bands --------------------------------- */
+    /* ==================================================================== *
+     * Four quiet backdrops. Each one is deliberately restrained: a surface,
+     * one light, and at most one shape. All of them are driven by the mood
+     * palette, so switching mood changes the whole room, not just an accent.
+     * ==================================================================== */
 
-    /* ---- ink: plumes sinking and bleeding ----------------------------- */
+    const moodOf = () => paletteOf(state.palette);
 
-    const PLUMES = (() => {
-      const list = [];
-      let seed = 20261025;
-      const rnd = () => {
-        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-        return seed / 0x7fffffff;
-      };
-      for (let i = 0; i < 16; i += 1) {
-        list.push({
-          x: rnd(),
-          y: rnd(),
-          r: 0.1 + rnd() * 0.22,
-          vx: (rnd() - 0.5) * 0.05,
-          vy: (rnd() - 0.5) * 0.05,
-          ph: rnd() * 6.28,
-          tone: i % 3,
-          wob: 0.4 + rnd() * 0.8,
-        });
-      }
-      return list;
-    })();
+    /* ---- paper: a lit sheet, almost nothing on it --------------------- */
 
-    function drawPlumes(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#04060c' : '#eef2f9';
+    function drawPaper(ctx, W, H, dark) {
+      const m = moodOf();
+      const base = dark ? m.base[1] : m.base[0];
+      ctx.fillStyle = 'rgb(' + base[0] + ',' + base[1] + ',' + base[2] + ')';
       ctx.fillRect(0, 0, W, H);
-      ctx.filter = 'blur(3.2px)';
 
-      const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 26;
-      const px = silkPointer.active ? silkPointer.x : -9999;
-      const py = silkPointer.active ? silkPointer.y : -9999;
-
-      for (let i = 0; i < PLUMES.length; i += 1) {
-        const p = PLUMES[i];
-        // slow swirl + a downward drift: ink sinks
-        let x = (p.x + Math.sin(t * 0.11 * p.wob + p.ph) * 0.16 + p.vx * t * 0.4) % 1.2;
-        let y = (p.y + Math.cos(t * 0.09 * p.wob + p.ph * 1.7) * 0.14 + p.vy * t * 0.35) % 1.2;
-        if (x < 0) x += 1.2;
-        if (y < 0) y += 1.2;
-
-        let cx = x * W;
-        let cy = y * H;
-        // ink gathers where the cursor is: nearby plumes swell and darken,
-        // so the pointer feels like it is stirring the water
-        let gather = 0;
-        if (px > -999) {
-          const gd = Math.sqrt((cx - px) * (cx - px) + (cy - py) * (cy - py));
-          gather = Math.max(0, 1 - gd / 95);
-        }
-        const rad = p.r * (0.7 + 0.3 * Math.sin(t * 0.13 + p.ph)) * H * 0.72 * (1 + gather * 0.5);
-        const c = cols[p.tone];
-
-        // pointer pushes the cloud aside
-        if (px > -999) {
-          const dx = cx - px;
-          const dy = cy - py;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < 9000) {
-            const push = (1 - d2 / 9000) * 26;
-            const d = Math.sqrt(d2) || 1;
-            cx += (dx / d) * push;
-            cy += (dy / d) * push;
-          }
-        }
-
-        // a plume is three lobes strung along its drift direction, so it reads
-        // as ink with tendrils rather than one round blob
-        const ang = p.ph + t * 0.05 * p.wob;
-        const dirX = Math.cos(ang) * -0.5;
-        const dirY = Math.sin(ang);
-        for (let k = 0; k < 3; k += 1) {
-          const spread = rad * (0.15 + k * 0.55);
-          const bx = cx + dirX * spread;
-          const by = cy + dirY * spread;
-          const br = rad * (1 - k * 0.26);
-          if (br <= 0.5) continue;
-          const alpha = (dark ? 0.62 : 0.52) * (1 - k * 0.24) * (1 + gather * 0.55);
-          const g = ctx.createRadialGradient(bx, by, 0, bx, by, br);
-          g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')');
-          g.addColorStop(0.5, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha * 0.42 + ')');
-          g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
-          ctx.fillStyle = g;
-          ctx.beginPath();
-          ctx.arc(bx, by, br, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-    }
-
-    /* ---- constructivism: bold flat geometry --------------------------- */
-
-    const BARS = (() => {
-      const list = [];
-      let seed = 918273;
-      const rnd = () => {
-        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-        return seed / 0x7fffffff;
-      };
-      for (let i = 0; i < 7; i += 1) {
-        list.push({
-          kind: i % 3,
-          x: 0.12 + rnd() * 0.76,
-          y: 0.14 + rnd() * 0.7,
-          s: 0.1 + rnd() * 0.26,
-          rot: rnd() * Math.PI,
-          tone: i % 3,
-          depth: 0.3 + rnd() * 0.9,
-        });
-      }
-      return list;
-    })();
-
-    function drawConstruct(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#0c0a09' : '#f1eee7';
-      ctx.fillRect(0, 0, W, H);
-      ctx.filter = 'none';
-
-      const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 6;
+      const t = silkT * 1.2;
       const px = silkPointer.active ? silkPointer.x / W - 0.5 : 0;
       const py = silkPointer.active ? silkPointer.y / H - 0.5 : 0;
+      const c = m.rgb[0];
 
-      ctx.save();
-      ctx.translate(W * 0.5 + px * 26, H * 0.5 + py * 18);
-      ctx.rotate(Math.sin(t * 0.12) * 0.06);
-      ctx.translate(-W * 0.5, -H * 0.5);
+      // one large, very soft pool of light — the whole composition
+      ctx.filter = 'blur(26px)';
+      const cx = W * (0.42 + px * 0.06) + Math.sin(t * 0.2) * W * 0.02;
+      const cy = H * (0.38 + py * 0.05) + Math.cos(t * 0.17) * H * 0.02;
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.62);
+      g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.26 : 0.55) + ')');
+      g.addColorStop(0.55, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.1 : 0.2) + ')');
+      g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
 
-      for (let i = 0; i < BARS.length; i += 1) {
-        const b = BARS[i];
-        const c = cols[b.tone];
-        const cx = b.x * W + px * 34 * b.depth + Math.sin(t * 0.4 + i) * 3;
-        const cy = b.y * H + py * 22 * b.depth + Math.cos(t * 0.33 + i) * 3;
-        const s = b.s * Math.min(W, H);
+      // a second, cooler pool for depth
+      const c2 = m.rgb[2];
+      const g2 = ctx.createRadialGradient(W * 0.82, H * 0.86, 0, W * 0.82, H * 0.86, W * 0.5);
+      g2.addColorStop(0, 'rgba(' + c2[0] + ',' + c2[1] + ',' + c2[2] + ',' + (dark ? 0.14 : 0.16) + ')');
+      g2.addColorStop(1, 'rgba(' + c2[0] + ',' + c2[1] + ',' + c2[2] + ',0)');
+      ctx.fillStyle = g2;
+      ctx.fillRect(0, 0, W, H);
 
+      // a single hairline, off-centre, like a fold in the sheet
+      ctx.filter = 'blur(0.4px)';
+      ctx.beginPath();
+      ctx.moveTo(W * 0.06, H * 0.74);
+      ctx.bezierCurveTo(W * 0.34, H * 0.7, W * 0.62, H * 0.79, W * 0.96, H * 0.72);
+      ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.18 : 0.3) + ')';
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
+
+    /* ---- material: one frosted pane catching a moving highlight ------- */
+
+    function drawMaterial(ctx, W, H, dark) {
+      const m = moodOf();
+      const base = dark ? m.base[1] : m.base[0];
+      ctx.fillStyle = 'rgb(' + base[0] + ',' + base[1] + ',' + base[2] + ')';
+      ctx.fillRect(0, 0, W, H);
+
+      const t = silkT * 1.6;
+      const sx = silkPointer.active ? silkPointer.x : W * 0.5;
+
+      // a soft tonal wash so the pane has something to sit on
+      ctx.filter = 'blur(22px)';
+      const wash = ctx.createLinearGradient(0, 0, W, H);
+      wash.addColorStop(0, 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.22 : 0.4) + ')');
+      wash.addColorStop(1, 'rgba(' + m.rgb[1].join(',') + ',' + (dark ? 0.12 : 0.18) + ')');
+      ctx.fillStyle = wash;
+      ctx.fillRect(0, 0, W, H);
+
+      // two panes: a big one and a narrow one, both with soft edges
+      const panes = [
+        { x: W * 0.14, y: H * 0.2, w: W * 0.52, h: H * 0.46, r: 10 },
+        { x: W * 0.6, y: H * 0.44, w: W * 0.26, h: H * 0.4, r: 8 },
+      ];
+      for (let i = 0; i < panes.length; i += 1) {
+        const p = panes[i];
+        const px = p.x + Math.sin(t * 0.3 + i) * 2;
+        const py = p.y + Math.cos(t * 0.24 + i) * 2;
+
+        ctx.filter = 'blur(0.6px)';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(px, py, p.w, p.h, p.r);
+        else ctx.rect(px, py, p.w, p.h);
+        ctx.fillStyle = dark ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.34)';
+        ctx.fill();
+        ctx.strokeStyle = dark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+
+        // the highlight that travels with the cursor
         ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(b.rot + t * 0.05 * (i % 2 ? 1 : -1));
-        // Screen-print logic: no gaussian shadow (it just reads as blur after the
-        // canvas is upscaled) — a solid fill plus a crisp keyline instead.
-        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.72 : 0.62) + ')';
-        if (b.kind === 0) {
-          ctx.beginPath();
-          ctx.arc(0, 0, s * 0.5, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.7)';
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
-        } else if (b.kind === 1) {
-          ctx.fillRect(-s * 0.9, -s * 0.11, s * 1.8, s * 0.22);
-          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.65)';
-          ctx.lineWidth = 0.7;
-          ctx.strokeRect(-s * 0.9, -s * 0.11, s * 1.8, s * 0.22);
-        } else {
-          ctx.fillRect(-s * 0.42, -s * 0.42, s * 0.84, s * 0.84);
-          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.65)';
-          ctx.lineWidth = 0.7;
-          ctx.strokeRect(-s * 0.42, -s * 0.42, s * 0.84, s * 0.84);
-        }
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(px, py, p.w, p.h, p.r);
+        else ctx.rect(px, py, p.w, p.h);
+        ctx.clip();
+        const hx = sx - p.w * 0.25;
+        const hl = ctx.createLinearGradient(hx, 0, hx + p.w * 0.5, 0);
+        hl.addColorStop(0, 'rgba(255,255,255,0)');
+        hl.addColorStop(0.5, 'rgba(255,255,255,' + (dark ? 0.07 : 0.42) + ')');
+        hl.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = hl;
+        ctx.fillRect(px, py, p.w, p.h);
         ctx.restore();
       }
 
-      // one hard black bar anchors the composition, like a Rodchenko plate
-      ctx.fillStyle = dark ? 'rgba(255,255,255,0.9)' : 'rgba(16,14,12,0.9)';
+      // one matte bar at the bottom, the "material" anchor
+      ctx.filter = 'blur(1px)';
+      const bar = ctx.createLinearGradient(0, H * 0.9, 0, H);
+      bar.addColorStop(0, 'rgba(' + m.rgb[1].join(',') + ',' + (dark ? 0.18 : 0.14) + ')');
+      bar.addColorStop(1, 'rgba(' + m.rgb[1].join(',') + ',0)');
+      ctx.fillStyle = bar;
+      ctx.fillRect(0, H * 0.9, W, H * 0.1);
+    }
+
+    /* ---- window: warm light coming through a frame -------------------- */
+
+    function drawWindow(ctx, W, H, dark) {
+      const m = moodOf();
+      const base = dark ? m.base[1] : m.base[0];
+      ctx.fillStyle = 'rgb(' + base[0] + ',' + base[1] + ',' + base[2] + ')';
+      ctx.fillRect(0, 0, W, H);
+
+      const t = silkT * 0.8;
+      const px = silkPointer.active ? silkPointer.x / W : 0.5;
+
+      // the light itself: a warm wedge from the upper left
+      ctx.filter = 'blur(30px)';
+      const lg = ctx.createLinearGradient(0, 0, W * 0.9, H);
+      lg.addColorStop(0, 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.3 : 0.62) + ')');
+      lg.addColorStop(0.45, 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.1 : 0.22) + ')');
+      lg.addColorStop(1, 'rgba(' + m.rgb[0].join(',') + ',0)');
+      ctx.fillStyle = lg;
+      ctx.fillRect(0, 0, W, H);
+
+      // the frame: three bright bars of light with soft edges, angle drifts
+      // with the cursor — this is what actually reads as window light
+      ctx.filter = 'blur(3.5px)';
+      const ang = -0.32 + (px - 0.5) * 0.16 + Math.sin(t * 0.15) * 0.02;
       ctx.save();
-      ctx.translate(W * (0.5 + px * 0.1), H * (0.5 + py * 0.1));
-      ctx.rotate(-0.6 + Math.sin(t * 0.1) * 0.05);
-      ctx.fillRect(-W * 0.7, -1.6, W * 1.4, 3.2);
-      ctx.restore();
-
-      ctx.restore();
-    }
-
-    function drawWaves(ctx, W, H, dark) {
-      ctx.fillStyle = dark ? '#070a12' : '#eef2f9';
-      ctx.fillRect(0, 0, W, H);
-
-      ctx.filter = 'blur(1.6px)';
-      const cols = paletteOf(state.palette).rgb;
-      const px = silkPointer.x;
-      const py = silkPointer.y;
-
-      for (let i = 0; i < 7; i += 1) {
-        const a = cols[i % 3];
-        const b = cols[(i + 1) % 3];
-        const amp = 8 + i * 3.4;
-        const baseY = H * (0.06 + i * 0.13);
-        const thick = H * (0.15 + 0.02 * i);
-        const ph = i * 1.7;
-        const sp = 1 + i * 0.12;
-
-        const wave = (x, off) => {
-          let y = baseY + off +
-            Math.sin(x * 0.012 + silkT * sp + ph) * amp +
-            Math.sin(x * 0.03 - silkT * 1.7 + ph * 1.4) * amp * 0.42;
-          if (silkPointer.active) {
-            const dx = x - px;
-            y += Math.exp(-(dx * dx) / 2400) * (py - y) * 0.16;
-          }
-          return y;
-        };
-
-        ctx.beginPath();
-        for (let x = 0; x <= W; x += 6) {
-          const y = wave(x, 0);
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        for (let x = W; x >= 0; x -= 6) ctx.lineTo(x, wave(x, thick));
-        ctx.closePath();
-        const g = ctx.createLinearGradient(0, baseY - amp, 0, baseY + thick + amp);
-        const A = (al) => 'rgba(' + a[0] + ',' + a[1] + ',' + a[2] + ',' + al + ')';
-        const B = (al) => 'rgba(' + b[0] + ',' + b[1] + ',' + b[2] + ',' + al + ')';
-        g.addColorStop(0, A(dark ? 0.08 : 0.06));
-        g.addColorStop(0.16, A(dark ? 0.62 : 0.52));
-        g.addColorStop(0.3, dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.72)');
-        g.addColorStop(0.52, B(dark ? 0.46 : 0.38));
-        g.addColorStop(0.82, B(dark ? 0.14 : 0.1));
-        g.addColorStop(1, A(0.04));
-        ctx.fillStyle = g;
-        ctx.fill();
-
-        ctx.beginPath();
-        for (let x = 0; x <= W; x += 6) {
-          const y = wave(x, 0);
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.65)';
-        ctx.lineWidth = 1.4;
-        ctx.stroke();
-      }
-
-      // a travelling sheen: the satin only lights up where the cursor is,
-      // which is what sells "cloth catching a light" instead of a flat gradient
-      const sx = silkPointer.active ? silkPointer.x : W * 0.5;
-      const sheen = ctx.createLinearGradient(sx - W * 0.16, 0, sx + W * 0.16, 0);
-      sheen.addColorStop(0, 'rgba(255,255,255,0)');
-      sheen.addColorStop(0.5, 'rgba(255,255,255,' + (dark ? 0.1 : 0.24) + ')');
-      sheen.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = sheen;
-      ctx.fillRect(sx - W * 0.16, 0, W * 0.32, H);
-    }
-
-    /* ---- dream: dreamcore pastel orbs and floating frames ------------- */
-
-    const ORBS = (() => {
-      const list = [];
-      let seed = 90210;
-      const rnd = () => {
-        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-        return seed / 0x7fffffff;
-      };
-      for (let i = 0; i < 9; i += 1) {
-        list.push({ x: rnd(), y: rnd(), r: 0.04 + rnd() * 0.09, ph: rnd() * 6.28, tone: i % 3 });
-      }
-      return list;
-    })();
-
-    function drawDream(ctx, W, H, dark) {
-      const sky = ctx.createLinearGradient(0, 0, W, H);
-      sky.addColorStop(0, dark ? '#181428' : '#fdf3f8');
-      sky.addColorStop(0.5, dark ? '#221a34' : '#f0eafb');
-      sky.addColorStop(1, dark ? '#0c0a16' : '#e8f2fb');
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, W, H);
-
-      const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 2;
-      const px = silkPointer.active ? silkPointer.x : W * 0.5;
-      const py = silkPointer.active ? silkPointer.y : H * 0.5;
-
-      ctx.filter = 'blur(8px)';
-      for (let i = 0; i < ORBS.length; i += 1) {
-        const o = ORBS[i];
-        let cx = (o.x + Math.sin(t * 0.4 + o.ph) * 0.06) * W;
-        let cy = (o.y + Math.cos(t * 0.33 + o.ph) * 0.05) * H;
-        // orbs lean toward the cursor, slowly
-        cx += (px - cx) * 0.06;
-        cy += (py - cy) * 0.06;
-        const r = o.r * W;
-        const c = cols[o.tone];
-        // orbs brighten as they get close to the cursor, like motes in a beam
-        const dd = Math.sqrt((cx - px) * (cx - px) + (cy - py) * (cy - py));
-        const near = Math.max(0, 1 - dd / (W * 0.42));
-        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * (1 + near * 0.35));
-        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + ((dark ? 0.6 : 0.5) + near * 0.3) + ')');
-        g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r * (1 + near * 0.35), 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // floating frames, a dreamcore staple
-      ctx.filter = 'blur(0.5px)';
+      ctx.translate(W * 0.32, -H * 0.1);
+      ctx.rotate(ang);
       for (let i = 0; i < 3; i += 1) {
-        const depth = 0.3 + i * 0.35;
-        const w = W * (0.14 + i * 0.03);
-        const h = H * (0.2 + i * 0.04);
-        const cx = W * (0.22 + i * 0.28) + (px - W * 0.5) * 0.05 * depth + Math.sin(t * 0.5 + i) * 5;
-        const cy = H * (0.4 + (i % 2) * 0.12) + (py - H * 0.5) * 0.04 * depth + Math.cos(t * 0.4 + i) * 4;
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(cx - w / 2, cy - h / 2, w, h, 6);
-        else ctx.rect(cx - w / 2, cy - h / 2, w, h);
-        ctx.fillStyle = dark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.5)';
-        ctx.fill();
-        ctx.strokeStyle = dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.9)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        const x = i * W * 0.24;
+        ctx.fillStyle = 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.34 : 0.62) + ')';
+        ctx.fillRect(x, 0, W * 0.16, H * 1.9);
       }
+      ctx.fillStyle = 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.2 : 0.4) + ')';
+      ctx.fillRect(-W * 0.2, H * 0.42, W * 1.8, H * 0.12);
+      ctx.restore();
+
+      // floor light pool
+      ctx.filter = 'blur(26px)';
+      const pool = ctx.createRadialGradient(W * 0.68, H * 0.82, 0, W * 0.68, H * 0.82, W * 0.42);
+      pool.addColorStop(0, 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.16 : 0.4) + ')');
+      pool.addColorStop(1, 'rgba(' + m.rgb[0].join(',') + ',0)');
+      ctx.fillStyle = pool;
+      ctx.fillRect(0, 0, W, H);
     }
 
-    /* ---- petal: translucent ruffled petals, reference 10 ------------- */
+    /* ---- geometry: one block, one line, a lot of air ------------------ */
 
-    function petalPath(ctx, len, wid, ruff, phase) {
-      const N = 18;
+    function drawGeometry(ctx, W, H, dark) {
+      const m = moodOf();
+      const base = dark ? m.base[1] : m.base[0];
+      ctx.fillStyle = 'rgb(' + base[0] + ',' + base[1] + ',' + base[2] + ')';
+      ctx.fillRect(0, 0, W, H);
+      ctx.filter = 'none';
+
+      const t = silkT * 0.9;
+      const px = silkPointer.active ? (silkPointer.x / W - 0.5) : 0;
+      const py = silkPointer.active ? (silkPointer.y / H - 0.5) : 0;
+
+      // the block: a tall rectangle, slightly off-canvas
+      const bx = W * 0.62 + px * 3;
+      const by = -H * 0.08 + py * 2;
+      ctx.fillStyle = 'rgba(' + m.rgb[0].join(',') + ',' + (dark ? 0.5 : 0.72) + ')';
+      ctx.fillRect(bx, by, W * 0.3, H * 1.2);
+
+      // the circle: overlaps the block, one accent
+      const cx = W * 0.3 + px * 4;
+      const cy = H * 0.62 + py * 3;
       ctx.beginPath();
-      ctx.moveTo(0, 0);
-      for (let i = 0; i <= N; i += 1) {
-        const t = i / N;
-        const w = Math.pow(Math.sin(Math.PI * t), 0.72) * wid * (1 + ruff * Math.sin(t * 11 + phase));
-        ctx.lineTo(len * t, -w);
-      }
-      for (let i = N; i >= 0; i -= 1) {
-        const t = i / N;
-        const w = Math.pow(Math.sin(Math.PI * t), 0.72) * wid * (1 + ruff * Math.sin(t * 11 + phase + 1.7));
-        ctx.lineTo(len * t, w);
-      }
-      ctx.closePath();
-    }
+      ctx.arc(cx, cy, W * 0.15, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(' + m.rgb[2].join(',') + ',' + (dark ? 0.4 : 0.5) + ')';
+      ctx.fill();
 
-    function drawPetal(ctx, W, H, dark) {
-      const bg = ctx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, W * 0.8);
-      bg.addColorStop(0, dark ? '#1a1420' : '#f6eef4');
-      bg.addColorStop(1, dark ? '#08060c' : '#e6dbe8');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, W, H);
-
-      const cols = paletteOf(state.palette).rgb;
-      const t = silkT * 4;
-      // anchored to the bottom-right corner, like a flower growing into frame —
-      // it deliberately does NOT follow the pointer
-      const cx = W * 0.88;
-      const cy = H * 1.08;
-
-      ctx.filter = 'blur(0.6px)';
-      // petals read best when the body is the lightest colour of the card and the
-      // tip picks up the accent — otherwise a dark card turns the flower to mud
-      const order = [0, 1, 2].sort(
-        (a, b) => cols[a][0] + cols[a][1] + cols[a][2] - (cols[b][0] + cols[b][1] + cols[b][2]),
-      );
-      const base = cols[order[1]];
-      const accent = cols[order[2]];
-      const layers = [
-        { n: 9, len: 0.66, wid: 0.21, tone: 0, rot: 0.0 },
-        { n: 7, len: 0.48, wid: 0.16, tone: 1, rot: 0.42 },
-        { n: 5, len: 0.32, wid: 0.115, tone: 2, rot: 0.9 },
-      ];
-
-      for (let L = 0; L < layers.length; L += 1) {
-        const lay = layers[L];
-        const c = L === 2 ? accent : base;
-        for (let i = 0; i < lay.n; i += 1) {
-          const a = (i / lay.n) * Math.PI * 2 + lay.rot + t * (0.1 + L * 0.04);
-          const breathe = 1 + 0.04 * Math.sin(t * 1.1 + i + L);
-          const len = lay.len * W * breathe;
-          const wid = lay.wid * W * breathe;
-
-          ctx.save();
-          ctx.translate(cx, cy);
-          ctx.rotate(a);
-          petalPath(ctx, len, wid, 0.12, t + i * 0.8 + L);
-          const g = ctx.createLinearGradient(0, 0, len, 0);
-          const c2 = L === 0 ? accent : base;
-          g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.55 : 0.5) + ')');
-          g.addColorStop(0.55, 'rgba(' + c2[0] + ',' + c2[1] + ',' + c2[2] + ',' + (dark ? 0.4 : 0.36) + ')');
-          g.addColorStop(1, dark ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.92)');
-          ctx.fillStyle = g;
-          ctx.fill();
-          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.85)';
-          ctx.lineWidth = 0.9;
-          ctx.stroke();
-          ctx.restore();
-        }
-      }
-
-      // the throat of the flower
-      const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.09);
-      core.addColorStop(0, dark ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)');
-      core.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = core;
-      ctx.fillRect(0, 0, W, H);
+      // the line: a single horizontal hairline at eye height
+      const ly = H * 0.44 + Math.sin(t * 0.3) * 1.2;
+      ctx.beginPath();
+      ctx.moveTo(0, ly);
+      ctx.lineTo(W, ly);
+      ctx.strokeStyle = 'rgba(' + m.rgb[1].join(',') + ',' + (dark ? 0.28 : 0.4) + ')';
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
     }
 
     function now0() {
@@ -1780,7 +1641,7 @@ button:active,[role="button"]:active,[role="menuitem"]:active,
       const sharp = state.bgmode === 'construct' || state.bgmode === 'ascii' || state.bgmode === 'minimal' || state.bgmode === 'relief';
       const wantW = sharp ? 1024 : 384;
       if (silk && silk.width !== wantW) { silk.width = wantW; silk.height = Math.round(wantW * 0.5625); }
-      const on = !!state.enabled && !!state.aurora && canvasMode && silkCtx;
+      const on = !!state.enabled && canvasMode && silkCtx;
       if (on) {
         if (!silkRaf && typeof requestAnimationFrame === 'function') {
           silkLast = 0;
