@@ -536,15 +536,6 @@ body:not([data-ds-dark-theme]) [class*="composerSeat"] [class$="_card"]{
   box-shadow:0 16px 42px rgb(23 33 64 / .12), inset 0 1px 0 rgb(255 255 255 / .7) !important;
 }
 
-/* ---- global hover feedback ------------------------------------------ *
- * One rule for every control in the app, not just this plugin's panel, so
- * nothing feels dead under the cursor. brightness() only runs on a state
- * change, never per frame. !important because the host ships its own
- * hover rules that would otherwise win. */
-button,[role="button"],[role="menuitem"],[role="tab"],[role="option"],
-[role="switch"],[role="checkbox"],[role="radio"],summary,a{
-  transition:filter .16s ease !important;
-}
 button:hover,[role="button"]:hover,[role="menuitem"]:hover,
 [role="tab"]:hover,[role="option"]:hover,[role="switch"]:hover,
 [role="checkbox"]:hover,[role="radio"]:hover,summary:hover,a:hover{
@@ -926,6 +917,7 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
     }
 
     function paintNow() {
+      staticDrawn = false;
       if (rafPending) {
         cancelAnimationFrame(rafPending);
         rafPending = 0;
@@ -975,6 +967,7 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
 
     let panelScroll = 0;
     let sliderQueued = 0;
+    let staticDrawn = false;
 
     /* ---------------------------- hover copy ---------------------------- */
 
@@ -1102,7 +1095,7 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
           onInput: (e) => {
             // Shift = fine control (a tenth of the step)
             const raw = Number(e.target.value);
-            const v = e.shiftKey ? Math.round(raw * 10) / 10 : raw;
+            const v = e.shiftKey ? Math.round(raw * 20) / 20 : Math.round(raw * 20) / 20;
             state = { ...state, [key]: v };
             const out = refs['val-' + key];
             if (out) out.textContent = fmt(v);
@@ -1174,9 +1167,7 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
         ]),
         el('div', { class: 'ag-sec' }, [
           el('div', { class: 'ag-label', text: t('sec.surface') }),
-          slider('glass', t('ctl.glass'), 0, 1, 0.02, (v) => Math.round(v * 100) + '%'),
-          slider('blur', t('ctl.blur'), 0, 60, 2, (v) => Math.round(v) + 'px'),
-          slider('saturation', t('ctl.saturation'), 0, 2, 0.05, (v) => Math.round(v * 100) + '%'),
+          slider('glass', t('ctl.glass'), 0, 1, 0.05, (v) => Math.round(v * 100) + '%'),
         ]),
         el('div', { class: 'ag-sec' }, [
           el('div', { class: 'ag-label', text: t('sec.look') }),
@@ -1433,7 +1424,11 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
       silkSpeed += (target - silkSpeed) * 0.06;
       silkBurst *= 0.985;
       if (silkBurst < 0.01) silkBurst = 0;
-      silkT += dt * 0.00035 * silkSpeed;
+      // 静止 must really be still: freeze the clock instead of just slowing it
+      const motionScale = state.motion === 'off' ? 0 : state.motion === 'full' ? 1 : 0.35;
+      silkT += dt * 0.00035 * silkSpeed * motionScale;
+      // frozen clock means every frame would be identical: draw once, then stop
+      if (motionScale === 0 && staticDrawn) return;
 
       const W = silk.width || 384;
       const H = silk.height || 216;
@@ -1455,6 +1450,7 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
       // ripple rings belong to the fluid backdrops only — drawing them over the
       // others produced a field of rings that looked like a rendering fault
       ctx.filter = 'none';
+      staticDrawn = motionScale === 0;
     }
 
     function drawRippleRings() {
