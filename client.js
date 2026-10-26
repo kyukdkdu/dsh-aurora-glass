@@ -382,17 +382,15 @@ body{
 #${BG_ID} .ag-scrim{
   position:absolute; inset:0; display:block; pointer-events:none;
   background:
-    radial-gradient(40% 34% at var(--ag-px,50%) var(--ag-py,42%), rgb(255 255 255 / calc(.05 + .09 * var(--ag-g))), transparent 72%),
-    radial-gradient(64% 58% at 52% 44%, rgb(248 250 255 / calc(.2 + .12 * var(--ag-g))), rgb(248 250 255 / 0) 80%),
-    rgb(248 250 255 / calc(.05 + .05 * var(--ag-g)));
+    radial-gradient(64% 58% at 52% 44%, rgb(248 250 255 / calc(.06 + .06 * var(--ag-g))), rgb(248 250 255 / 0) 82%),
+    rgb(248 250 255 / calc(.02 + .03 * var(--ag-g)));
   transition:opacity .6s ease;
 }
 body:not([data-ds-dark-theme]) #${BG_ID} i{ opacity:calc(.9 + .1 * var(--ag-g)) }
 body[data-ds-dark-theme] #${BG_ID} .ag-scrim{
   background:
-    radial-gradient(40% 34% at var(--ag-px,50%) var(--ag-py,42%), rgb(255 255 255 / calc(.03 + .06 * var(--ag-g))), transparent 72%),
-    radial-gradient(64% 58% at 52% 44%, rgb(4 6 12 / calc(.34 + .12 * var(--ag-g))), rgb(4 6 12 / 0) 82%),
-    rgb(4 6 12 / calc(.2 + .08 * var(--ag-g)));
+    radial-gradient(70% 62% at 50% 44%, rgb(4 6 12 / calc(.12 + .08 * var(--ag-g))), rgb(4 6 12 / 0) 84%),
+    rgb(4 6 12 / calc(.06 + .04 * var(--ag-g)));
 }
 html.ag-typing #${BG_ID} .ag-scrim{ opacity:.55 }
 #${BG_ID} .ag-grain{
@@ -454,7 +452,6 @@ body{
   /* editorial ink: warm near-black instead of the platform's blue-grey */
   --ag-ink-l: ${pal.base[0].map((v) => Math.round(v * 0.12)).join(' ')};
   --ag-ink-d: ${pal.base[1].map((v) => Math.round(v + (255 - v) * 0.92)).join(' ')};
-  --dsw-alias-brand-primary: ${pal.brand.light} !important;
   --dsw-alias-label-primary: rgb(var(--ag-ink-l)) !important;
   --dsw-alias-label-secondary: rgb(var(--ag-ink-l) / .72) !important;
   --dsw-alias-label-tertiary: rgb(var(--ag-ink-l) / .5) !important;
@@ -473,12 +470,10 @@ body{
   --dsw-alias-border-l3: rgb(15 23 42 / .17) !important;
   --dsw-alias-border-l4: rgb(15 23 42 / .21) !important;
   --dsw-specific-sidebar-fill: rgb(var(--ag-base-l) / calc(.02 + .05 * var(--ag-g))) !important;
-  --dsw-alias-brand-primary: ${pal.brand.light} !important;
 }
 
 /* ---- alias tokens, dark -------------------------------------------- */
 body[data-ds-dark-theme]{
-  --dsw-alias-brand-primary: ${pal.brand.dark} !important;
   --dsw-alias-label-primary: rgb(var(--ag-ink-d)) !important;
   --dsw-alias-label-secondary: rgb(var(--ag-ink-d) / .7) !important;
   --dsw-alias-label-tertiary: rgb(var(--ag-ink-d) / .46) !important;
@@ -497,7 +492,6 @@ body[data-ds-dark-theme]{
   --dsw-alias-border-l3: rgb(255 255 255 / calc(.16 + .06 * var(--ag-g))) !important;
   --dsw-alias-border-l4: rgb(255 255 255 / calc(.2 + .07 * var(--ag-g))) !important;
   --dsw-specific-sidebar-fill: rgb(var(--ag-base-d) / calc(.02 + .05 * var(--ag-g))) !important;
-  --dsw-alias-brand-primary: ${pal.brand.dark} !important;
 }
 
 /* ---- dialogs: opaque, so settings never floats on the aurora -------- *
@@ -980,6 +974,7 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
     }
 
     let panelScroll = 0;
+    let sliderQueued = 0;
 
     /* ---------------------------- hover copy ---------------------------- */
 
@@ -1071,8 +1066,6 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
           'data-palette': p.id,
           'data-tip': tip('palette'),
           style: 'background:linear-gradient(135deg,' + solidOf(p.rgb[0]) + ',' + solidOf(p.rgb[1]) + ' 55%,' + solidOf(p.rgb[2]) + ')',
-          onPointerenter: () => previewPalette(p.id),
-          onPointerleave: () => previewPalette(null),
           onClick: () => set({ palette: p.id }),
         }),
       );
@@ -1113,8 +1106,15 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
             state = { ...state, [key]: v };
             const out = refs['val-' + key];
             if (out) out.textContent = fmt(v);
-            // every slider now updates live — the tuning class keeps it cheap
-            paint();
+            // coalesce: a range input can fire dozens of events per frame and
+            // each paint writes a dozen custom properties plus a stylesheet
+            if (!sliderQueued) {
+              sliderQueued = 1;
+              requestAnimationFrame(() => {
+                sliderQueued = 0;
+                paint();
+              });
+            }
           },
           onChange: (e) => {
             state = { ...state, [key]: Number(e.target.value) };
@@ -1535,54 +1535,95 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
     const MIST_CELLS = makeCells(18, 515151);
     const SWIRL_CELLS = makeCells(24, 737373);
 
-    function paintCells(ctx, W, H, dark, cells, t, o) {
+    /* ---- four structurally different fluids -------------------------- *
+     * They used to be the same cell field with a different stretch, which is
+     * why they all looked alike. Each one now has its own motion model.
+     * ------------------------------------------------------------------ */
+
+    function cellPalette(dark) {
       const m = moodOf();
-      const bright = m.rgb[2];
-      const mid = m.rgb[1];
-      const deep = m.rgb[0];
-      const ink = dark ? m.base[1] : m.base[0];
-
-      for (let i = 0; i < cells.length; i += 1) {
-        const c = cells[i];
-        let x = (c.x + Math.sin(t * c.sx + c.ph) * c.ax) * W;
-        let y = (c.y + Math.cos(t * c.sy + c.ph * 1.7) * c.ay) * H;
-
-        if (o.spin) {
-          const dx = x - W * 0.5;
-          const dy = y - H * 0.5;
-          const a = o.spin * t * 0.06;
-          x = W * 0.5 + dx * Math.cos(a) - dy * Math.sin(a) * 0.7;
-          y = H * 0.5 + dx * Math.sin(a) * 0.7 + dy * Math.cos(a);
-        }
-        if (o.stretchY) y = H * 0.5 + (y - H * 0.5) * o.stretchY;
-
-        const r = c.r * W * (0.88 + 0.12 * Math.sin(t * 0.7 + c.ph)) * o.scale;
-        const col = c.darkCell ? ink : (c.tone === 2 ? bright : mid);
-        blob(ctx, x, y, r, col, c.a * (dark ? 1 : 0.95), c.sq);
-      }
-
-      // a single hot core keeps the whole thing from looking flat
-      blob(ctx, W * 0.58, H * 0.36, W * 0.22, dark ? bright : deep, dark ? 0.2 : 0.16, 1);
+      return {
+        m,
+        bright: m.rgb[2],
+        mid: m.rgb[1],
+        deep: m.rgb[0],
+        ink: dark ? m.base[1] : m.base[0],
+        dark,
+      };
     }
 
+    // smoke: billows rising, squashed vertically, drifting sideways
     function drawSmoke(ctx, W, H, dark) {
       ground(ctx, W, H, dark);
-      paintCells(ctx, W, H, dark, SMOKE_CELLS, silkT * 0.9, { scale: 1, stretchY: 0, spin: 0 });
+      const p = cellPalette(dark);
+      const t = silkT * 0.8;
+      const list = SMOKE_CELLS;
+      for (let i = 0; i < list.length; i += 1) {
+        const c = list[i];
+        const x = (c.x + Math.sin(t * c.sx + c.ph) * 0.1) * W;
+        const y = (c.y + Math.cos(t * c.sy + c.ph * 1.6) * 0.08) * H;
+        const r = c.r * W * (0.9 + 0.1 * Math.sin(t * 0.6 + c.ph));
+        blob(ctx, x, y, r, c.darkCell ? p.ink : (c.tone === 2 ? p.bright : p.mid), c.a, 1.5);
+      }
+      blob(ctx, W * 0.56, H * 0.34, W * 0.2, p.bright, dark ? 0.24 : 0.14, 1);
     }
 
+    // flow: long vertical streaks travelling upward, wrapping at the top
     function drawFlow(ctx, W, H, dark) {
       ground(ctx, W, H, dark);
-      paintCells(ctx, W, H, dark, FLOW_CELLS, silkT * 1.15, { scale: 1.05, stretchY: 1.9, spin: 0 });
+      const p = cellPalette(dark);
+      const t = silkT * 1.5;
+      const list = FLOW_CELLS;
+      for (let i = 0; i < list.length; i += 1) {
+        const c = list[i];
+        // continuous upward travel: this is what separates it from smoke
+        const y = (((c.y - t * (0.06 + (i % 5) * 0.012)) % 1.3) + 1.3) % 1.3 - 0.15;
+        const x = (c.x + Math.sin(t * 0.4 + c.ph) * 0.04) * W;
+        const r = c.r * W * 0.85;
+        const col = c.darkCell ? p.ink : (c.tone === 2 ? p.bright : p.mid);
+        blob(ctx, x, y * H, r * 0.55, col, c.a * 0.9, 3.4);
+      }
     }
 
+    // mist: wide flat strata sliding sideways at different speeds
     function drawMist(ctx, W, H, dark) {
       ground(ctx, W, H, dark);
-      paintCells(ctx, W, H, dark, MIST_CELLS, silkT * 0.55, { scale: 1.15, stretchY: 0.55, spin: 0 });
+      const p = cellPalette(dark);
+      const t = silkT * 0.45;
+      const list = MIST_CELLS;
+      for (let i = 0; i < list.length; i += 1) {
+        const c = list[i];
+        const lane = Math.floor(i / 3) / Math.max(1, Math.floor(list.length / 3));
+        const x = (((c.x + t * (0.02 + lane * 0.03)) % 1.4) + 1.4) % 1.4 - 0.2;
+        const y = (0.12 + lane * 0.82 + Math.sin(t * 0.3 + c.ph) * 0.015) * H;
+        const r = c.r * W * 1.1;
+        const col = c.darkCell ? p.ink : (c.tone === 2 ? p.bright : p.mid);
+        blob(ctx, x * W, y, r, col, c.a * 0.8, 0.34);
+      }
     }
 
+    // swirl: three spiral arms turning around a dark eye
     function drawSwirl(ctx, W, H, dark) {
       ground(ctx, W, H, dark);
-      paintCells(ctx, W, H, dark, SWIRL_CELLS, silkT * 0.75, { scale: 1, stretchY: 0, spin: 1 });
+      const p = cellPalette(dark);
+      const t = silkT * 0.55;
+      const cx = W * 0.5;
+      const cy = H * 0.5;
+      const arms = 3;
+      const per = 7;
+      for (let a = 0; a < arms; a += 1) {
+        for (let k = 0; k < per; k += 1) {
+          const phase = (a / arms) * Math.PI * 2 + k * 0.42 + t * 0.9;
+          const rad = W * (0.06 + k * 0.075);
+          const x = cx + Math.cos(phase) * rad;
+          const y = cy + Math.sin(phase) * rad * 0.62;
+          const r = W * (0.2 - k * 0.014);
+          const col = k % 3 === 0 ? p.ink : k > 4 ? p.bright : p.mid;
+          blob(ctx, x, y, r, col, (dark ? 0.3 : 0.24) * (1 - k * 0.06), 0.9);
+        }
+      }
+      // the eye
+      blob(ctx, cx, cy, W * 0.13, p.ink, dark ? 0.85 : 0.5, 0.9);
     }
 
     function now0() {

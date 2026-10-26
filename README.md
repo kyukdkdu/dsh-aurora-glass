@@ -3,7 +3,7 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-3.1.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-3.2.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <p align="center">
   <img src="docs/preview-light.png" alt="烟 · 浅青（浅色）" width="780">
@@ -80,17 +80,18 @@
 
 正文颜色也跟着色板走（覆盖 `--dsw-alias-label-*`），强调色跟随每一套的品牌色。
 
-### 背景：四种流体，真的会动
+### 背景：四种流体，各有各的运动模型
 
-每一团都是一个软渐变，沿各自的 Lissajous 路径漂移——但**三分之一是暗的**。
-暗团在亮团之间挖出通道，那种干涉才读得出"流体"，而不是一团模糊。
+之前四种只是同一套细胞换个拉伸比例，所以看着一样。现在每种是**不同的运动方式**：
 
-| 背景 | 参数 |
+| 背景 | 运动 |
 | --- | --- |
-| **烟** | 26 团，横向漂移，最接近参考的质感 |
-| **流** | 20 团，纵向拉伸 1.9 倍，像上升的水流 |
-| **雾** | 18 团，横向压扁 0.55 倍，最安静 |
-| **涡** | 24 团绕中心缓慢旋转 |
+| **烟** | 团块上升 + 横向漂移，纵向压扁 1.5 倍，像烟 |
+| **流** | 长条竖直向上**连续流动**，到顶回卷，像上升的水流 |
+| **雾** | 分三层的横向雾带，各自以不同速度滑过，最安静 |
+| **涡** | 三条螺旋臂绕一个**暗眼**旋转，中心是空的 |
+
+每种里都有约三分之一的**暗团**，暗团在亮团之间挖出通道——这才是"流体"而不是"一团模糊"。
 
 ### 交互：只在控件上
 
