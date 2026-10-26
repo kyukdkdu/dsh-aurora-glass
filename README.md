@@ -3,14 +3,14 @@
 > **`dsh-aurora-glass`** — 为 DeepSeek Harness（DSH）打造的全局玻璃拟态 + 极光渐变主题插件。
 > A global glassmorphism + aurora theme plugin for DeepSeek Harness.
 
-![Version](https://img.shields.io/badge/version-2.1.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
+![Version](https://img.shields.io/badge/version-3.0.0-8fb0ff) ![License](https://img.shields.io/badge/license-MIT-059669) ![Platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-4763ff) ![Dependencies](https://img.shields.io/badge/dependencies-0-0b7bf1)
 
 <p align="center">
-  <img src="docs/preview-light.png" alt="色块 · 象牙朱红（浅色）" width="780">
-  <img src="docs/preview-dark.png" alt="色块 · 象牙朱红（深色）" width="780">
-  <img src="docs/preview-grid.png" alt="网格 · 炭黑琥珀" width="780">
-  <img src="docs/preview-wash.png" alt="柔光 · 纸白钴蓝" width="780">
-  <img src="docs/preview-fibre.png" alt="纤维 · 米灰橄榄" width="780">
+  <img src="docs/preview-light.png" alt="烟 · 浅青（浅色）" width="780">
+  <img src="docs/preview-dark.png" alt="烟 · 深青（深色）" width="780">
+  <img src="docs/preview-flow.png" alt="流 · 墨蓝" width="780">
+  <img src="docs/preview-mist.png" alt="雾 · 雾绿" width="780">
+  <img src="docs/preview-swirl.png" alt="涡 · 砂褐" width="780">
 </p>
 
 不替换任何组件，只改 CSS token 层 —— 侧栏、对话区、输入框、代码块、弹窗会一起变；
@@ -65,39 +65,40 @@
 - **随场景变色**：会话标题算出一个稳定的色相偏移，再叠加按时段的正弦偏移——切会话、过时间，主色都会慢慢变
 - **输入脉动**：焦点在输入框时背景亮一档
 
-### 设计语言：瑞士编辑排版
+### 设计语言：单色流体
 
-不是"给界面加装饰"，而是把**版式**本身当成设计：一块实心色域、一根不到头的横线、一个巨大的编号、
-严格对齐的网格。颜色只有三种角色——**纸、墨、一个强调色**。
+每一套色板只有**一种色相**，从深到浅三层。背景不是"图形"，是**流体的密度变化**——
+二十团极大的柔光缓慢翻滚、互相晕开，像水里的烟。没有线条、没有形状、没有跟随鼠标的光。
 
-| 色板 | 纸（浅 / 深） | 墨 | 强调色 |
+| 色板 | 浅色底 | 深色底 | 三阶 |
 | --- | --- | --- | --- |
-| **象牙朱红** | `#F4F1EA` / `#111110` | `#1A1917` | `#D33A2C` |
-| **纸白钴蓝** | `#F5F6F7` / `#0E1013` | `#181A1E` | `#1B4FA0` |
-| **米灰橄榄** | `#F1F0EB` / `#14150F` | `#1C1E16` | `#5A6B3B` |
-| **炭黑琥珀** | `#EDEAE4` / `#0B0B0C` | `#141415` | `#C08A2E` |
+| **深青** | `#ECF6F7` | `#071619` | `#2A6068` `#4E9CA6` `#96E2E8` |
+| **浅青** | `#E9F7F8` | `#0A1C20` | `#96D6DB` `#C6ECEF` `#F4FCFD` |
+| **墨蓝** | `#ECF1F8` | `#0A101E` | `#2C3E6E` `#526EAA` `#A0C4EC` |
+| **雾绿** | `#F0F5F0` | `#0E1814` | `#34604E` `#60967E` `#B0DCC8` |
+| **砂褐** | `#F6F2EB` | `#18120F` | `#704E38` `#A88060` `#E2C6AA` |
 
-**正文颜色也跟着换了**：不再是平台的蓝灰，而是每套色板自己的墨色（`--dsw-alias-label-*` 一起覆盖）。
-这一步比换背景更能改变"气质"——蓝灰配暖白永远显得廉价。
+正文颜色也跟着色板走（覆盖 `--dsw-alias-label-*`），强调色跟随每一套的品牌色。
 
-设置面板的每一节都带编号（`01 预设`、`02 色板`……），这是面板里唯一的"版式动作"。
-
-### 背景：四种版式，都只有版式元素
+### 背景：四种流体，都不跟随鼠标
 
 | 背景 | 内容 |
 | --- | --- |
-| **色块** | 一块实心色域压在右侧、一根不到头的横线、一个巨大的编号 `01` |
-| **柔光** | 一团很柔的光 + 一根基线，没有图形 |
-| **纤维** | 几十道极淡的短笔画模拟纸纤维 + 一根竖向页边线 |
-| **网格** | 细网格 + 每四格一条粗线 + 一个压在交点上的强调色块 |
+| **烟** | 二十二团极大的柔光缓慢翻滚、互相晕开，最接近参考的质感 |
+| **流** | 七道竖向流体缓缓上升，像光穿过水面 |
+| **雾** | 五层横向雾带以不同速度漂移，最安静的一种 |
+| **涡** | 十六团柔光绕中心缓慢旋转，像被搅动的水 |
 
-### 交互：三档，从"只在控件上"到"背景跟随"
+### 交互：只在控件上
 
-| 档位 | 行为 |
-| --- | --- |
-| **静止** | 背景完全不动，所有反馈都在控件上（悬停提亮、按下回弹、滑杆填充） |
-| **呼吸** | 背景里那团光的方向跟着鼠标，其它不动 |
-| **流动** | 光跟随 + 背景整体错开几像素（视差） |
+按你的要求，**背景不再跟随鼠标**。所有反馈都在控件上：悬停提亮、按下回弹、滑杆填充、chip 选中。
+
+背景只对两件事有反应：
+
+- **打字时**整体流动加快一点（`ag-typing`）
+- **长时间不动**时自动降到 ~10fps，省 GPU（9 秒无输入触发）
+
+动效三档：**静止 / 呼吸 / 流动**。
 
 所有背景共用同一套色板和 `--ag-hue`，所以换色板、换会话，背景都会跟着变。浅色模式用的是同一组颜色的**加深版**，不是靠透明度糊出来的粉彩。
 

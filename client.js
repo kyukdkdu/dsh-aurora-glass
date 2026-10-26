@@ -42,35 +42,43 @@ window.__ModuleLoader__.load({
      * palettes & presets
      * ------------------------------------------------------------------ */
 
-    // Four Swiss palettes: a ground, an ink, and exactly one accent.
+    // Five single-hue palettes, after the reference stills: a deep ground,
+    // a pale ground, and three tones of the same hue in between.
     const PALETTES = [
       {
-        id: 'ivory',
-        label: '象牙朱红',
-        base: [[244, 241, 234], [17, 17, 16]],
-        rgb: [[232, 228, 218], [26, 25, 23], [211, 58, 44]],
-        brand: { light: '#b4342a', dark: '#e8655a' },
+        id: 'deep',
+        label: '深青',
+        base: [[236, 246, 247], [7, 22, 25]],
+        rgb: [[42, 96, 104], [78, 156, 166], [150, 226, 232]],
+        brand: { light: '#1f6d76', dark: '#7fd6de' },
       },
       {
-        id: 'paper',
-        label: '纸白钴蓝',
-        base: [[245, 246, 247], [14, 16, 19]],
-        rgb: [[236, 238, 240], [24, 26, 30], [27, 79, 160]],
-        brand: { light: '#1b4fa0', dark: '#6e9be0' },
+        id: 'pale',
+        label: '浅青',
+        base: [[233, 247, 248], [10, 28, 32]],
+        rgb: [[150, 214, 219], [198, 236, 239], [244, 252, 253]],
+        brand: { light: '#3fa9b4', dark: '#a8e6ec' },
       },
       {
-        id: 'oat',
-        label: '米灰橄榄',
-        base: [[241, 240, 235], [20, 21, 15]],
-        rgb: [[228, 226, 216], [28, 30, 22], [90, 107, 59]],
-        brand: { light: '#4e5e33', dark: '#9cb06b' },
+        id: 'indigo',
+        label: '墨蓝',
+        base: [[236, 241, 248], [10, 16, 30]],
+        rgb: [[44, 62, 110], [82, 110, 170], [160, 196, 236]],
+        brand: { light: '#2b4a86', dark: '#8fb6e8' },
       },
       {
-        id: 'charcoal',
-        label: '炭黑琥珀',
-        base: [[237, 234, 228], [11, 11, 12]],
-        rgb: [[222, 218, 208], [20, 20, 21], [192, 138, 46]],
-        brand: { light: '#96690f', dark: '#d8a94a' },
+        id: 'sage',
+        label: '雾绿',
+        base: [[240, 245, 240], [14, 24, 20]],
+        rgb: [[52, 96, 78], [96, 150, 126], [176, 220, 200]],
+        brand: { light: '#35664f', dark: '#9ed3b8' },
+      },
+      {
+        id: 'clay',
+        label: '砂褐',
+        base: [[246, 242, 235], [24, 18, 15]],
+        rgb: [[112, 78, 56], [168, 128, 96], [226, 198, 170]],
+        brand: { light: '#7a5540', dark: '#dcb894' },
       },
     ];
 
@@ -84,7 +92,7 @@ window.__ModuleLoader__.load({
     const DEFAULT_SETTINGS = {
       enabled: true,
       preset: 'default',
-      palette: 'ivory',
+      palette: 'deep',
       glass: 0.82,
       blur: 34,
       saturation: 1.15,
@@ -92,7 +100,7 @@ window.__ModuleLoader__.load({
       grain: true,
       aurora: true,
       tint: true,
-      bgmode: 'block',
+      bgmode: 'smoke',
       posX: null,
       posY: null,
     };
@@ -110,10 +118,10 @@ window.__ModuleLoader__.load({
         'sec.surface': '质感',
         'sec.look': '动效',
         'bg.label': '背景',
-        'bg.block': '色块',
-        'bg.wash': '柔光',
-        'bg.fibre': '纤维',
-        'bg.grid': '网格',
+        'bg.smoke': '烟',
+        'bg.flow': '流',
+        'bg.mist': '雾',
+        'bg.swirl': '涡',
         'preset.default': '标准',
         'preset.clear': '通透',
         'preset.rich': '浓郁',
@@ -141,10 +149,10 @@ window.__ModuleLoader__.load({
         'sec.surface': 'Texture',
         'sec.look': 'Motion',
         'bg.label': 'Backdrop',
-        'bg.block': 'Block',
-        'bg.wash': 'Wash',
-        'bg.fibre': 'Fibre',
-        'bg.grid': 'Grid',
+        'bg.smoke': 'Smoke',
+        'bg.flow': 'Flow',
+        'bg.mist': 'Mist',
+        'bg.swirl': 'Swirl',
         'preset.default': 'Standard',
         'preset.clear': 'Clear',
         'preset.rich': 'Rich',
@@ -185,10 +193,10 @@ window.__ModuleLoader__.load({
       zh: {
         preset: '一键套一组参数。想快速换个感觉时用它，细调再去下面的滑杆。',
         palette: '极光的配色。深色和浅色各取一组，悬停色块可以直接预览。',
-        'bg.block': '瑞士排版：一块实心色域压在右侧、一根不到头的横线、一个巨大的编号。鼠标只会让它挪动几像素。',
-        'bg.wash': '只有一团很柔的光和一根基线，没有图形。光会朝鼠标偏一点。',
-        'bg.fibre': '纸的纤维感：几十道极淡的短笔画 + 一根竖线。静止，但有东西可看。',
-        'bg.grid': '像坐标纸：细网格 + 每四格一条粗线 + 一个压在交点上的色块。',
+        'bg.smoke': '二十团极大的柔光缓慢翻滚、互相晕开，像水里的烟。全篇只有一种颜色，从深到浅。',
+        'bg.flow': '七道竖向的流体缓缓上升，像光穿过水面。',
+        'bg.mist': '五层横向的雾以不同速度漂移，最安静的一种。',
+        'bg.swirl': '十六团柔光绕着一个中心缓慢旋转，像被搅动的水。',
         glass: '表面有多透。100% 几乎全靠背景撑，0% 等于回到原生外观。',
         blur: '极光边缘的柔化程度，越大越朦胧。松手才生效，所以拖动不会卡。',
         saturation: '极光的鲜艳程度。往右更艳，往左偏灰。',
@@ -202,10 +210,10 @@ window.__ModuleLoader__.load({
       en: {
         preset: 'Applies a whole set of values at once. Use it to change the mood quickly.',
         palette: 'The aurora colours. Dark and light each pick their own; hover a swatch to preview.',
-        'bg.block': 'Swiss layout: a solid field down the right edge, a rule that stops short, one oversized numeral. The pointer only nudges it a few pixels.',
-        'bg.wash': 'One very soft light and a baseline, no shapes. The light leans toward the pointer.',
-        'bg.fibre': 'Paper fibre: dozens of faint short strokes plus a vertical margin rule.',
-        'bg.grid': 'Like graph paper: a fine grid, a heavier rule every four cells, and one accent block on an intersection.',
+        'bg.smoke': 'Twenty large soft billows rolling and bleeding into each other, like smoke in water. One hue only, deep to pale.',
+        'bg.flow': 'Seven vertical currents rising slowly, like light through water.',
+        'bg.mist': 'Five horizontal strata drifting at different speeds — the quietest of the four.',
+        'bg.swirl': 'Sixteen soft billows orbiting a slow centre, like stirred water.',
         glass: 'How transparent the surfaces are. 100% leans on the background, 0% is the stock look.',
         blur: 'Softness of the aurora edge. Applied on release, so dragging stays smooth.',
         saturation: 'Colour intensity. Right is richer, left is greyer.',
@@ -444,8 +452,8 @@ body{
   --ag-card-l: ${pal.rgb[0].map((v) => Math.round(v + (255 - v) * 0.55)).join(' ')};
   --ag-card-d: ${pal.rgb[0].map((v) => Math.round(v + (255 - v) * 0.45)).join(' ')};
   /* editorial ink: warm near-black instead of the platform's blue-grey */
-  --ag-ink-l: ${pal.rgb[1].join(' ')};
-  --ag-ink-d: ${pal.rgb[0].map((v) => Math.round(v + (255 - v) * 0.86)).join(' ')};
+  --ag-ink-l: ${pal.base[0].map((v) => Math.round(v * 0.12)).join(' ')};
+  --ag-ink-d: ${pal.base[1].map((v) => Math.round(v + (255 - v) * 0.92)).join(' ')};
   --dsw-alias-brand-primary: ${pal.brand.light} !important;
   --dsw-alias-label-primary: rgb(var(--ag-ink-l)) !important;
   --dsw-alias-label-secondary: rgb(var(--ag-ink-l) / .72) !important;
@@ -833,6 +841,7 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
     let silkRaf = 0;
     let silkT = 0;
     let silkLast = 0;
+    let lastInput = 0;
     let silkSpeed = 1;
     let silkBurst = 0;
     const silkPointer = { x: -999, y: -999, active: false };
@@ -1133,7 +1142,7 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
         }, t('seg.motion.' + lv)),
       );
 
-      const bgChips = ['block', 'wash', 'fibre', 'grid'].map((mode) =>
+      const bgChips = ['smoke', 'flow', 'mist', 'swirl'].map((mode) =>
         el('button', {
           class: 'ag-chip ag-chip-sm',
           type: 'button',
@@ -1157,10 +1166,6 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
 
       const panel = el('div', { id: 'dsh-ag-panel', role: 'dialog', 'aria-label': t('panel.title') }, [
         head,
-        el('div', { class: 'ag-sec' }, [
-          el('div', { class: 'ag-label', text: t('sec.preset') }),
-          el('div', { class: 'ag-seg' }, presetChips),
-        ]),
         el('div', { class: 'ag-sec' }, [
           el('div', { class: 'ag-label', text: t('sec.palette') }),
           el('div', { class: 'ag-swatches' }, swatches),
@@ -1244,6 +1249,7 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
     let glowVisible = false;
 
     function onPointerMove(e) {
+      lastInput = now0();
       if (!state.enabled || !state.aurora) return;
       const w = window.innerWidth || 1;
       const h = window.innerHeight || 1;
@@ -1411,7 +1417,10 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
         hidden = false;
       }
       if (hidden) return;
-      if (now - silkLast < 33) return;
+      // when nobody has touched anything for a while, drop to ~10fps: the drift
+      // is slow enough that it still looks continuous, and it saves a lot of GPU
+      const idle = now - lastInput > 9000;
+      if (now - silkLast < (idle ? 96 : 33)) return;
       const dt = silkLast ? Math.min(80, now - silkLast) : 16;
       silkLast = now;
 
@@ -1422,6 +1431,7 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
         typing = false;
       }
       const target = 1 + (typing ? 0.75 : 0) + silkBurst * 2.2;
+      if (typing) lastInput = now;
       silkSpeed += (target - silkSpeed) * 0.06;
       silkBurst *= 0.985;
       if (silkBurst < 0.01) silkBurst = 0;
@@ -1439,10 +1449,10 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
 
 
       const mode = state.bgmode;
-      if (mode === 'wash') drawWash(ctx, W, H, dark);
-      else if (mode === 'fibre') drawFibre(ctx, W, H, dark);
-      else if (mode === 'grid') drawGrid(ctx, W, H, dark);
-      else drawBlock(ctx, W, H, dark);
+      if (mode === 'flow') drawFlow(ctx, W, H, dark);
+      else if (mode === 'mist') drawMist(ctx, W, H, dark);
+      else if (mode === 'swirl') drawSwirl(ctx, W, H, dark);
+      else drawSmoke(ctx, W, H, dark);
 
       // ripple rings belong to the fluid backdrops only — drawing them over the
       // others produced a field of rings that looked like a rendering fault
@@ -1454,18 +1464,15 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
     }
 
     /* ==================================================================== *
-     * Swiss editorial backdrops.
-     * The language is typographic: a flat ground, a strict grid, hairline
-     * rules and one oversized numeral. Nothing here is decorative for its
-     * own sake — every mark is a layout mark.
+     * Fluid backdrops, after the reference stills: one hue, deep to pale,
+     * made of nothing but large soft gradients. No lines, no shapes, no
+     * pointer light — the motion is slow enough to be felt, not watched.
+     *
+     * Cost: every blob is a radial gradient fill; there is no ctx.filter in
+     * this file at all, which is what keeps 20+ of them affordable at 30fps.
      * ==================================================================== */
 
     const moodOf = () => paletteOf(state.palette);
-
-    // motion 0 = still (controls only), 1 = light responds, 2 = light + parallax
-    function pointerAmt() {
-      return state.motion === 'off' ? 0 : state.motion === 'full' ? 1 : 0.55;
-    }
 
     function ground(ctx, W, H, dark) {
       const m = moodOf();
@@ -1475,156 +1482,125 @@ body:not([data-ds-dark-theme]) .ag-swatch.on{ border-color:rgba(60,48,36,.7); bo
       return m;
     }
 
-    function inkOf(m, dark, alpha) {
-      const c = dark ? m.rgb[0] : m.rgb[1];
-      return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')';
-    }
-
-    /* ---- block: flat ground, one form, one rule ----------------------- */
-
-    function drawBlock(ctx, W, H, dark) {
-      const m = ground(ctx, W, H, dark);
-      const amt = pointerAmt();
-      const px = silkPointer.active ? (silkPointer.x / W - 0.5) * amt : 0;
-      const py = silkPointer.active ? (silkPointer.y / H - 0.5) * amt : 0;
-
-      // the form: a solid field of ink down the right edge
-      ctx.fillStyle = inkOf(m, dark, dark ? 0.5 : 0.1);
-      ctx.fillRect(W * 0.68 + px * 4, 0, W * 0.32, H);
-
-      // the rule: a hairline that stops short — asymmetry is the point
-      ctx.beginPath();
-      ctx.moveTo(0, H * 0.66 + py * 3);
-      ctx.lineTo(W * 0.52, H * 0.66 + py * 3);
-      ctx.strokeStyle = inkOf(m, dark, dark ? 0.34 : 0.26);
-      ctx.lineWidth = 0.6;
-      ctx.stroke();
-
-      // the numeral: one oversized figure, set low and quiet
+    // a soft blob: colour at the core, nothing at the rim
+    function blob(ctx, x, y, r, c, a, squash) {
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')');
+      g.addColorStop(0.42, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * 0.55) + ')');
+      g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
       ctx.save();
-      ctx.font = '700 ' + Math.round(H * 0.5) + 'px "Helvetica Neue", Helvetica, Arial, sans-serif';
-      ctx.fillStyle = inkOf(m, dark, dark ? 0.1 : 0.07);
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillText('01', W * 0.04 + px * 8, H * 0.98 + py * 4);
+      if (squash && squash !== 1) {
+        ctx.translate(x, y);
+        ctx.scale(1, squash);
+        ctx.translate(-x, -y);
+      }
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
     }
 
-    /* ---- wash: a flat ground and one soft light ---------------------- */
+    /* ---- smoke: the reference look, twenty slow billows -------------- */
 
-    function drawWash(ctx, W, H, dark) {
-      const m = ground(ctx, W, H, dark);
-      const amt = pointerAmt();
-      const t = silkT * 1.1;
-      const px = silkPointer.active ? silkPointer.x / W : 0.42;
-      const py = silkPointer.active ? silkPointer.y / H : 0.3;
-      const c = m.rgb[2];
-
-      ctx.filter = 'blur(30px)';
-      const cx = W * (0.42 + (px - 0.5) * 0.22 * amt) + Math.sin(t * 0.18) * W * 0.02;
-      const cy = H * (0.34 + (py - 0.5) * 0.18 * amt) + Math.cos(t * 0.15) * H * 0.02;
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.55);
-      g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.2 : 0.16) + ')');
-      g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, H);
-
-      // one hairline keeps it from being a blur with no structure
-      ctx.filter = 'none';
-      ctx.beginPath();
-      ctx.moveTo(W * 0.08, H * 0.78);
-      ctx.lineTo(W * 0.92, H * 0.78);
-      ctx.strokeStyle = inkOf(m, dark, dark ? 0.22 : 0.14);
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
-    }
-
-    /* ---- fibre: flat ground with paper grain ------------------------- */
-
-    const FIBRES = (() => {
+    const SMOKE = (() => {
       const list = [];
-      let seed = 77123;
+      let seed = 20261026;
       const rnd = () => {
         seed = (seed * 1103515245 + 12345) & 0x7fffffff;
         return seed / 0x7fffffff;
       };
-      for (let i = 0; i < 90; i += 1) {
-        list.push({ x: rnd(), y: rnd(), len: 0.02 + rnd() * 0.09, a: (rnd() - 0.5) * 0.5, w: 0.3 + rnd() * 0.5 });
+      for (let i = 0; i < 22; i += 1) {
+        list.push({
+          x: rnd(),
+          y: rnd(),
+          r: 0.2 + rnd() * 0.34,
+          ph: rnd() * 6.28,
+          sp: 0.12 + rnd() * 0.2,
+          tone: rnd() < 0.45 ? 2 : rnd() < 0.6 ? 1 : 0,
+          a: 0.1 + rnd() * 0.16,
+          sq: 0.7 + rnd() * 0.7,
+        });
       }
       return list;
     })();
 
-    function drawFibre(ctx, W, H, dark) {
+    function drawSmoke(ctx, W, H, dark) {
       const m = ground(ctx, W, H, dark);
-      const amt = pointerAmt();
-      const px = silkPointer.active ? (silkPointer.x / W - 0.5) * amt : 0;
+      const t = silkT * 0.55;
+      const pulse = 1 + silkBurst * 0.18;
 
-      ctx.filter = 'none';
-      ctx.strokeStyle = inkOf(m, dark, dark ? 0.16 : 0.1);
-      for (let i = 0; i < FIBRES.length; i += 1) {
-        const f = FIBRES[i];
-        const x = f.x * W + px * 6;
-        const y = f.y * H;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + Math.cos(f.a) * f.len * W, y + Math.sin(f.a) * f.len * W);
-        ctx.lineWidth = f.w;
-        ctx.stroke();
+      for (let i = 0; i < SMOKE.length; i += 1) {
+        const b = SMOKE[i];
+        const x = (b.x + Math.sin(t * b.sp + b.ph) * 0.16) * W;
+        const y = (b.y + Math.cos(t * b.sp * 0.8 + b.ph * 1.6) * 0.14) * H;
+        const r = b.r * W * (0.9 + 0.1 * Math.sin(t * 0.5 + b.ph)) * pulse;
+        // light ground needs the darker tones, dark ground the lighter ones
+        const tone = dark ? (b.tone === 0 ? 1 : b.tone) : 0;
+        blob(ctx, x, y, r, m.rgb[tone], b.a * (dark ? 1.9 : 3.4), b.sq);
       }
 
-      // a single vertical rule, like a margin
-      ctx.beginPath();
-      ctx.moveTo(W * 0.5 + px * 3, 0);
-      ctx.lineTo(W * 0.5 + px * 3, H);
-      ctx.strokeStyle = inkOf(m, dark, dark ? 0.24 : 0.12);
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
+      // a single pale core, like the brightest part of the reference stills
+      blob(ctx, W * 0.62, H * 0.34, W * 0.32, m.rgb[dark ? 2 : 0], dark ? 0.22 : 0.16, 1);
     }
 
-    /* ---- grid: a strict layout grid ---------------------------------- */
+    /* ---- flow: vertical currents rising through the frame ------------ */
 
-    function drawGrid(ctx, W, H, dark) {
+    function drawFlow(ctx, W, H, dark) {
       const m = ground(ctx, W, H, dark);
-      const amt = pointerAmt();
-      const px = silkPointer.active ? (silkPointer.x / W - 0.5) * amt : 0;
-      const py = silkPointer.active ? (silkPointer.y / H - 0.5) * amt : 0;
-      const ox = px * 5;
-      const oy = py * 4;
-
-      ctx.filter = 'none';
-      const minor = Math.max(10, W / 32);
-      const major = minor * 4;
-
-      ctx.strokeStyle = inkOf(m, dark, dark ? 0.055 : 0.05);
-      ctx.lineWidth = 0.5;
-      ctx.beginPath();
-      for (let x = (ox % minor) - minor; x <= W; x += minor) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, H);
+      const t = silkT * 0.5;
+      const n = 7;
+      for (let i = 0; i < n; i += 1) {
+        const base = (i + 0.5) / n;
+        const x = (base + Math.sin(t * 0.3 + i * 1.7) * 0.05) * W;
+        const y = ((t * 0.06 + i * 0.13) % 1.4 - 0.2) * H;
+        const r = W * (0.16 + (i % 3) * 0.05);
+        const c = m.rgb[dark ? 1 + (i % 2) : i % 2];
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(0.55, 2.6);
+        ctx.translate(-x, -y);
+        blob(ctx, x, y, r, c, (dark ? 0.24 : 0.2) + (i % 2) * 0.05, 1);
+        ctx.restore();
       }
-      for (let y = (oy % minor) - minor; y <= H; y += minor) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(W, y);
-      }
-      ctx.stroke();
+    }
 
-      ctx.strokeStyle = inkOf(m, dark, dark ? 0.13 : 0.1);
-      ctx.lineWidth = 0.7;
-      ctx.beginPath();
-      for (let x = (ox % major) - major; x <= W; x += major) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, H);
-      }
-      for (let y = (oy % major) - major; y <= H; y += major) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(W, y);
-      }
-      ctx.stroke();
+    /* ---- mist: horizontal strata, drifting at different speeds ------- */
 
-      // one accent square sitting on an intersection
-      const ax = Math.round((W * 0.72 + ox) / major) * major;
-      const ay = Math.round((H * 0.28 + oy) / major) * major;
-      ctx.fillStyle = 'rgba(' + m.rgb[2].join(',') + ',' + (dark ? 0.5 : 0.42) + ')';
-      ctx.fillRect(ax - major, ay - major, major, major);
+    function drawMist(ctx, W, H, dark) {
+      const m = ground(ctx, W, H, dark);
+      const t = silkT * 0.4;
+      const n = 5;
+      for (let i = 0; i < n; i += 1) {
+        const y = H * (0.16 + i * 0.18);
+        const h = H * (0.2 + (i % 2) * 0.08);
+        const drift = ((t * (0.02 + i * 0.006) + i * 0.3) % 1.6) - 0.3;
+        const c = m.rgb[dark ? 1 + (i % 2) : i % 2];
+        const g = ctx.createLinearGradient(0, y - h * 0.5, 0, y + h * 0.5);
+        g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+        g.addColorStop(0.5, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (dark ? 0.26 : 0.22) + ')');
+        g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(-W * 0.3 + drift * W, y - h * 0.5, W * 1.6, h);
+      }
+    }
+
+    /* ---- swirl: billows orbiting a slow centre ----------------------- */
+
+    function drawSwirl(ctx, W, H, dark) {
+      const m = ground(ctx, W, H, dark);
+      const t = silkT * 0.32;
+      const cx = W * 0.52;
+      const cy = H * 0.52;
+      const n = 16;
+      for (let i = 0; i < n; i += 1) {
+        const a = (i / n) * Math.PI * 2 + t * 0.5;
+        const ring = W * (0.1 + (i % 4) * 0.09);
+        const x = cx + Math.cos(a) * ring;
+        const y = cy + Math.sin(a) * ring * 0.7;
+        const r = W * (0.14 + (i % 3) * 0.05);
+        blob(ctx, x, y, r, m.rgb[dark ? 1 + (i % 2) : i % 2], (dark ? 0.2 : 0.17) + (i % 2) * 0.05, 0.9);
+      }
     }
 
     function now0() {
